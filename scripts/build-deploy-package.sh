@@ -11,11 +11,23 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT_DIR="${1:-$ROOT/dist}"
+mkdir -p "$OUT_DIR"
+OUT_DIR="$(cd "$OUT_DIR" && pwd)"
 STAMP="$(date +%Y%m%d-%H%M)"
-STAGE="$(mktemp -d)"
-PKG="$STAGE/eeht"
 
 cd "$ROOT"
+
+# Outils nécessaires (fonctionne sous Linux et macOS).
+for tool in git php composer npm zip tar; do
+    command -v "$tool" >/dev/null || { echo "✗ « $tool » est introuvable : installez-le puis relancez." >&2; exit 1; }
+done
+php -r 'exit(version_compare(PHP_VERSION, "8.4.1", ">=") ? 0 : 1);' || {
+    echo "✗ PHP $(php -r 'echo PHP_VERSION;') détecté : PHP 8.4.1 minimum est requis (Symfony 8.1)." >&2
+    exit 1
+}
+
+STAGE="$(mktemp -d)"
+PKG="$STAGE/eeht"
 
 echo "→ Compilation des assets front (Vite)…"
 npm install --ignore-scripts --no-audit --no-fund
@@ -24,8 +36,9 @@ npm run build
 echo "→ Copie des fichiers de l'application…"
 mkdir -p "$PKG"
 # git ls-files : uniquement les fichiers suivis (exclut .env, node_modules,
-# vendor, base SQLite locale, fichiers d'éditeur…)
-git ls-files -z | xargs -0 -I{} cp --parents {} "$PKG"
+# vendor, base SQLite locale, fichiers d'éditeur…). Copie via tar pour
+# fonctionner aussi sous macOS (pas de `cp --parents`).
+git ls-files -z | tar --null -T - -cf - | tar -xf - -C "$PKG"
 cp -r public/build "$PKG/public/build"
 
 # Fichiers inutiles en production
