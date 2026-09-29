@@ -529,7 +529,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
 Route::prefix('espace-eleve')->name('student.')->middleware(['auth', 'verified', 'role:eleve'])->group(function () {
     Route::get('/', [StudentPortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/emploi-du-temps', [StudentPortalController::class, 'timetable'])->name('timetable');
+    Route::get('/emploi-du-temps/pdf', [StudentPortalController::class, 'timetablePdf'])->name('timetable.pdf');
     Route::get('/notes', [StudentPortalController::class, 'grades'])->name('grades');
+    Route::get('/notes/pdf', [StudentPortalController::class, 'gradesPdf'])->name('grades.pdf');
     Route::get('/bulletins/{reportCard}/pdf', [StudentPortalController::class, 'reportCardPdf'])->name('report-cards.pdf');
     Route::get('/presences', [StudentPortalController::class, 'attendance'])->name('attendance');
     Route::get('/factures', [StudentPortalController::class, 'invoices'])->name('invoices');
@@ -552,6 +554,7 @@ Route::prefix('espace-enseignant')->name('teacher.')->middleware(['auth', 'verif
     Route::get('/', [TeacherPortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/classes', [TeacherPortalController::class, 'classes'])->name('classes');
     Route::get('/emploi-du-temps', [TeacherPortalController::class, 'timetable'])->name('timetable');
+    Route::get('/emploi-du-temps/pdf', [TeacherPortalController::class, 'timetablePdf'])->name('timetable.pdf');
     Route::get('/messages', [TeacherPortalController::class, 'messages'])->name('messages');
     Route::post('/messages/class', [TeacherPortalController::class, 'sendToClass'])->name('messages.class');
     Route::get('/discussion-classe/{schoolClass}', [TeacherPortalController::class, 'classDiscussion'])->name('class-discussion');

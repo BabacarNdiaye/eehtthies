@@ -16,11 +16,11 @@
 <body>
     <header>
         <div>Établissement: {{ config('app.name') }}</div>
-        <h1>Emploi du temps — {{ $schoolClass->name ?? 'Classe' }}</h1>
+        <h1>Emploi du temps — {{ isset($teacher) ? $teacher->first_name.' '.$teacher->last_name : ($schoolClass->name ?? 'Classe') }}</h1>
     </header>
 
     @if($entries->isEmpty())
-        <p>Aucun emploi du temps trouvé pour cette classe.</p>
+        <p>Aucun cours programmé pour le moment.</p>
     @else
         <table>
             <thead>
@@ -28,7 +28,7 @@
                     <th>Jour</th>
                     <th class="time">Heure</th>
                     <th>Matière</th>
-                    <th>Professeur</th>
+                    <th>{{ isset($teacher) ? 'Classe' : 'Professeur' }}</th>
                     <th>Salle</th>
                 </tr>
             </thead>
@@ -38,7 +38,11 @@
                         <td>{{ $days[$entry->day_of_week] ?? $entry->day_of_week }}</td>
                         <td class="time">{{ substr($entry->start_time, 0, 5) }} - {{ substr($entry->end_time, 0, 5) }}</td>
                         <td>{{ $entry->subject->name ?? '' }}</td>
-                        <td>{{ isset($entry->teacher) ? ($entry->teacher->first_name . ' ' . $entry->teacher->last_name) : '' }}</td>
+                        @isset($teacher)
+                            <td>{{ $entry->schoolClass->name ?? '' }}</td>
+                        @else
+                            <td>{{ isset($entry->teacher) ? ($entry->teacher->first_name . ' ' . $entry->teacher->last_name) : '' }}</td>
+                        @endisset
                         <td>{{ $entry->room->name ?? '' }}</td>
                     </tr>
                 @endforeach

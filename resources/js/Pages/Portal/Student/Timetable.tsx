@@ -32,7 +32,7 @@ export default function Timetable({ entries, days, schoolClassName, schoolClassI
                 </div>
                 {schoolClassId ? (
                     <a
-                        href={`/generate_pdf.php?class_id=${schoolClassId}`}
+                        href={route('student.timetable.pdf')}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink-800"

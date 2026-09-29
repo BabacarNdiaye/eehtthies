@@ -59,30 +59,20 @@ class StudentPortalController extends Controller
         ]);
     }
 
-    public function timetable(Request $request): Response
+    private function timetableEntries(Student $student)
     {
-        $student = $this->student($request);
-
-        $entries = $student->school_class_id
+        return $student->school_class_id
             ? TimetableEntry::where('school_class_id', $student->school_class_id)
                 ->with('subject:id,name', 'teacher:id,first_name,last_name', 'room:id,name')
                 ->orderBy('day_of_week')
                 ->orderBy('start_time')
                 ->get()
             : collect();
-
-        return Inertia::render('Portal/Student/Timetable', [
-            'entries' => $entries,
-            'days' => TimetableEntry::DAYS,
-            'schoolClassName' => $student->schoolClass?->name,
-            'schoolClassId' => $student->school_class_id,
-        ]);
     }
 
-    public function grades(Request $request): Response
+    /** Épreuves publiées de la classe de l'élève, avec ses propres notes indexées par épreuve. */
+    private function publishedExamsWithGrades(Student $student): array
     {
-        $student = $this->student($request);
-
         $exams = $student->school_class_id
             ? Exam::where('school_class_id', $student->school_class_id)
                 ->where('is_published', true)
@@ -92,6 +82,38 @@ class StudentPortalController extends Controller
             : collect();
 
         $grades = $student->grades()->whereIn('exam_id', $exams->pluck('id'))->get()->keyBy('exam_id');
+
+        return [$exams, $grades];
+    }
+
+    public function timetable(Request $request): Response
+    {
+        $student = $this->student($request);
+        $entries = $this->timetableEntries($student);
+
+        return Inertia::render('Portal/Student/Timetable', [
+            'entries' => $entries,
+            'days' => TimetableEntry::DAYS,
+            'schoolClassName' => $student->schoolClass?->name,
+            'schoolClassId' => $student->school_class_id,
+        ]);
+    }
+
+    public function timetablePdf(Request $request)
+    {
+        $student = $this->student($request)->load('schoolClass:id,name');
+
+        return Pdf::loadView('pdf.admin_timetable', [
+            'entries' => $this->timetableEntries($student),
+            'schoolClass' => $student->schoolClass,
+            'days' => TimetableEntry::DAYS,
+        ])->stream('emploi-du-temps.pdf');
+    }
+
+    public function grades(Request $request): Response
+    {
+        $student = $this->student($request);
+        [$exams, $grades] = $this->publishedExamsWithGrades($student);
 
         $reportCards = $student->reportCards()
             ->where('is_published', true)
@@ -104,6 +126,18 @@ class StudentPortalController extends Controller
             'reportCards' => $reportCards,
             'schoolClassId' => $student->school_class_id,
         ]);
+    }
+
+    public function gradesPdf(Request $request)
+    {
+        $student = $this->student($request)->load('schoolClass:id,name');
+        [$exams, $grades] = $this->publishedExamsWithGrades($student);
+
+        return Pdf::loadView('pdf.student_grades', [
+            'student' => $student,
+            'exams' => $exams,
+            'grades' => $grades,
+        ])->stream('releve-de-notes.pdf');
     }
 
     public function reportCardPdf(Request $request, ReportCard $reportCard, ReportCardCalculator $calculator)

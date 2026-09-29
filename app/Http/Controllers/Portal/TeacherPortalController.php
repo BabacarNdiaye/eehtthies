@@ -10,6 +10,7 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\TimetableEntry;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -102,6 +103,23 @@ class TeacherPortalController extends Controller
             'entries' => $entries,
             'days' => TimetableEntry::DAYS,
         ]);
+    }
+
+    public function timetablePdf(Request $request)
+    {
+        $teacher = $this->teacher($request);
+
+        $entries = TimetableEntry::where('teacher_id', $teacher->id)
+            ->with('schoolClass:id,name', 'subject:id,name', 'room:id,name')
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get();
+
+        return Pdf::loadView('pdf.admin_timetable', [
+            'entries' => $entries,
+            'teacher' => $teacher,
+            'days' => TimetableEntry::DAYS,
+        ])->stream('emploi-du-temps.pdf');
     }
 
     public function messages(Request $request): Response
