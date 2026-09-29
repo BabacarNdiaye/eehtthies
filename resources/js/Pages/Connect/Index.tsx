@@ -16,7 +16,7 @@ interface Props {
     links: ConnectLinks;
     ai: AiConfig;
     calls: { iceServers: RTCIceServer[] };
-    initial: { conversation: number | null; class: number | null; user: number | null; section: string | null; call: number | null };
+    initial: { conversation: number | null; class: number | null; user: number | null; section: string | null; call: number | null; answer?: boolean };
 }
 
 const SECTIONS: Section[] = ['messages', 'groups', 'announcements', 'documents', 'contacts', 'profile'];
@@ -378,6 +378,12 @@ export default function ConnectIndex({ me, canCreateGroups, links, ai, calls, in
                     key={activeCall.id}
                     initialCall={activeCall}
                     iceServers={calls.iceServers}
+                    autoAnswer={!!initial.answer && activeCall.id === initial.call}
+                    onOpenConversation={(id) => openConversation(id)}
+                    onShowProfile={(id) => {
+                        openConversation(id);
+                        setInfoOpen(true);
+                    }}
                     onClose={() => {
                         setActiveCall(null);
                         loadConversations(true);

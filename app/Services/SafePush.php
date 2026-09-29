@@ -14,14 +14,14 @@ use Throwable;
  */
 class SafePush
 {
-    public static function send(?User $user, string $title, ?string $body, string $url): void
+    public static function send(?User $user, string $title, ?string $body, string $url, array $extra = []): void
     {
         if (! $user) {
             return;
         }
 
         try {
-            $user->notify(new PushAlert($title, (string) $body, $url));
+            $user->notify(new PushAlert($title, (string) $body, $url, $extra));
         } catch (Throwable $e) {
             report($e);
         }

@@ -605,6 +605,10 @@ Route::prefix('espace-parent')->name('parent.')->middleware(['auth', 'verified',
 |--------------------------------------------------------------------------
 */
 
+// Bouton « Refuser » d'une notification d'appel (adresse signée, sans session).
+Route::post('/connect/calls/{call}/push-decline', [CallController::class, 'pushDecline'])
+    ->middleware(['signed:relative', 'throttle:30,1'])->name('connect.calls.push-decline');
+
 Route::prefix('connect')->name('connect.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [ConnectController::class, 'index'])->name('index');
 

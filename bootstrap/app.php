@@ -27,6 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\TrackLastSeen::class,
         ]);
 
+        // Refus d'appel depuis une notification : protégé par une signature.
+        $middleware->validateCsrfTokens(except: ['connect/calls/*/push-decline']);
+
         $middleware->alias([
             'staff' => \App\Http\Middleware\EnsureUserIsStaff::class,
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,

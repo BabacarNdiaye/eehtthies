@@ -3,6 +3,7 @@ import { router } from '@inertiajs/react';
 import { MessageCircle, Phone, PhoneOff, Video } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { PageProps } from '@/types';
+import { closeCallNotification, useRingtone } from './Connect/CallScreen';
 
 /**
  * Bouton flottant « EEHT Connect », en bas à droite de toutes les pages dès
@@ -61,6 +62,9 @@ export default function ConnectLauncher({ initialPage }: { initialPage: Page<Pag
         return () => clearInterval(id);
     }, [hidden]);
 
+    // Sonnerie et vibration tant que l'appel entrant est affiché.
+    useRingtone(!!incoming && !hidden, 'incoming');
+
     if (hidden) return null;
 
     if (incoming) {
@@ -76,6 +80,7 @@ export default function ConnectLauncher({ initialPage }: { initialPage: Page<Pag
                 <button
                     onClick={() => {
                         window.axios.post(route('connect.calls.decline', incoming.id)).catch(() => undefined);
+                        closeCallNotification(incoming.id);
                         setIncoming(null);
                     }}
                     className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 hover:bg-red-700"
@@ -84,7 +89,7 @@ export default function ConnectLauncher({ initialPage }: { initialPage: Page<Pag
                     <PhoneOff className="h-4 w-4" />
                 </button>
                 <button
-                    onClick={() => router.visit(`/connect?conversation=${incoming.conversation_id}&call=${incoming.id}`)}
+                    onClick={() => router.visit(`/connect?conversation=${incoming.conversation_id}&call=${incoming.id}&answer=1`)}
                     className="flex h-10 items-center gap-1.5 rounded-full bg-emerald-500 px-4 text-sm font-semibold hover:bg-emerald-600"
                 >
                     <Phone className="h-4 w-4" /> Répondre

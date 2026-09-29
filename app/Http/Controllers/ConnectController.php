@@ -118,6 +118,7 @@ class ConnectController extends Controller
                 'class' => $request->integer('class') ?: null,
                 'user' => $request->integer('user') ?: null,
                 'call' => $request->integer('call') ?: null,
+                'answer' => $request->boolean('answer'),
                 'section' => $request->string('section')->value() ?: null,
             ],
         ]);
