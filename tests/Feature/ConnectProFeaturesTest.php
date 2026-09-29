@@ -195,6 +195,7 @@ class ConnectProFeaturesTest extends TestCase
 
         $this->actingAs($this->bineta)->getJson(route('connect.messages', $id))->assertJsonPath('typing', ['Aminata Sow']);
         $this->actingAs($this->ami)->getJson(route('connect.messages', $id))->assertJsonPath('typing', []);
+        $this->actingAs($this->bineta)->getJson(route('connect.conversations'))->assertJsonPath('conversations.0.typing', ['Aminata Sow']);
 
         $this->travel(10)->seconds();
         $this->actingAs($this->bineta)->getJson(route('connect.messages', $id))->assertJsonPath('typing', []);

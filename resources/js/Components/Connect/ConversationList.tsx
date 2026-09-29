@@ -138,13 +138,19 @@ export default function ConversationList({
                                     </span>
                                 )}
                                 <span className="mt-1 flex items-center justify-between gap-2">
-                                    <span className={`truncate text-xs ${c.unread > 0 ? 'text-ink-700' : 'text-ink-400'}`}>
-                                        {c.last
-                                            ? `${c.type === 'group' && c.last.sender_name ? `${c.last.sender_name.split(' ')[0]} : ` : c.last.sender_name === 'Vous' ? 'Vous : ' : ''}${c.last.body}`
-                                            : c.type === 'group'
-                                              ? `${c.members_count} membres`
-                                              : 'Nouvelle conversation'}
-                                    </span>
+                                    {c.typing && c.typing.length > 0 ? (
+                                        <span className="truncate text-xs font-medium italic text-emerald-600">
+                                            {c.type === 'direct' ? 'écrit…' : c.typing.length === 1 ? `${c.typing[0].split(' ')[0]} écrit…` : `${c.typing.length} personnes écrivent…`}
+                                        </span>
+                                    ) : (
+                                        <span className={`truncate text-xs ${c.unread > 0 ? 'text-ink-700' : 'text-ink-400'}`}>
+                                            {c.last
+                                                ? `${c.type === 'group' && c.last.sender_name ? `${c.last.sender_name.split(' ')[0]} : ` : c.last.sender_name === 'Vous' ? 'Vous : ' : ''}${c.last.body}`
+                                                : c.type === 'group'
+                                                  ? `${c.members_count} membres`
+                                                  : 'Nouvelle conversation'}
+                                        </span>
+                                    )}
                                     <span className="flex shrink-0 items-center gap-1">
                                         {c.muted && <BellOff className="h-3.5 w-3.5 text-ink-400" aria-label="Notifications coupées" />}
                                         {c.mentions > 0 && (

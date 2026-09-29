@@ -304,6 +304,12 @@ export default function ChatPane({
         if (stickToBottom.current) scrollToBottom();
     }, [messages]);
 
+    // La bulle « écrit… » reste visible si l'on est déjà en bas de la conversation.
+    useLayoutEffect(() => {
+        const el = scrollRef.current;
+        if (typing.length > 0 && el && el.scrollHeight - el.scrollTop - el.clientHeight < 160) scrollToBottom();
+    }, [typing.length]);
+
     const replaceMessage = (m: ChatMessage) => setMessages((prev) => prev.map((x) => (x.id === m.id ? m : x)));
 
     const loadOlder = async () => {
@@ -643,7 +649,11 @@ export default function ChatPane({
                                     {other.online ? 'En ligne' : 'Hors ligne'}
                                 </span>
                             )}
-                            {subtitle && <span className="truncate sm:ml-4">{subtitle}</span>}
+                            {isGroup && typing.length > 0 ? (
+                                <span className="truncate font-medium text-emerald-600 sm:ml-4">{typingLabel(typing)}…</span>
+                            ) : (
+                                subtitle && <span className="truncate sm:ml-4">{subtitle}</span>
+                            )}
                         </span>
                     </span>
                 </button>
@@ -773,6 +783,17 @@ export default function ChatPane({
                         </Fragment>
                     );
                 })}
+
+                {typing.length > 0 && (
+                    <div className="flex items-end gap-3" aria-live="polite">
+                        <span className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-[#eef2f8] px-4 py-3 shadow-sm" aria-label={`${typingLabel(typing)}…`}>
+                            {[0, 150, 300].map((d) => (
+                                <span key={d} className="h-2 w-2 animate-bounce rounded-full bg-ink-400" style={{ animationDelay: `${d}ms` }} />
+                            ))}
+                        </span>
+                        <span className="pb-1 text-[11px] text-ink-500">{typingLabel(typing)}…</span>
+                    </div>
+                )}
             </div>
 
             {summary && (
@@ -816,17 +837,6 @@ export default function ChatPane({
                         </div>
                     )}
                 </div>
-            )}
-
-            {typing.length > 0 && isGroup && (
-                <p className="flex items-center gap-2 px-6 pb-1 text-[11px] text-ink-500" aria-live="polite">
-                    <span className="flex gap-0.5">
-                        {[0, 150, 300].map((d) => (
-                            <span key={d} className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-400" style={{ animationDelay: `${d}ms` }} />
-                        ))}
-                    </span>
-                    {typingLabel(typing)}…
-                </p>
             )}
 
             {!canWrite ? (
