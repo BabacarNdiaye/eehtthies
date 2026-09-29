@@ -120,7 +120,7 @@ export default function InfoPanel({
                     <h3 className="text-[13px] font-semibold text-ink-900">À propos</h3>
                     {profile.about && <p className="mt-2 text-[13px] leading-relaxed text-ink-700">{profile.about}</p>}
                     <div className="mt-3">
-                        <Row icon={Mail} label="Email" value={profile.email} href={profile.email ? `mailto:${profile.email}` : undefined} />
+                        <Row icon={Mail} label="E-mail" value={profile.email} href={profile.email ? `mailto:${profile.email}` : undefined} />
                         <Row icon={Smartphone} label="Téléphone" value={profile.phone} href={profile.phone ? `tel:${profile.phone}` : undefined} />
                         <Row icon={GraduationCap} label="Formation" value={profile.formation} />
                         <Row icon={Briefcase} label="Poste" value={profile.position} />
