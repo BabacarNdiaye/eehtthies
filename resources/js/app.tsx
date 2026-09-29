@@ -4,6 +4,7 @@ import './bootstrap';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import ConnectLauncher from './Components/ConnectLauncher';
 import PwaInstallBanner from './Components/PwaInstallBanner';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -21,6 +22,7 @@ createInertiaApp({
         root.render(
             <>
                 <App {...props} />
+                <ConnectLauncher initialPage={props.initialPage as never} />
                 <PwaInstallBanner />
             </>,
         );

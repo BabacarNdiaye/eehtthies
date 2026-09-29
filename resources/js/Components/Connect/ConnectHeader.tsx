@@ -6,14 +6,6 @@ import SiteLogo from '@/Components/SiteLogo';
 import Avatar from './Avatar';
 import { ConnectLinks, Profile } from './types';
 
-const navigation = [
-    { name: 'Accueil', href: 'home' },
-    { name: 'Formations', href: 'formations.index' },
-    { name: 'Actualités', href: 'news.index' },
-    { name: 'Événements', href: 'events.index' },
-    { name: 'Galerie', href: 'gallery.index' },
-];
-
 export default function ConnectHeader({
     me,
     links,
@@ -64,22 +56,6 @@ export default function ConnectHeader({
                     </span>
                 </Link>
             </div>
-
-            <nav className="hidden flex-1 items-stretch justify-center gap-7 px-6 lg:flex">
-                {navigation.map((item) => (
-                    <Link
-                        key={item.href}
-                        href={route(item.href)}
-                        className="flex items-center text-[13px] font-medium text-ink-800 transition-colors hover:text-gold-600"
-                    >
-                        {item.name}
-                    </Link>
-                ))}
-                <span className="relative flex items-center text-[13px] font-semibold text-ink-900">
-                    EEHT Connect
-                    <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t bg-gold-500" />
-                </span>
-            </nav>
 
             <div className="ml-auto flex items-center gap-2 px-3 sm:gap-4 sm:px-5">
                 <label className="relative hidden md:block">

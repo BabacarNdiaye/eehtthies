@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import { ArrowRightFromLine, CalendarDays, FileText, Megaphone, MessageSquareText, Settings, User, Users, UsersRound, X } from 'lucide-react';
+import { ArrowRightFromLine, FileText, Megaphone, MessageSquareText, Settings, User, Users, UsersRound, X } from 'lucide-react';
 import { PageProps } from '@/types';
 import SiteLogo from '@/Components/SiteLogo';
 import Avatar, { groupIconFor } from './Avatar';
@@ -37,12 +37,11 @@ export default function ConnectSidebar({
 }) {
     const { siteSettings } = usePage<PageProps>().props;
 
-    const items: { key: Section | 'calendar'; label: string; icon: typeof Users; badge?: number }[] = [
+    const items: { key: Section; label: string; icon: typeof Users; badge?: number }[] = [
         { key: 'messages', label: 'Messages', icon: MessageSquareText, badge: unreadMessages },
         { key: 'groups', label: 'Groupes', icon: Users },
         { key: 'announcements', label: 'Annonces', icon: Megaphone, badge: unreadAnnouncements },
         { key: 'documents', label: 'Documents', icon: FileText },
-        { key: 'calendar', label: 'Calendrier', icon: CalendarDays },
         { key: 'contacts', label: 'Contacts', icon: UsersRound },
         { key: 'profile', label: 'Mon profil', icon: User },
     ];
@@ -70,16 +69,8 @@ export default function ConnectSidebar({
                         active ? 'bg-white/10 text-white shadow-inner' : 'text-white/85 hover:bg-white/5 hover:text-white'
                     }`;
 
-                    if (item.key === 'calendar') {
-                        return links.calendar ? (
-                            <a key={item.key} href={links.calendar} className={className}>
-                                <Icon className="h-5 w-5 shrink-0" /> {item.label}
-                            </a>
-                        ) : null;
-                    }
-
                     return (
-                        <button key={item.key} onClick={() => onSection(item.key as Section)} className={className}>
+                        <button key={item.key} onClick={() => onSection(item.key)} className={className}>
                             <Icon className="h-5 w-5 shrink-0" />
                             {item.label}
                             <Badge count={item.badge ?? 0} />
