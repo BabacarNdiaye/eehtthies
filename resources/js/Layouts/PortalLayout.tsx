@@ -4,7 +4,6 @@ import {
     CalendarOff,
     ChevronLeft,
     ClipboardCheck,
-    Contact,
     GraduationCap,
     Home,
     KeyRound,
@@ -13,7 +12,6 @@ import {
     Medal,
     Menu,
     MessageCircle,
-    MessageSquare,
     NotebookText,
     PenSquare,
     Receipt,
@@ -43,10 +41,8 @@ function iconFor(href: string) {
     if (href.includes('skills')) return Medal;
     if (href.includes('library')) return Library;
     if (href.includes('invoices')) return Receipt;
-    if (href.includes('class-discussion')) return MessageSquare;
-    if (href.includes('messages')) return MessageCircle;
+    if (href.includes('connect')) return MessageCircle;
     if (href.includes('classes') || href.includes('child')) return Users;
-    if (href.includes('directory')) return Contact;
     return Home;
 }
 
@@ -61,7 +57,7 @@ export default function PortalLayout({
     useAutoPushSubscribe();
     const currentRoute = route().current() ?? component;
     const rolePrefix = nav[0]?.href.split('.')[0] ?? 'student';
-    const messagesHref = route(`${rolePrefix}.messages`);
+    const messagesHref = route('connect.index');
     const passwordHref = route(`${rolePrefix}.password`);
 
     const SidebarContent = (

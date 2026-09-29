@@ -6,8 +6,7 @@ import { ChevronRight, GraduationCap } from 'lucide-react';
 
 export const parentNav: PortalNavItem[] = [
     { label: 'Mes enfants', href: 'parent.dashboard', active: (c) => c === 'parent.dashboard' || c === 'parent.child' },
-    { label: 'Messages', href: 'parent.messages', active: (c) => c === 'parent.messages' },
-    { label: 'Annuaire', href: 'directory.index', active: (c) => c === 'directory.index' },
+    { label: 'EEHT Connect', href: 'connect.index', active: (c) => c.startsWith('connect.') },
 ];
 
 type ChildRow = Student & {

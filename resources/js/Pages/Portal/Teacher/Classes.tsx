@@ -27,7 +27,7 @@ export default function Classes({ classes }: { classes: ClassWithStudents[] }) {
                                 </p>
                             </div>
                             <Link
-                                href={route('teacher.class-discussion', c.id)}
+                                href={`/connect?class=${c.id}`}
                                 className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 px-3 py-2 text-sm font-medium text-ink-700 hover:bg-ink-50"
                             >
                                 <MessageSquare className="h-4 w-4" /> Discussion

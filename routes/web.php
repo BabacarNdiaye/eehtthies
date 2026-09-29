@@ -65,8 +65,7 @@ use App\Http\Controllers\Portal\TeacherLibraryController;
 use App\Http\Controllers\Portal\TeacherSkillController;
 use App\Http\Controllers\Portal\TeacherLessonLogController;
 use App\Http\Controllers\Portal\TeacherPortalController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\DirectoryController;
+use App\Http\Controllers\ConnectController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Site\AlumniController;
 use App\Http\Controllers\Site\CandidatureController;
@@ -172,12 +171,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::post('/notifications', [NotificationController::class, 'store'])->name('notifications.store');
-    Route::get('/annuaire', [DirectoryController::class, 'index'])->name('directory.index');
-    Route::get('/notifications/threads/{thread}', [NotificationController::class, 'show'])->name('notifications.show');
-    Route::post('/notifications/threads/{thread}/reply', [NotificationController::class, 'reply'])->name('notifications.reply');
+
+    // Anciennes adresses de la messagerie (liens de notifications push déjà
+    // envoyées, favoris) — tout est désormais dans EEHT Connect.
+    Route::redirect('/notifications', '/connect');
+    Route::redirect('/annuaire', '/connect?section=contacts');
+    Route::redirect('/espace-eleve/messages', '/connect');
+    Route::redirect('/espace-eleve/discussion-classe', '/connect?section=groups');
+    Route::redirect('/espace-enseignant/messages', '/connect');
+    Route::get('/espace-enseignant/discussion-classe/{schoolClass}', fn (int $schoolClass) => redirect("/connect?class={$schoolClass}"));
+    Route::redirect('/espace-parent/messages', '/connect');
 
     Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
     Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
@@ -536,10 +539,6 @@ Route::prefix('espace-eleve')->name('student.')->middleware(['auth', 'verified',
     Route::get('/presences', [StudentPortalController::class, 'attendance'])->name('attendance');
     Route::get('/factures', [StudentPortalController::class, 'invoices'])->name('invoices');
     Route::get('/factures/{invoice}/paiements/{payment}/recu', [StudentPortalController::class, 'invoiceReceiptPdf'])->name('invoices.receipt');
-    Route::get('/discussion-classe', [StudentPortalController::class, 'classDiscussion'])->name('class-discussion');
-    Route::get('/discussion-classe/messages', [StudentPortalController::class, 'classMessagesJson'])->name('class-discussion.messages');
-    Route::post('/discussion-classe', [StudentPortalController::class, 'storeClassMessage'])->name('class-discussion.store');
-    Route::get('/messages', [StudentPortalController::class, 'messages'])->name('messages');
     Route::get('/bibliotheque', [StudentPortalController::class, 'library'])->name('library');
     Route::get('/mot-de-passe', fn () => Inertia::render('Portal/Student/Password'))->name('password');
 });
@@ -555,11 +554,6 @@ Route::prefix('espace-enseignant')->name('teacher.')->middleware(['auth', 'verif
     Route::get('/classes', [TeacherPortalController::class, 'classes'])->name('classes');
     Route::get('/emploi-du-temps', [TeacherPortalController::class, 'timetable'])->name('timetable');
     Route::get('/emploi-du-temps/pdf', [TeacherPortalController::class, 'timetablePdf'])->name('timetable.pdf');
-    Route::get('/messages', [TeacherPortalController::class, 'messages'])->name('messages');
-    Route::post('/messages/class', [TeacherPortalController::class, 'sendToClass'])->name('messages.class');
-    Route::get('/discussion-classe/{schoolClass}', [TeacherPortalController::class, 'classDiscussion'])->name('class-discussion');
-    Route::get('/discussion-classe/{schoolClass}/messages', [TeacherPortalController::class, 'classMessagesJson'])->name('class-discussion.messages');
-    Route::post('/discussion-classe/{schoolClass}', [TeacherPortalController::class, 'storeClassMessage'])->name('class-discussion.store');
 
     Route::get('/devoirs', [TeacherExamController::class, 'index'])->name('exams.index');
     Route::get('/devoirs/nouveau', [TeacherExamController::class, 'create'])->name('exams.create');
@@ -601,8 +595,36 @@ Route::prefix('espace-parent')->name('parent.')->middleware(['auth', 'verified',
     Route::get('/enfants/{student}', [ParentPortalController::class, 'child'])->name('child');
     Route::get('/enfants/{student}/bulletins/{reportCard}/pdf', [ParentPortalController::class, 'reportCardPdf'])->name('report-cards.pdf');
     Route::get('/enfants/{student}/factures/{invoice}/paiements/{payment}/recu', [ParentPortalController::class, 'invoiceReceiptPdf'])->name('invoices.receipt');
-    Route::get('/messages', [ParentPortalController::class, 'messages'])->name('messages');
     Route::get('/mot-de-passe', fn () => Inertia::render('Portal/Parent/Password'))->name('password');
+});
+
+/*
+|--------------------------------------------------------------------------
+| EEHT Connect — messagerie interne (tous profils)
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('connect')->name('connect.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [ConnectController::class, 'index'])->name('index');
+
+    Route::prefix('api')->group(function () {
+        Route::get('/unread-count', [ConnectController::class, 'unreadCount'])->name('unread-count');
+        Route::get('/conversations', [ConnectController::class, 'conversations'])->name('conversations');
+        Route::get('/classes/{schoolClass}', [ConnectController::class, 'conversationForClass'])->whereNumber('schoolClass')->name('class');
+        Route::post('/direct', [ConnectController::class, 'openDirect'])->name('direct');
+        Route::post('/groups', [ConnectController::class, 'storeGroup'])->name('groups.store');
+        Route::get('/conversations/{conversation}/messages', [ConnectController::class, 'messages'])->name('messages');
+        Route::post('/conversations/{conversation}/messages', [ConnectController::class, 'send'])->name('send');
+        Route::get('/conversations/{conversation}/details', [ConnectController::class, 'details'])->name('details');
+        Route::post('/conversations/{conversation}/favorite', [ConnectController::class, 'toggleFavorite'])->name('favorite');
+        Route::post('/conversations/{conversation}/unread', [ConnectController::class, 'markUnread'])->name('unread');
+        Route::post('/conversations/{conversation}/leave', [ConnectController::class, 'leave'])->name('leave');
+        Route::get('/messages/{message}/attachment', [ConnectController::class, 'attachment'])->name('attachment');
+        Route::get('/contacts', [ConnectController::class, 'contacts'])->name('contacts');
+        Route::get('/announcements', [ConnectController::class, 'announcements'])->name('announcements');
+        Route::post('/announcements/{announcement}/read', [ConnectController::class, 'readAnnouncement'])->name('announcements.read');
+        Route::get('/documents', [ConnectController::class, 'documents'])->name('documents');
+    });
 });
 
 require __DIR__.'/auth.php';

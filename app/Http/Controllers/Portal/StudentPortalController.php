@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
-use App\Models\ClassMessage;
 use App\Models\Exam;
 use App\Models\Invoice;
 use App\Models\LibraryResource;
@@ -184,11 +183,6 @@ class StudentPortalController extends Controller
         ]);
     }
 
-    public function messages(): Response
-    {
-        return Inertia::render('Portal/Student/Messages');
-    }
-
     public function library(): Response
     {
         return Inertia::render('Portal/Student/Library', [
@@ -232,52 +226,5 @@ class StudentPortalController extends Controller
         ]);
 
         return $pdf->stream("recu-{$payment->receipt_number}.pdf");
-    }
-
-    public function classDiscussion(Request $request): Response
-    {
-        $student = $this->student($request);
-        abort_unless($student->school_class_id, 404, "Vous n'êtes rattaché à aucune classe pour le moment.");
-
-        $messages = ClassMessage::where('school_class_id', $student->school_class_id)
-            ->with('user:id,name')
-            ->orderBy('created_at')
-            ->get();
-
-        return Inertia::render('Portal/Student/ClassDiscussion', [
-            'messages' => $messages,
-            'className' => $student->schoolClass?->name,
-        ]);
-    }
-
-    public function classMessagesJson(Request $request)
-    {
-        $student = $this->student($request);
-        abort_unless($student->school_class_id, 404);
-
-        $messages = ClassMessage::where('school_class_id', $student->school_class_id)
-            ->with('user:id,name')
-            ->orderBy('created_at')
-            ->get();
-
-        return response()->json(['messages' => $messages]);
-    }
-
-    public function storeClassMessage(Request $request)
-    {
-        $student = $this->student($request);
-        abort_unless($student->school_class_id, 404);
-
-        $data = $request->validate([
-            'body' => ['required', 'string', 'max:2000'],
-        ]);
-
-        $message = ClassMessage::create([
-            'school_class_id' => $student->school_class_id,
-            'user_id' => $request->user()->id,
-            'body' => $data['body'],
-        ])->load('user:id,name');
-
-        return response()->json(['message' => $message]);
     }
 }

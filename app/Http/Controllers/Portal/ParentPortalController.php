@@ -127,9 +127,4 @@ class ParentPortalController extends Controller
 
         return $pdf->stream("bulletin-{$reportCard->term}.pdf");
     }
-
-    public function messages(): Response
-    {
-        return Inertia::render('Portal/Parent/Messages');
-    }
 }

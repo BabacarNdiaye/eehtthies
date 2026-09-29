@@ -28,6 +28,14 @@ class Announcement extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** Destinataires à qui l'annonce a été remise (avec leur état de lecture). */
+    public function recipients()
+    {
+        return $this->belongsToMany(User::class, 'announcement_user')
+            ->withPivot(['read_at', 'pushed_at'])
+            ->withTimestamps();
+    }
+
     /**
      * Resolve the actual recipient user ids for this announcement's audience,
      * computed fresh each time rather than stored, so it always reflects who

@@ -14,8 +14,7 @@ export const teacherNav: PortalNavItem[] = [
     { label: 'Compétences', href: 'teacher.skills.index', active: (c) => c.startsWith('teacher.skills') },
     { label: 'Bibliothèque', href: 'teacher.library.index', active: (c) => c.startsWith('teacher.library') },
     { label: 'Devoirs', href: 'teacher.exams.index', active: (c) => c.startsWith('teacher.exams') },
-    { label: 'Messages', href: 'teacher.messages', active: (c) => c === 'teacher.messages' },
-    { label: 'Annuaire', href: 'directory.index', active: (c) => c === 'directory.index' },
+    { label: 'EEHT Connect', href: 'connect.index', active: (c) => c.startsWith('connect.') },
 ];
 
 interface Props {

@@ -472,7 +472,13 @@ const navGroups: NavGroup[] = [
         icon: MessageSquare,
         items: [
             {
-                label: 'Messages',
+                label: 'EEHT Connect',
+                href: 'connect.index',
+                icon: MessageSquare,
+                active: (c) => c.startsWith('connect.'),
+            },
+            {
+                label: 'Messages du site',
                 href: 'admin.messages.index',
                 icon: MessageSquare,
                 active: (c) => c.startsWith('admin.messages'),
@@ -493,7 +499,7 @@ const navGroups: NavGroup[] = [
                 permission: 'voir_communication',
             },
             {
-                label: 'Discussions de classe',
+                label: 'Modération des groupes',
                 href: 'admin.class-discussions.index',
                 icon: MessageSquare,
                 active: (c) => c.startsWith('admin.class-discussions'),
@@ -853,7 +859,7 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         Plateforme de gestion intégrée — EEHT de Thiès
                     </div>
                     <div className="flex items-center gap-3">
-                        <NotificationBell href={route('admin.mail.index')} />
+                        <NotificationBell href={route('connect.index')} />
                         <Link
                             href={route('home')}
                             className="text-sm font-medium text-ink-600 transition-colors duration-150 hover:text-gold-600"

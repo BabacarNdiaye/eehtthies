@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\GenericMessage;
-use App\Models\InternalMessage;
 use App\Models\SentEmail;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Services\Messenger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
@@ -33,7 +33,7 @@ class MailController extends Controller
         ]);
     }
 
-    public function send(Request $request)
+    public function send(Request $request, Messenger $messenger)
     {
         $data = $request->validate([
             'subject' => ['required', 'string', 'max:255'],
@@ -50,14 +50,14 @@ class MailController extends Controller
             $user = User::where('email', $recipient['email'])->first();
 
             if ($user) {
-                // Has a portal account (élève/enseignant/parent) — deliver as an
-                // internal message they'll see (with a notification) in their space.
-                InternalMessage::create([
-                    'sender_id' => $request->user()->id,
-                    'recipient_id' => $user->id,
-                    'subject' => $data['subject'],
-                    'body' => $data['body'],
-                ]);
+                // Has a portal account (élève/enseignant/parent) — deliver in their
+                // private EEHT Connect conversation (with a push notification).
+                $messenger->send(
+                    $messenger->directConversation($request->user(), $user),
+                    $request->user(),
+                    $data['body'],
+                    subject: $data['subject'],
+                );
                 $internalCount++;
             } else {
                 // No portal account (e.g. a parent/partner e-mail typed manually) —

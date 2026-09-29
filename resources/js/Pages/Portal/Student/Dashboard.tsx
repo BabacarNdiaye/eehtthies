@@ -2,7 +2,7 @@ import PortalLayout, { PortalNavItem } from '@/Layouts/PortalLayout';
 import Card from '@/Components/Admin/Card';
 import { ReportCard, Student } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Award, Calendar, ClipboardCheck, GraduationCap, MessageCircle, QrCode, Receipt, Users } from 'lucide-react';
+import { Award, Calendar, ClipboardCheck, GraduationCap, MessageCircle, QrCode, Receipt } from 'lucide-react';
 
 export const studentNav: PortalNavItem[] = [
     { label: 'Tableau de bord', href: 'student.dashboard', active: (c) => c === 'student.dashboard' },
@@ -10,10 +10,8 @@ export const studentNav: PortalNavItem[] = [
     { label: 'Notes & bulletins', href: 'student.grades', active: (c) => c === 'student.grades' },
     { label: 'Présences', href: 'student.attendance', active: (c) => c === 'student.attendance' },
     { label: 'Factures', href: 'student.invoices', active: (c) => c === 'student.invoices' },
-    { label: 'Discussion de classe', href: 'student.class-discussion', active: (c) => c === 'student.class-discussion' },
-    { label: 'Messages', href: 'student.messages', active: (c) => c === 'student.messages' },
+    { label: 'EEHT Connect', href: 'connect.index', active: (c) => c.startsWith('connect.') },
     { label: 'Bibliothèque', href: 'student.library', active: (c) => c === 'student.library' },
-    { label: 'Annuaire', href: 'directory.index', active: (c) => c === 'directory.index' },
 ];
 
 const quickActions = [
@@ -21,8 +19,7 @@ const quickActions = [
     { label: 'Notes', href: 'student.grades', icon: GraduationCap },
     { label: 'Présences', href: 'student.attendance', icon: ClipboardCheck },
     { label: 'Factures', href: 'student.invoices', icon: Receipt },
-    { label: 'Discussion\nde classe', href: 'student.class-discussion', icon: Users },
-    { label: 'Messages', href: 'student.messages', icon: MessageCircle },
+    { label: 'EEHT\nConnect', href: 'connect.index', icon: MessageCircle },
 ];
 
 interface Props {

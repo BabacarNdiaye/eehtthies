@@ -6,7 +6,8 @@ import { Inbox, Trash2 } from 'lucide-react';
 
 type ClassMessage = {
     id: number;
-    body: string;
+    body: string | null;
+    attachment_name: string | null;
     created_at: string;
     user: { id: number; name: string } | null;
 };
@@ -29,7 +30,8 @@ export default function Show({ schoolClass, messages }: { schoolClass: { id: num
                         <div key={m.id} className="flex items-start justify-between gap-4 px-5 py-4">
                             <div>
                                 <p className="text-sm font-semibold text-ink-900">{m.user?.name ?? 'Utilisateur'}</p>
-                                <p className="mt-1 whitespace-pre-line text-sm text-ink-700">{m.body}</p>
+                                {m.body && <p className="mt-1 whitespace-pre-line text-sm text-ink-700">{m.body}</p>}
+                                {m.attachment_name && <p className="mt-1 text-sm text-ink-500">📎 {m.attachment_name}</p>}
                                 <p className="mt-1 text-xs text-ink-400">{new Date(m.created_at).toLocaleString('fr-FR')}</p>
                             </div>
                             <button
