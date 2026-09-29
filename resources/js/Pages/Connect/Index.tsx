@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useAutoPushSubscribe from '@/hooks/useAutoPushSubscribe';
+import CallScreen, { CallInfo } from '@/Components/Connect/CallScreen';
 import ChatPane from '@/Components/Connect/ChatPane';
 import ConnectHeader from '@/Components/Connect/ConnectHeader';
 import ConnectSidebar from '@/Components/Connect/ConnectSidebar';
@@ -14,12 +15,13 @@ interface Props {
     canCreateGroups: boolean;
     links: ConnectLinks;
     ai: AiConfig;
-    initial: { conversation: number | null; class: number | null; user: number | null; section: string | null };
+    calls: { iceServers: RTCIceServer[] };
+    initial: { conversation: number | null; class: number | null; user: number | null; section: string | null; call: number | null };
 }
 
 const SECTIONS: Section[] = ['messages', 'groups', 'announcements', 'documents', 'contacts', 'profile'];
 
-export default function ConnectIndex({ me, canCreateGroups, links, ai, initial }: Props) {
+export default function ConnectIndex({ me, canCreateGroups, links, ai, calls, initial }: Props) {
     useAutoPushSubscribe();
 
     const initialSection = SECTIONS.includes(initial.section as Section) ? (initial.section as Section) : 'messages';
@@ -37,6 +39,10 @@ export default function ConnectIndex({ me, canCreateGroups, links, ai, initial }
     const [showNewGroup, setShowNewGroup] = useState(false);
     const [searchResults, setSearchResults] = useState<SearchResult[] | 'loading' | null>(null);
     const [focus, setFocus] = useState<{ conversationId: number; messageId: number } | null>(null);
+    const [activeCall, setActiveCall] = useState<CallInfo | null>(null);
+    const [callError, setCallError] = useState<string | null>(null);
+    const activeCallRef = useRef<CallInfo | null>(null);
+    activeCallRef.current = activeCall;
     const activeIdRef = useRef<number | null>(null);
     activeIdRef.current = activeId;
 
@@ -124,6 +130,44 @@ export default function ConnectIndex({ me, canCreateGroups, links, ai, initial }
         }, 300);
         return () => clearTimeout(t);
     }, [search]);
+
+    // Appels entrants : vérifiés toutes les 3 secondes.
+    useEffect(() => {
+        const check = async () => {
+            if (activeCallRef.current) return;
+            try {
+                const res = await window.axios.get(route('connect.calls.incoming'));
+                if (res.data.call && !activeCallRef.current) setActiveCall(res.data.call);
+            } catch {
+                // Réessai au prochain passage.
+            }
+        };
+        const id = setInterval(check, 3000);
+        return () => clearInterval(id);
+    }, []);
+
+    // Ouverture depuis une notification d'appel (?call=…).
+    useEffect(() => {
+        if (!initial.call) return;
+        window.axios
+            .get(route('connect.calls.show', initial.call))
+            .then((res) => {
+                if (['ringing', 'active'].includes(res.data.call.status)) setActiveCall(res.data.call);
+            })
+            .catch(() => undefined);
+    }, [initial.call]);
+
+    const startCall = async (type: 'audio' | 'video') => {
+        if (!activeIdRef.current || activeCallRef.current) return;
+        setCallError(null);
+        try {
+            const res = await window.axios.post(route('connect.calls.start', activeIdRef.current), { type });
+            setActiveCall(res.data.call);
+        } catch (e) {
+            setCallError((e as { response?: { data?: { message?: string } } }).response?.data?.message ?? "L'appel n'a pas pu être lancé.");
+            setTimeout(() => setCallError(null), 5000);
+        }
+    };
 
     const loadDetails = useCallback(async (id: number) => {
         try {
@@ -257,7 +301,7 @@ export default function ConnectIndex({ me, canCreateGroups, links, ai, initial }
                                 <ChatPane
                                     conversation={active}
                                     meId={me.id}
-                                    phone={details?.profile?.phone ?? null}
+                                    onCall={startCall}
                                     members={details?.group?.members ?? []}
                                     ai={ai}
                                     focusMessageId={focus && focus.conversationId === activeId ? focus.messageId : null}
@@ -289,6 +333,7 @@ export default function ConnectIndex({ me, canCreateGroups, links, ai, initial }
                                             onShowDocuments={() => changeSection('documents')}
                                             onShowGroups={() => changeSection('groups')}
                                             onLeave={leave}
+                                            onCall={startCall}
                                         />
                                     </div>
                                 </>
@@ -327,6 +372,21 @@ export default function ConnectIndex({ me, canCreateGroups, links, ai, initial }
                 </span>
                 <span>Élite École Hôtelière et Touristique de Thiès • Excellence • Formation • Avenir</span>
             </footer>
+
+            {activeCall && (
+                <CallScreen
+                    key={activeCall.id}
+                    initialCall={activeCall}
+                    iceServers={calls.iceServers}
+                    onClose={() => {
+                        setActiveCall(null);
+                        loadConversations(true);
+                    }}
+                />
+            )}
+            {callError && (
+                <div className="fixed left-1/2 top-20 z-[80] -translate-x-1/2 rounded-xl bg-red-600 px-4 py-3 text-sm font-medium text-white shadow-elevated">{callError}</div>
+            )}
 
             {showNewGroup && (
                 <NewGroupModal

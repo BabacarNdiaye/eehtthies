@@ -106,6 +106,9 @@ class ConnectController extends Controller
             'me' => $this->messenger->profile($me),
             'canCreateGroups' => $this->canCreateGroups($me),
             'links' => $this->spaceLinks($me),
+            'calls' => [
+                'iceServers' => CallController::iceServers(),
+            ],
             'ai' => [
                 'enabled' => $this->assistant->enabled(),
                 'languages' => ConnectAssistant::LANGUAGES,
@@ -114,6 +117,7 @@ class ConnectController extends Controller
                 'conversation' => $request->integer('conversation') ?: null,
                 'class' => $request->integer('class') ?: null,
                 'user' => $request->integer('user') ?: null,
+                'call' => $request->integer('call') ?: null,
                 'section' => $request->string('section')->value() ?: null,
             ],
         ]);

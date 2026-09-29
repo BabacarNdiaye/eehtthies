@@ -1,6 +1,6 @@
 import { Page } from '@inertiajs/core';
 import { router } from '@inertiajs/react';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Phone, PhoneOff, Video } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { PageProps } from '@/types';
 
@@ -16,6 +16,7 @@ import { PageProps } from '@/types';
 export default function ConnectLauncher({ initialPage }: { initialPage: Page<PageProps> }) {
     const [page, setPage] = useState<Page<PageProps>>(initialPage);
     const [unread, setUnread] = useState(0);
+    const [incoming, setIncoming] = useState<{ id: number; conversation_id: number; type: 'audio' | 'video'; other: { name: string } | null } | null>(null);
 
     useEffect(() => router.on('navigate', (event) => setPage(event.detail.page as Page<PageProps>)), []);
 
@@ -41,7 +42,56 @@ export default function ConnectLauncher({ initialPage }: { initialPage: Page<Pag
         };
     }, [loggedIn]);
 
+    // Appel entrant pendant que l'utilisateur est ailleurs sur le site.
+    useEffect(() => {
+        if (hidden) {
+            setIncoming(null);
+            return;
+        }
+        const check = async () => {
+            try {
+                const res = await window.axios.get(route('connect.calls.incoming'));
+                setIncoming(res.data.call);
+            } catch {
+                // Réessai au prochain passage.
+            }
+        };
+        check();
+        const id = setInterval(check, 4000);
+        return () => clearInterval(id);
+    }, [hidden]);
+
     if (hidden) return null;
+
+    if (incoming) {
+        return (
+            <div className="fixed inset-x-4 bottom-20 z-50 mx-auto flex max-w-sm items-center gap-3 rounded-2xl bg-ink-900 p-4 text-white shadow-elevated lg:bottom-6 lg:left-auto lg:right-6 lg:mx-0">
+                <span className="flex h-11 w-11 shrink-0 animate-pulse items-center justify-center rounded-full bg-emerald-500">
+                    {incoming.type === 'video' ? <Video className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
+                </span>
+                <span className="min-w-0 flex-1 leading-tight">
+                    <span className="block truncate text-sm font-semibold">{incoming.other?.name ?? 'Quelqu’un'}</span>
+                    <span className="text-xs text-white/70">{incoming.type === 'video' ? 'Appel vidéo entrant' : 'Appel vocal entrant'}</span>
+                </span>
+                <button
+                    onClick={() => {
+                        window.axios.post(route('connect.calls.decline', incoming.id)).catch(() => undefined);
+                        setIncoming(null);
+                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 hover:bg-red-700"
+                    aria-label="Refuser l'appel"
+                >
+                    <PhoneOff className="h-4 w-4" />
+                </button>
+                <button
+                    onClick={() => router.visit(`/connect?conversation=${incoming.conversation_id}&call=${incoming.id}`)}
+                    className="flex h-10 items-center gap-1.5 rounded-full bg-emerald-500 px-4 text-sm font-semibold hover:bg-emerald-600"
+                >
+                    <Phone className="h-4 w-4" /> Répondre
+                </button>
+            </div>
+        );
+    }
 
     return (
         <a
