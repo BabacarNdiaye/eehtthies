@@ -1,6 +1,8 @@
 import {
     AlarmClock,
     BellOff,
+    Check,
+    Headphones,
     ChevronDown,
     Circle,
     Lock,
@@ -53,6 +55,27 @@ const END_LABELS: Record<string, string> = {
 const QUICK_REPLIES = ['Je ne peux pas répondre pour le moment.', 'Je vous rappelle dans quelques minutes.', 'Je suis en cours, écrivez-moi.', "J'arrive."];
 
 const isTouchDevice = () => typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
+
+const MIC_CONSTRAINTS = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+
+/*
+ * Sortie du son. Aucun navigateur n'offre un simple « haut-parleur oui/non » :
+ * - Chrome Android expose le trajet du son comme des micros (« Speakerphone »,
+ *   « Headset earpiece », « Bluetooth headset »…) ; ouvrir le micro
+ *   correspondant bascule l'écouteur du téléphone ou le haut-parleur ;
+ * - les navigateurs d'ordinateur choisissent la sortie avec setSinkId() ;
+ * - Safari iOS règle la session audio (navigator.audioSession).
+ */
+const EARPIECE_RE = /earpiece|écouteur interne|receiver|combiné|handset|téléphone/i;
+const SPEAKER_RE = /speakerphone|speaker|haut-parleur/i;
+const EXTERNAL_RE = /bluetooth|wired|headset|headphone|casque|airpods|buds|usb|écouteurs/i;
+const isEarpiece = (d: MediaDeviceInfo) => EARPIECE_RE.test(d.label);
+const isSpeaker = (d: MediaDeviceInfo) => SPEAKER_RE.test(d.label) && !isEarpiece(d);
+const isExternal = (d: MediaDeviceInfo) => EXTERNAL_RE.test(d.label) && !isEarpiece(d) && !isSpeaker(d);
+
+type AudioRoute = 'speaker' | 'earpiece' | 'external';
+
+type Quality = 'bonne' | 'moyenne' | 'faible';
 
 /** Retire la notification « sonnerie » de cet appel (écran verrouillé, centre de notifications). */
 export function closeCallNotification(callId: number) {
@@ -180,9 +203,17 @@ export default function CallScreen({
     const [videoOn, setVideoOn] = useState(false);
     const [facing, setFacing] = useState<'user' | 'environment'>('user');
     const [cameraCount, setCameraCount] = useState(0);
-    const [outputs, setOutputs] = useState<MediaDeviceInfo[]>([]);
-    // Haut-parleur : activé d'office en vidéo et sur ordinateur, désactivable à tout moment.
-    const [speakerOn, setSpeakerOn] = useState(initialCall.type === 'video' || !touch);
+    // Sortie du son : haut-parleur d'office en vidéo et sur ordinateur, écouteur
+    // du téléphone pour un appel vocal sur mobile ; modifiable à tout moment.
+    const [audioRoute, setAudioRoute] = useState<AudioRoute>(initialCall.type === 'video' || !touch ? 'speaker' : 'earpiece');
+    const [externalName, setExternalName] = useState<string | null>(null);
+    const [audioMenu, setAudioMenu] = useState(false);
+    const [hint, setHint] = useState<string | null>(null);
+    const [quality, setQuality] = useState<Quality | null>(null);
+    const [reconnecting, setReconnecting] = useState(false);
+    const [controlsVisible, setControlsVisible] = useState(true);
+    const [pipCorner, setPipCorner] = useState<'tr' | 'tl' | 'br' | 'bl'>('tr');
+    const speakerOn = audioRoute === 'speaker';
     const [sharing, setSharing] = useState(false);
     const [recording, setRecording] = useState(false);
     const [minimized, setMinimized] = useState(false);
@@ -206,6 +237,9 @@ export default function CallScreen({
     const pendingCandidates = useRef<RTCIceCandidateInit[]>([]);
     const closed = useRef(false);
     const connectedAt = useRef<number | null>(null);
+    const mutedRef = useRef(false);
+    const appliedRoute = useRef<string | null>(null);
+    const iceRestarts = useRef(0);
 
     const outgoing = call.direction === 'outgoing';
     const isRingingIncoming = phase === 'ringing' && !outgoing;
@@ -223,8 +257,9 @@ export default function CallScreen({
     const refreshDevices = useCallback(async () => {
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
-            setOutputs(devices.filter((d) => d.kind === 'audiooutput'));
             setCameraCount(devices.filter((d) => d.kind === 'videoinput').length);
+            const external = devices.find((d) => (d.kind === 'audioinput' || d.kind === 'audiooutput') && isExternal(d));
+            setExternalName(external ? external.label.replace(/\s*\(.*\)\s*$/, '') : null);
         } catch {
             // Liste indisponible : les commandes correspondantes restent simplifiées.
         }
@@ -263,7 +298,7 @@ export default function CallScreen({
 
     const getMedia = useCallback(
         async (video: boolean) => {
-            const audio = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+            const audio = MIC_CONSTRAINTS;
             let stream: MediaStream;
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
@@ -315,10 +350,21 @@ export default function CallScreen({
                 if (pc.connectionState === 'connected') {
                     connectedAt.current ??= Date.now();
                     setPhase('connected');
+                    setReconnecting(false);
                     setError(null);
                 }
+                if (pc.connectionState === 'disconnected') setReconnecting(true);
                 if (pc.connectionState === 'failed') {
-                    setError('Connexion impossible entre les deux appareils (réseau trop restrictif).');
+                    // Réseau changé (Wi-Fi ↔ 4G…) : l'appelant relance la mise en relation.
+                    if (outgoing && connectedAt.current && iceRestarts.current < 3) {
+                        iceRestarts.current++;
+                        setReconnecting(true);
+                        pc.createOffer({ iceRestart: true })
+                            .then((offer) => pc.setLocalDescription(offer).then(() => sendSignal('offer', offer)))
+                            .catch(() => undefined);
+                    } else if (!connectedAt.current || !outgoing) {
+                        setError('Connexion impossible entre les deux appareils (réseau trop restrictif).');
+                    }
                 }
             };
             pcRef.current = pc;
@@ -419,26 +465,167 @@ export default function CallScreen({
         }
     });
 
-    // Sortie audio : haut-parleur ou écouteur.
-    useEffect(() => {
-        const el = remoteAudio.current as (HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> }) | null;
-        if (!el) return;
-        const pick = speakerOn
-            ? (outputs.find((d) => /speaker|haut-parleur/i.test(d.label)) ?? outputs.find((d) => d.deviceId === 'default'))
-            : outputs.find((d) => /earpiece|écouteur|ecouteur|receiver|combiné|handset|headset|headphone|casque/i.test(d.label));
-        if (typeof el.setSinkId === 'function' && outputs.length > 1 && pick) {
-            el.volume = 1;
-            el.setSinkId(pick.deviceId).catch(() => (el.volume = speakerOn ? 1 : 0.3));
-        } else {
-            // Navigateur sans choix de sortie : volume réduit, comme un combiné.
-            el.volume = speakerOn ? 1 : 0.3;
+    /** Remplace le micro (même appel, sans coupure) : utilisé pour changer le trajet du son sur Android. */
+    const replaceMic = async (deviceId: string) => {
+        const stream = localStream.current;
+        if (!stream) return;
+        // Un seul micro ouvert à la fois sur beaucoup de téléphones.
+        stream.getAudioTracks().forEach((t) => {
+            t.stop();
+            stream.removeTrack(t);
+        });
+        let track: MediaStreamTrack;
+        try {
+            track = (await navigator.mediaDevices.getUserMedia({ audio: { ...MIC_CONSTRAINTS, deviceId: { exact: deviceId } } })).getAudioTracks()[0];
+        } catch {
+            track = (await navigator.mediaDevices.getUserMedia({ audio: MIC_CONSTRAINTS })).getAudioTracks()[0];
         }
-    }, [speakerOn, outputs]);
+        track.enabled = !mutedRef.current;
+        stream.addTrack(track);
+        const sender = pcRef.current?.getTransceivers().find((t) => t.receiver.track?.kind === 'audio')?.sender;
+        await sender?.replaceTrack(track).catch(() => undefined);
+    };
+
+    /** Envoie le son vers le haut-parleur, l'écouteur du téléphone ou le casque. Renvoie false si l'appareil ne le permet pas. */
+    const applyRoute = useCallback(async (target: AudioRoute): Promise<boolean> => {
+        const el = remoteAudio.current as (HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> }) | null;
+        if (!el) return false;
+        const pick = (list: MediaDeviceInfo[]) =>
+            target === 'speaker' ? list.find(isSpeaker) : target === 'earpiece' ? list.find(isEarpiece) : list.find(isExternal);
+
+        let devices: MediaDeviceInfo[] = [];
+        try {
+            devices = await navigator.mediaDevices.enumerateDevices();
+        } catch {
+            // ignoré : on passe aux autres méthodes
+        }
+        const inputs = devices.filter((d) => d.kind === 'audioinput');
+        const outputs = devices.filter((d) => d.kind === 'audiooutput');
+
+        // 1. Chrome Android : trajets proposés comme micros.
+        const input = pick(inputs);
+        if (input && inputs.some(isEarpiece) && localStream.current) {
+            await replaceMic(input.deviceId);
+            el.volume = 1;
+            return true;
+        }
+
+        // 2. Choix de la sortie (ordinateurs, certains mobiles).
+        const output = pick(outputs);
+        if (typeof el.setSinkId === 'function' && output) {
+            try {
+                await el.setSinkId(output.deviceId);
+                el.volume = 1;
+                return true;
+            } catch {
+                // sortie refusée : méthodes suivantes
+            }
+        }
+
+        // 3. Safari iOS : session audio.
+        const session = (navigator as unknown as { audioSession?: { type: string } }).audioSession;
+        if (session && target !== 'external') {
+            try {
+                session.type = target === 'earpiece' ? 'play-and-record' : 'auto';
+                el.volume = 1;
+                return true;
+            } catch {
+                // non pris en charge
+            }
+        }
+
+        // 4. Aucune méthode : volume réduit, comme un combiné.
+        el.volume = target === 'speaker' ? 1 : 0.35;
+        return target === 'speaker';
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Applique le trajet du son dès que le micro est ouvert, puis à chaque changement.
+    useEffect(() => {
+        if (phase === 'ringing' || phase === 'ended' || !localStream.current) return;
+        if (appliedRoute.current === audioRoute) return;
+        appliedRoute.current = audioRoute;
+        applyRoute(audioRoute).then((ok) => {
+            if (!ok && audioRoute !== 'speaker') {
+                setHint("Ce navigateur ne permet pas de choisir l'écouteur du téléphone : le volume a été baissé. Installez l'application EEHT (menu du navigateur → « Installer ») ou utilisez des écouteurs.");
+            }
+        });
+    }, [audioRoute, phase, applyRoute]);
 
     useEffect(() => {
-        navigator.mediaDevices?.addEventListener?.('devicechange', refreshDevices);
-        return () => navigator.mediaDevices?.removeEventListener?.('devicechange', refreshDevices);
-    }, [refreshDevices]);
+        if (!hint) return;
+        const id = setTimeout(() => setHint(null), 7000);
+        return () => clearTimeout(id);
+    }, [hint]);
+
+    // Casque ou écouteurs Bluetooth branchés en cours d'appel : le son y bascule.
+    useEffect(() => {
+        let hadExternal: boolean | null = null;
+        const onChange = async () => {
+            await refreshDevices();
+            const devices = await navigator.mediaDevices.enumerateDevices().catch(() => [] as MediaDeviceInfo[]);
+            const hasExternal = devices.some(isExternal);
+            if (hasExternal && hadExternal === false) setAudioRoute('external');
+            if (!hasExternal) setAudioRoute((r) => (r === 'external' ? (initialCall.type === 'video' || !touch ? 'speaker' : 'earpiece') : r));
+            hadExternal = hasExternal;
+        };
+        navigator.mediaDevices
+            ?.enumerateDevices()
+            .then((d) => (hadExternal = d.some(isExternal)))
+            .catch(() => undefined);
+        navigator.mediaDevices?.addEventListener?.('devicechange', onChange);
+        return () => navigator.mediaDevices?.removeEventListener?.('devicechange', onChange);
+    }, [refreshDevices, initialCall.type, touch]);
+
+    const toggleSpeaker = () => {
+        setHint(null);
+        if (externalName) setAudioMenu((v) => !v);
+        else setAudioRoute(speakerOn ? 'earpiece' : 'speaker');
+    };
+
+    // Qualité de la connexion (aller-retour et pertes), toutes les 3 secondes.
+    useEffect(() => {
+        if (phase !== 'connected') return;
+        let lost = 0;
+        let received = 0;
+        const id = setInterval(async () => {
+            const pc = pcRef.current;
+            if (!pc) return;
+            try {
+                const stats = await pc.getStats();
+                let rtt = 0;
+                let nowLost = 0;
+                let nowReceived = 0;
+                stats.forEach((s) => {
+                    if (s.type === 'candidate-pair' && s.state === 'succeeded' && s.nominated) rtt = s.currentRoundTripTime ?? rtt;
+                    if (s.type === 'inbound-rtp' && s.kind === 'audio') {
+                        nowLost = s.packetsLost ?? 0;
+                        nowReceived = s.packetsReceived ?? 0;
+                    }
+                });
+                const dLost = Math.max(0, nowLost - lost);
+                const dTotal = Math.max(1, dLost + nowReceived - received);
+                lost = nowLost;
+                received = nowReceived;
+                const loss = dLost / dTotal;
+                setQuality(rtt > 0.6 || loss > 0.08 ? 'faible' : rtt > 0.3 || loss > 0.03 ? 'moyenne' : 'bonne');
+            } catch {
+                // statistiques indisponibles
+            }
+        }, 3000);
+        return () => clearInterval(id);
+    }, [phase]);
+
+    // Vidéo plein écran : les commandes se masquent après 5 s, un toucher les réaffiche.
+    const showRemoteVideoNow = phase === 'connected' && (remote ? remote.video : remoteHasVideo);
+    useEffect(() => {
+        if (!showRemoteVideoNow || !controlsVisible || audioMenu) return;
+        const id = setTimeout(() => setControlsVisible(false), 5000);
+        return () => clearTimeout(id);
+    }, [showRemoteVideoNow, controlsVisible, audioMenu]);
+    useEffect(() => {
+        if (!showRemoteVideoNow) setControlsVisible(true);
+    }, [showRemoteVideoNow]);
 
     // L'écran reste allumé pendant l'appel.
     useEffect(() => {
@@ -528,6 +715,7 @@ export default function CallScreen({
 
     const toggleMute = () => {
         localStream.current?.getAudioTracks().forEach((t) => (t.enabled = muted));
+        mutedRef.current = !muted;
         setMuted(!muted);
     };
 
@@ -641,12 +829,24 @@ export default function CallScreen({
         if (action === 'profile') onShowProfile?.(call.conversation_id);
     };
 
-    const showRemoteVideo = phase === 'connected' && (remote ? remote.video : remoteHasVideo);
+    const showRemoteVideo = showRemoteVideoNow;
     const showLocalVideo = (videoOn || sharing) && phase !== 'ended' && !isRingingIncoming;
+    const hideControls = showRemoteVideo && !controlsVisible;
+    const routeLabel = audioRoute === 'speaker' ? 'Haut-parleur' : audioRoute === 'earpiece' ? 'Écouteur' : (externalName?.split(' ')[0] ?? 'Casque');
+    const pipPosition = { tr: 'right-4 top-16', tl: 'left-4 top-16', br: 'right-4 bottom-40', bl: 'left-4 bottom-40' }[pipCorner];
+
+    /** Incrustation déplaçable : elle se range dans le coin le plus proche du doigt. */
+    const onPipPointerUp = (e: React.PointerEvent) => {
+        const right = e.clientX > window.innerWidth / 2;
+        const bottom = e.clientY > window.innerHeight / 2;
+        setPipCorner(`${bottom ? 'b' : 't'}${right ? 'r' : 'l'}` as typeof pipCorner);
+    };
     const statusText =
         phase === 'ended'
             ? error
-            : phase === 'connected'
+            : reconnecting
+              ? 'Reconnexion…'
+              : phase === 'connected'
               ? call.type === 'video' || videoOn || showRemoteVideo
                   ? 'Appel vidéo · EEHT Connect'
                   : 'Appel vocal · EEHT Connect'
@@ -697,6 +897,7 @@ export default function CallScreen({
                     autoPlay
                     playsInline
                     muted
+                    onClick={() => showRemoteVideo && setControlsVisible((v) => !v)}
                     className={`absolute inset-0 h-full w-full bg-black transition-opacity ${remote?.screen ? 'object-contain' : 'object-cover'} ${
                         showRemoteVideo ? 'opacity-100' : 'opacity-0'
                     }`}
@@ -709,7 +910,10 @@ export default function CallScreen({
                     autoPlay
                     playsInline
                     muted
-                    className={`absolute right-4 top-16 z-10 h-40 w-28 rounded-2xl border-2 border-white/30 bg-black object-cover shadow-elevated sm:h-48 sm:w-36 ${
+                    onPointerUp={onPipPointerUp}
+                    onPointerDown={(e) => (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)}
+                    title="Faites glisser vers un autre coin"
+                    className={`absolute z-20 h-40 w-28 cursor-grab touch-none rounded-2xl border-2 border-white/30 bg-black object-cover shadow-elevated transition-all duration-300 sm:h-48 sm:w-36 ${pipPosition} ${
                         showLocalVideo && !sharing ? '' : 'hidden'
                     }`}
                     style={{ transform: facing === 'user' ? 'scaleX(-1)' : undefined }}
@@ -721,7 +925,10 @@ export default function CallScreen({
                 )}
 
                 {/* Barre du haut */}
-                <div className="relative z-10 flex items-center justify-between px-4 pt-4" style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}>
+                <div
+                    className={`relative z-10 flex items-center justify-between px-4 pt-4 transition-opacity duration-300 ${hideControls ? 'pointer-events-none opacity-0' : ''}`}
+                    style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+                >
                     {phase !== 'ended' && !isRingingIncoming ? (
                         <button onClick={() => minimizeTo()} className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Réduire l'appel">
                             <ChevronDown className="h-6 w-6" />
@@ -732,7 +939,27 @@ export default function CallScreen({
                     <span className="flex items-center gap-1.5 text-[11px] text-white/60">
                         <Lock className="h-3 w-3" /> Chiffré de bout en bout
                     </span>
-                    <span className="w-10" />
+                    {quality && phase === 'connected' ? (
+                        <span className="flex w-10 items-end justify-end gap-0.5" title={`Connexion ${quality}`} aria-label={`Qualité de la connexion : ${quality}`}>
+                            {[1, 2, 3].map((bar) => (
+                                <span
+                                    key={bar}
+                                    className={`w-1 rounded-sm ${
+                                        bar <= (quality === 'bonne' ? 3 : quality === 'moyenne' ? 2 : 1)
+                                            ? quality === 'faible'
+                                                ? 'bg-red-400'
+                                                : quality === 'moyenne'
+                                                  ? 'bg-amber-300'
+                                                  : 'bg-emerald-400'
+                                            : 'bg-white/25'
+                                    }`}
+                                    style={{ height: `${bar * 4 + 2}px` }}
+                                />
+                            ))}
+                        </span>
+                    ) : (
+                        <span className="w-10" />
+                    )}
                 </div>
 
                 {/* Identité, statut, durée */}
@@ -769,6 +996,10 @@ export default function CallScreen({
                             </button>
                         )}
                     </div>
+                    {quality === 'faible' && phase === 'connected' && !reconnecting && (
+                        <p className="mt-3 rounded-full bg-amber-500/25 px-3 py-1 text-[11px] text-amber-100">Connexion faible : le son peut être haché.</p>
+                    )}
+                    {hint && <p className="mt-3 max-w-sm rounded-lg bg-white/15 px-3 py-2 text-xs text-white/90">{hint}</p>}
                     {error && phase !== 'ended' && <p className="mt-3 max-w-sm rounded-lg bg-red-500/25 px-3 py-2 text-xs text-red-100">{error}</p>}
                 </div>
 
@@ -828,9 +1059,36 @@ export default function CallScreen({
                     </div>
                 ) : phase !== 'ended' ? (
                     <div
-                        className={`relative z-10 mx-3 mb-3 rounded-[2rem] px-4 pb-6 pt-7 backdrop-blur-md sm:mx-auto sm:w-[26rem] ${showRemoteVideo ? 'bg-black/45' : 'bg-neutral-600/60'}`}
+                        className={`relative z-10 mx-3 mb-3 rounded-[2rem] px-4 pb-6 pt-7 backdrop-blur-md transition-all duration-300 sm:mx-auto sm:w-[26rem] ${
+                            showRemoteVideo ? 'bg-black/45' : 'bg-neutral-600/60'
+                        } ${hideControls ? 'pointer-events-none translate-y-8 opacity-0' : ''}`}
                         style={{ marginBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
                     >
+                        {audioMenu && (
+                            <div className="absolute bottom-full right-3 mb-2 w-56 overflow-hidden rounded-2xl bg-neutral-800/95 py-1 text-sm shadow-elevated backdrop-blur">
+                                <p className="px-4 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-white/50">Sortie du son</p>
+                                {(
+                                    [
+                                        ['speaker', 'Haut-parleur', Volume2],
+                                        ['earpiece', 'Écouteur du téléphone', Phone],
+                                        ['external', externalName ?? 'Casque / écouteurs', Headphones],
+                                    ] as const
+                                ).map(([value, label, Icon]) => (
+                                    <button
+                                        key={value}
+                                        onClick={() => {
+                                            setAudioRoute(value);
+                                            setAudioMenu(false);
+                                        }}
+                                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-white/10"
+                                    >
+                                        <Icon className="h-4 w-4" />
+                                        <span className="min-w-0 flex-1 truncate">{label}</span>
+                                        {audioRoute === value && <Check className="h-4 w-4 text-emerald-400" />}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                         <div className="grid grid-cols-3 gap-y-6">
                             <ControlButton
                                 icon={muted ? <MicOff className="h-7 w-7" strokeWidth={1.4} /> : <Mic className="h-7 w-7" strokeWidth={1.4} />}
@@ -845,10 +1103,18 @@ export default function CallScreen({
                                 onClick={flipCamera}
                             />
                             <ControlButton
-                                icon={speakerOn ? <Volume2 className="h-7 w-7" strokeWidth={1.4} /> : <Volume1 className="h-7 w-7" strokeWidth={1.4} />}
-                                label={speakerOn ? 'Haut-parleur' : 'Écouteur'}
+                                icon={
+                                    audioRoute === 'external' ? (
+                                        <Headphones className="h-7 w-7" strokeWidth={1.4} />
+                                    ) : speakerOn ? (
+                                        <Volume2 className="h-7 w-7" strokeWidth={1.4} />
+                                    ) : (
+                                        <Volume1 className="h-7 w-7" strokeWidth={1.4} />
+                                    )
+                                }
+                                label={routeLabel}
                                 active={speakerOn}
-                                onClick={() => setSpeakerOn(!speakerOn)}
+                                onClick={toggleSpeaker}
                             />
                             <ControlButton
                                 icon={videoOn ? <Video className="h-7 w-7" strokeWidth={1.4} /> : <VideoOff className="h-7 w-7" strokeWidth={1.4} />}
