@@ -30,7 +30,7 @@ cp -r public/build "$PKG/public/build"
 
 # Fichiers inutiles en production
 rm -rf "$PKG/tests" "$PKG/.claude" "$PKG/.github" "$PKG/node_modules" \
-       "$PKG/phpunit.xml" "$PKG/generate_pdf.php"
+       "$PKG/phpunit.xml"
 
 echo "→ Installation des dépendances PHP de production…"
 composer install --working-dir="$PKG" --no-dev --optimize-autoloader \

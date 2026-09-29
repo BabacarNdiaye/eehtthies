@@ -1,0 +1,125 @@
+# Déploiement automatique sur l'hébergement cPanel (FTP).
+#
+# À chaque mise à jour de `main` (ou à la demande depuis l'onglet Actions) :
+#   1. les tests sont lancés ; s'ils échouent, rien n'est envoyé ;
+#   2. le site est compilé (dépendances PHP de production + assets Vite) ;
+#   3. les fichiers modifiés sont envoyés par FTP dans le dossier de l'application.
+#
+# Secrets à créer dans GitHub › Settings › Secrets and variables › Actions :
+#   FTP_SERVER      ex. ftp.eeht-thies.sn
+#   FTP_USERNAME    compte FTP cPanel
+#   FTP_PASSWORD    mot de passe du compte FTP
+#   FTP_SERVER_DIR  dossier de l'application vu depuis le FTP, terminé par /
+#                   (ex. eeht/ — PAS public_html/)
+# Facultatif : FTP_PROTOCOL (ftps par défaut, ou ftp si l'hébergeur ne gère pas TLS).
+#
+# Le .env, les fichiers téléversés (storage/) et les journaux du serveur ne
+# sont jamais écrasés : ils ne font pas partie du dépôt. Après chaque
+# déploiement, lancez `php artisan migrate --force && php artisan optimize`
+# dans le Terminal cPanel (voir DEPLOIEMENT.md).
+
+name: Déploiement
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, gd, zip, bcmath, exif, fileinfo, pdo_sqlite
+          coverage: none
+
+      - name: Dépendances PHP
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Dépendances front et compilation
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+
+      - name: Tests
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan test
+
+  deploy:
+    name: Envoi FTP
+    needs: tests
+    runs-on: ubuntu-latest
+    env:
+      HAS_FTP: ${{ secrets.FTP_SERVER != '' && secrets.FTP_USERNAME != '' && secrets.FTP_PASSWORD != '' }}
+    steps:
+      - name: Secrets FTP manquants
+        if: env.HAS_FTP != 'true'
+        run: |
+          echo "::warning::Déploiement ignoré : ajoutez les secrets FTP_SERVER, FTP_USERNAME, FTP_PASSWORD et FTP_SERVER_DIR (voir DEPLOIEMENT.md)."
+
+      - uses: actions/checkout@v4
+        if: env.HAS_FTP == 'true'
+
+      - uses: shivammathur/setup-php@v2
+        if: env.HAS_FTP == 'true'
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, gd, zip, bcmath, exif, fileinfo
+          coverage: none
+
+      - name: Dépendances PHP de production
+        if: env.HAS_FTP == 'true'
+        run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
+
+      - uses: actions/setup-node@v4
+        if: env.HAS_FTP == 'true'
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Compilation des assets
+        if: env.HAS_FTP == 'true'
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+
+      - name: Envoi sur l'hébergement
+        if: env.HAS_FTP == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ secrets.FTP_PROTOCOL || 'ftps' }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR || 'eeht/' }}
+          # Seuls les fichiers modifiés depuis le dernier envoi sont transférés
+          # (état mémorisé sur le serveur dans .ftp-deploy-sync-state.json).
+          exclude: |
+            **/.git/**
+            node_modules/**
+            tests/**
+            .github/**
+            .claude/**
+            .env
+            .env.*
+            phpunit.xml
+            storage/logs/*.log
+            storage/framework/cache/data/**
+            storage/framework/sessions/**
+            storage/framework/views/*.php
+            public/hot
+            public/storage

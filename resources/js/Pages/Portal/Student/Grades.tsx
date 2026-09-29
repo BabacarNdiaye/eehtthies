@@ -35,7 +35,7 @@ export default function Grades({ exams, grades, reportCards, schoolClassId }: Pr
                 <h1 className="font-serif text-2xl font-bold text-ink-900">Mes notes et bulletins</h1>
                 {schoolClassId ? (
                     <a
-                        href={`/generate_pdf.php?class_id=${schoolClassId}`}
+                        href={route('student.grades.pdf')}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink-800"

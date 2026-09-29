@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
-use App\Models\ClassMessage;
 use App\Models\Exam;
-use App\Models\InternalMessage;
 use App\Models\SchoolClass;
-use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\TimetableEntry;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -104,108 +102,25 @@ class TeacherPortalController extends Controller
         ]);
     }
 
-    public function messages(Request $request): Response
+    public function timetablePdf(Request $request)
     {
         $teacher = $this->teacher($request);
-        $classIds = $this->classIds($teacher);
 
-        return Inertia::render('Portal/Teacher/Messages', [
-            'classes' => SchoolClass::whereIn('id', $classIds)->orderBy('name')->get(['id', 'name']),
-        ]);
-    }
+        $entries = TimetableEntry::where('teacher_id', $teacher->id)
+            ->with('schoolClass:id,name', 'subject:id,name', 'room:id,name')
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get();
 
-    public function sendToClass(Request $request)
-    {
-        $teacher = $this->teacher($request);
-        $classIds = $this->classIds($teacher);
-
-        $data = $request->validate([
-            'school_class_ids' => ['required', 'array', 'min:1'],
-            'school_class_ids.*' => ['exists:school_classes,id'],
-            'subject' => ['required', 'string', 'max:255'],
-            'body' => ['required', 'string', 'max:5000'],
-        ]);
-
-        $selectedIds = array_map('intval', $data['school_class_ids']);
-
-        abort_unless(
-            empty(array_diff($selectedIds, $classIds)),
-            403,
-            "Vous n'enseignez pas dans une ou plusieurs des classes sélectionnées."
-        );
-
-        $students = Student::whereIn('school_class_id', $selectedIds)
-            ->where('status', 'actif')
-            ->whereNotNull('user_id')
-            ->get(['id', 'user_id']);
-
-        foreach ($students as $student) {
-            InternalMessage::createQuietly([
-                'sender_id' => $request->user()->id,
-                'recipient_id' => $student->user_id,
-                'subject' => $data['subject'],
-                'body' => $data['body'],
-            ]);
-        }
-
-        $withoutAccess = Student::whereIn('school_class_id', $selectedIds)
-            ->where('status', 'actif')
-            ->whereNull('user_id')
-            ->count();
-
-        $classWord = count($selectedIds) > 1 ? 'classes sélectionnées' : 'classe sélectionnée';
-        $message = "{$students->count()} élève(s) de la {$classWord} ont reçu le message.";
-        if ($withoutAccess > 0) {
-            $message .= " {$withoutAccess} élève(s) n'ont pas encore d'accès à leur espace et n'ont rien reçu.";
-        }
-
-        return back()->with('success', $message);
+        return Pdf::loadView('pdf.admin_timetable', [
+            'entries' => $entries,
+            'teacher' => $teacher,
+            'days' => TimetableEntry::DAYS,
+        ])->stream('emploi-du-temps.pdf');
     }
 
     private function authorizeClass(Teacher $teacher, int $schoolClassId): void
     {
         abort_unless(in_array($schoolClassId, $this->classIds($teacher), true), 403, "Vous n'enseignez pas dans cette classe.");
-    }
-
-    public function classDiscussion(Request $request, SchoolClass $schoolClass): Response
-    {
-        $teacher = $this->teacher($request);
-        $this->authorizeClass($teacher, $schoolClass->id);
-
-        return Inertia::render('Portal/Teacher/ClassDiscussion', [
-            'schoolClass' => $schoolClass->only('id', 'name'),
-            'classes' => SchoolClass::whereIn('id', $this->classIds($teacher))->orderBy('name')->get(['id', 'name']),
-            'messages' => ClassMessage::where('school_class_id', $schoolClass->id)
-                ->with('user:id,name')
-                ->orderBy('created_at')
-                ->get(),
-        ]);
-    }
-
-    public function classMessagesJson(Request $request, SchoolClass $schoolClass)
-    {
-        $this->authorizeClass($this->teacher($request), $schoolClass->id);
-
-        $messages = ClassMessage::where('school_class_id', $schoolClass->id)
-            ->with('user:id,name')
-            ->orderBy('created_at')
-            ->get();
-
-        return response()->json(['messages' => $messages]);
-    }
-
-    public function storeClassMessage(Request $request, SchoolClass $schoolClass)
-    {
-        $this->authorizeClass($this->teacher($request), $schoolClass->id);
-
-        $data = $request->validate(['body' => ['required', 'string', 'max:2000']]);
-
-        $message = ClassMessage::create([
-            'school_class_id' => $schoolClass->id,
-            'user_id' => $request->user()->id,
-            'body' => $data['body'],
-        ])->load('user:id,name');
-
-        return response()->json(['message' => $message]);
     }
 }

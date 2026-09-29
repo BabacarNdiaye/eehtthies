@@ -2,7 +2,6 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
-import Inbox from '@/Components/Messaging/Inbox';
 import { Field, TextInput, Textarea } from '@/Components/Admin/Field';
 import { Paginated, SentEmail, Student, Teacher } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
@@ -292,14 +291,21 @@ export default function Index({
                 </div>
             </form>
 
-            <div className="mt-8">
-                <h2 className="mb-3 font-serif text-lg font-bold text-ink-900">Boîte de réception</h2>
-                <p className="mb-4 text-sm text-ink-500">
-                    Vos conversations avec les élèves, enseignants et parents ayant un accès activé — répondez-y
-                    directement ici.
-                </p>
-                <Inbox />
-            </div>
+            <Card className="mt-8 flex flex-wrap items-center justify-between gap-4 p-6">
+                <div>
+                    <h2 className="font-serif text-lg font-bold text-ink-900">Réponses et conversations</h2>
+                    <p className="mt-1 text-sm text-ink-500">
+                        Les messages envoyés aux personnes ayant un accès arrivent dans leur conversation privée EEHT Connect :
+                        leurs réponses s'y trouvent.
+                    </p>
+                </div>
+                <a
+                    href={route('connect.index')}
+                    className="inline-flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink-800"
+                >
+                    <Send className="h-4 w-4" /> Ouvrir EEHT Connect
+                </a>
+            </Card>
 
             <Card className="mt-8 overflow-hidden">
                 <div className="p-6 pb-0">

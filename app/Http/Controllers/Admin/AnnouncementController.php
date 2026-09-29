@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\Formation;
-use App\Models\InternalMessage;
 use App\Models\SchoolClass;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -38,17 +38,19 @@ class AnnouncementController extends Controller
         $announcement = Announcement::create([...$data, 'created_by' => $request->user()->id]);
 
         $recipientIds = $announcement->recipientUserIds();
-        $subject = $announcement->priority === 'urgente' ? "[URGENT] {$data['title']}" : $data['title'];
-        $senderId = $request->user()->id;
 
-        $recipientIds->each(function (int $recipientId) use ($senderId, $subject, $data) {
-            InternalMessage::createQuietly([
-                'sender_id' => $senderId,
-                'recipient_id' => $recipientId,
-                'subject' => $subject,
-                'body' => $data['body'],
-            ]);
-        });
+        // Remise en base en une fois ; les notifications push partent en différé
+        // via app:push-pending-messages (pushed_at null) pour ne pas bloquer la
+        // requête sur des centaines d'appels HTTP.
+        $now = now();
+        $recipientIds->chunk(500)->each(fn ($chunk) => DB::table('announcement_user')->insertOrIgnore(
+            $chunk->map(fn (int $userId) => [
+                'announcement_id' => $announcement->id,
+                'user_id' => $userId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->values()->all()
+        ));
 
         $announcement->update(['recipients_count' => $recipientIds->count()]);
 

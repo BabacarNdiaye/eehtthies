@@ -47,8 +47,12 @@ Schedule::command('app:send-grade-entry-reminders')->dailyAt('17:00')->onOneServ
 // milestone-throttled (3/7/14 days of inactivity).
 Schedule::command('app:send-candidature-followups')->dailyAt('09:00')->onOneServer();
 
-// Delivers the webpush notification for internal messages created in bulk
-// (announcements, class-wide sends) — those are created with the push
-// intentionally skipped so the request that creates 300+ of them doesn't
-// block on 300+ synchronous HTTP push calls. See InternalMessage::createQuietly().
-Schedule::command('app:push-pending-messages')->everyFiveMinutes()->onOneServer();
+// Notifications push différées d'EEHT Connect : messages des grands groupes
+// et annonces, remis en masse sans bloquer la requête qui les crée
+// (voir Messenger::SYNC_PUSH_LIMIT et AnnouncementController::store).
+// Rappels automatiques EEHT Connect (examens J-7 / veille, changements
+// d'emploi du temps regroupés). Les devoirs et absences partent à
+// l'enregistrement.
+Schedule::command('app:connect-reminders')->everyFifteenMinutes()->withoutOverlapping()->onOneServer();
+
+Schedule::command('app:push-pending-messages')->everyMinute()->withoutOverlapping()->onOneServer();

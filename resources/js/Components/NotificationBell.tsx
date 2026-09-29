@@ -27,9 +27,8 @@ function playChime() {
 }
 
 /**
- * Unread badge + sound alert for internal messages. Clicking it navigates to
- * the full messaging page (passed as `href`) rather than opening a dropdown —
- * conversations are read there, in the two-pane Inbox component.
+ * Unread badge + sound alert for EEHT Connect (messages and announcements).
+ * Clicking it opens EEHT Connect (passed as `href`).
  */
 export default function NotificationBell({ href }: { href: string }) {
     const [count, setCount] = useState(0);
@@ -37,7 +36,7 @@ export default function NotificationBell({ href }: { href: string }) {
 
     const fetchCount = async () => {
         try {
-            const res = await window.axios.get('/notifications/unread-count');
+            const res = await window.axios.get(route('connect.unread-count'));
             const next = res.data.count as number;
             if (previousCount.current !== null && next > previousCount.current) {
                 playChime();

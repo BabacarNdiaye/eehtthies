@@ -6,7 +6,7 @@ import { Head } from '@inertiajs/react';
 import { Clock, MapPin, Download } from 'lucide-react';
 
 interface Props {
-    entries: (TimetableEntry & { schoolClass?: { id: number; name: string } | null })[];
+    entries: (TimetableEntry & { school_class?: { id: number; name: string } | null })[];
     days: Record<string, string>;
 }
 
@@ -23,7 +23,17 @@ export default function Timetable({ entries, days }: Props) {
     return (
         <PortalLayout title="Espace Enseignant" nav={teacherNav}>
             <Head title="Mon emploi du temps" />
-            <h1 className="mb-6 font-serif text-2xl font-bold text-ink-900">Mon emploi du temps</h1>
+            <div className="mb-6 flex items-center justify-between gap-4">
+                <h1 className="font-serif text-2xl font-bold text-ink-900">Mon emploi du temps</h1>
+                <a
+                    href={route('teacher.timetable.pdf')}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink-800"
+                >
+                    <Download className="h-4 w-4" /> Télécharger PDF
+                </a>
+            </div>
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {byDay.map(({ day, label, items }) => (
@@ -34,17 +44,7 @@ export default function Timetable({ entries, days }: Props) {
                             {items.map((entry) => (
                                 <li key={entry.id} className="rounded-lg border border-ink-100 p-3">
                                     <p className="text-sm font-semibold text-ink-900">
-                                        {entry.subject?.name} — {entry.schoolClass?.name}
-                                        {entry.schoolClass?.id ? (
-                                            <a
-                                                href={`/generate_pdf.php?class_id=${entry.schoolClass.id}`}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="ml-3 inline-flex items-center gap-2 rounded px-2 py-1 text-xs font-semibold text-white bg-ink-900 hover:bg-ink-800"
-                                            >
-                                                <Download className="h-3.5 w-3.5" /> PDF
-                                            </a>
-                                        ) : null}
+                                        {entry.subject?.name} — {entry.school_class?.name}
                                     </p>
                                     <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-ink-500">
                                         <span className="inline-flex items-center gap-1">

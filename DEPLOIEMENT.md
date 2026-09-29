@@ -77,6 +77,11 @@ remplissez toutes les lignes marquées **« À REMPLIR »** :
 
 Vérifiez bien que `APP_ENV=production` et `APP_DEBUG=false`.
 
+**Assistant IA (facultatif)** : pour activer les suggestions de réponses,
+résumés, corrections et traductions dans EEHT Connect, renseignez
+`ANTHROPIC_API_KEY` (clé créée sur https://platform.claude.com, facturée à
+l'usage). Sans clé, l'assistant est simplement masqué.
+
 ## 6. Initialiser l'application (Terminal cPanel)
 
 ```bash
@@ -131,7 +136,9 @@ et votre identifiant) :
 ```
 
 - La première déclenche les sauvegardes quotidiennes, les rappels de
-  factures impayées, les alertes d'absence et les synthèses.
+  factures impayées, les alertes d'absence et les synthèses, ainsi que les
+  rappels automatiques d'EEHT Connect (examens J-7 et veille, changements
+  d'emploi du temps) et ses notifications push différées.
 - La seconde traite la file d'attente : **sans elle, les e-mails ne partent
   pas.** Un mutualisé n'autorise pas de processus permanent, d'où
   l'exécution chaque minute.
@@ -146,7 +153,52 @@ et votre identifiant) :
 - [ ] Envoyer un message interne, sans erreur 500 (extension `bcmath`/`gmp`)
 - [ ] Le lendemain : **Admin › Sauvegardes**, vérifier qu'une sauvegarde de 02:00 existe
 
-## Mettre à jour le site plus tard
+## Déploiement automatique (GitHub Actions + FTP)
+
+Au lieu de construire et téléverser l'archive à la main, GitHub peut le faire
+à chaque mise à jour de la branche `main` (workflow
+`.github/workflows/deploy.yml`). Il lance les tests, compile le site, puis
+envoie **uniquement les fichiers modifiés** par FTP. Si un test échoue, rien
+n'est envoyé.
+
+**Mise en place (une seule fois)**
+
+1. **cPanel › Comptes FTP** : créez un compte FTP dont le dossier racine est
+   votre dossier personnel (`/home/moncompte`), ou utilisez le compte FTP
+   principal. Notez le serveur (souvent `ftp.votre-domaine.sn`),
+   l'identifiant et le mot de passe.
+2. **GitHub › dépôt › Settings › Secrets and variables › Actions ›
+   New repository secret**, créez :
+
+   | Secret | Valeur |
+   |---|---|
+   | `FTP_SERVER` | ex. `ftp.eeht-thies.sn` |
+   | `FTP_USERNAME` | l'identifiant FTP |
+   | `FTP_PASSWORD` | le mot de passe FTP |
+   | `FTP_SERVER_DIR` | le dossier de l'application vu depuis le FTP, terminé par `/` : `eeht/` (jamais `public_html/`) |
+   | `FTP_PROTOCOL` | *(facultatif)* `ftps` par défaut ; mettez `ftp` si l'hébergeur refuse le chiffrement |
+
+3. Faites les étapes 2, 4, 5, 6 et 7 de ce guide (base MySQL, domaine sur
+   `eeht/public`, `.env`, initialisation, cron). Le premier envoi automatique
+   remplace l'étape 3 : lancez-le depuis **GitHub › Actions › Déploiement ›
+   Run workflow**. Il est long la première fois (environ 30 000 fichiers) ;
+   les suivants ne transfèrent que les changements.
+
+**À chaque mise à jour** : dès que des changements arrivent sur `main`, les
+fichiers du site sont mis à jour tout seuls. Une fois l'envoi terminé (coche
+verte dans GitHub › Actions), lancez dans le Terminal cPanel — pour appliquer
+les éventuelles migrations et rafraîchir le cache de configuration et de
+routes (sinon les nouvelles pages peuvent rester introuvables jusqu'à une
+heure) :
+
+```bash
+cd ~/eeht && php artisan migrate --force && php artisan optimize
+```
+
+Le `.env`, les fichiers téléversés (`storage/`) et la base de données ne sont
+jamais touchés par l'envoi automatique.
+
+## Mettre à jour le site plus tard (sans GitHub Actions)
 
 1. Sur le poste : `scripts/build-deploy-package.sh`
 2. Sur le serveur : `php artisan down`

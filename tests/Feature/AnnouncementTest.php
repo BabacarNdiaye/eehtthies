@@ -5,13 +5,13 @@ namespace Tests\Feature;
 use App\Models\AcademicYear;
 use App\Models\Announcement;
 use App\Models\Formation;
-use App\Models\InternalMessage;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -77,9 +77,10 @@ class AnnouncementTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $this->assertDatabaseHas('internal_messages', ['recipient_id' => $inClass->id, 'subject' => 'Réunion']);
-        $this->assertDatabaseMissing('internal_messages', ['recipient_id' => $notInClass->id]);
-        $this->assertDatabaseMissing('internal_messages', ['recipient_id' => $inactiveInClass->id]);
+        $announcement = Announcement::where('title', 'Réunion')->firstOrFail();
+        $this->assertDatabaseHas('announcement_user', ['announcement_id' => $announcement->id, 'user_id' => $inClass->id, 'read_at' => null]);
+        $this->assertDatabaseMissing('announcement_user', ['user_id' => $notInClass->id]);
+        $this->assertDatabaseMissing('announcement_user', ['user_id' => $inactiveInClass->id]);
     }
 
     public function test_announcement_to_the_whole_school_reaches_students_teachers_and_staff(): void
@@ -95,12 +96,12 @@ class AnnouncementTest extends TestCase
             'title' => 'Rentrée', 'body' => 'Bienvenue', 'priority' => 'normale', 'audience_type' => 'ecole',
         ]);
 
-        $this->assertDatabaseHas('internal_messages', ['recipient_id' => $student->id]);
-        $this->assertDatabaseHas('internal_messages', ['recipient_id' => $teacher->id]);
-        $this->assertDatabaseHas('internal_messages', ['recipient_id' => $staff->id]);
+        $this->assertDatabaseHas('announcement_user', ['user_id' => $student->id]);
+        $this->assertDatabaseHas('announcement_user', ['user_id' => $teacher->id]);
+        $this->assertDatabaseHas('announcement_user', ['user_id' => $staff->id]);
     }
 
-    public function test_urgent_priority_prefixes_the_message_subject(): void
+    public function test_announcements_appear_in_the_recipients_connect_feed_and_can_be_marked_read(): void
     {
         Notification::fake();
         $student = $this->makeStudentUser();
@@ -110,7 +111,14 @@ class AnnouncementTest extends TestCase
             'audience_type' => 'classe', 'audience_id' => $this->class->id,
         ]);
 
-        $this->assertDatabaseHas('internal_messages', ['recipient_id' => $student->id, 'subject' => '[URGENT] Alerte']);
+        $this->actingAs($student)->getJson(route('connect.unread-count'))->assertJson(['announcements' => 1]);
+        $this->actingAs($student)->getJson(route('connect.announcements'))
+            ->assertJsonPath('announcements.0.title', 'Alerte')
+            ->assertJsonPath('announcements.0.priority', 'urgente')
+            ->assertJsonPath('announcements.0.read', false);
+
+        $this->actingAs($student)->postJson(route('connect.announcements.read', Announcement::first()))->assertOk();
+        $this->actingAs($student)->getJson(route('connect.unread-count'))->assertJson(['announcements' => 0]);
     }
 
     public function test_bulk_announcement_creation_does_not_send_synchronous_pushes(): void
@@ -124,7 +132,7 @@ class AnnouncementTest extends TestCase
         ]);
 
         Notification::assertNothingSent();
-        $this->assertSame(1, InternalMessage::whereNull('pushed_at')->count());
+        $this->assertSame(1, DB::table('announcement_user')->whereNull('pushed_at')->count());
     }
 
     public function test_announcement_records_the_final_recipient_count(): void

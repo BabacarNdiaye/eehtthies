@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Notifications\PushAlert;
+use App\Services\ConnectReminders;
 use Illuminate\Database\Eloquent\Model;
 
 class Attendance extends Model
@@ -19,23 +19,11 @@ class Attendance extends Model
 
     protected static function booted(): void
     {
-        static::created(function (Attendance $attendance) {
-            if ($attendance->status === 'absent') {
-                $attendance->student?->user?->notify(new PushAlert(
-                    'Absence enregistrée',
-                    'Une absence a été enregistrée le '.$attendance->date->format('d/m/Y').'.',
-                    '/espace-eleve/presences'
-                ));
-            }
-
-            if ($attendance->status === 'retard') {
-                $attendance->student?->user?->notify(new PushAlert(
-                    'Retard enregistré',
-                    'Un retard a été enregistré le '.$attendance->date->format('d/m/Y').'.',
-                    '/espace-eleve/presences'
-                ));
-            }
-        });
+        // Absence ou retard : message dans la conversation « Assistant EEHT
+        // Connect » de l'élève et de son parent (avec notification push).
+        static::created(fn (Attendance $attendance) => ConnectReminders::safely(
+            fn (ConnectReminders $reminders) => $reminders->announceAttendance($attendance)
+        ));
     }
 
     public const STATUSES = [

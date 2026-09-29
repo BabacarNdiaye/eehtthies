@@ -64,9 +64,10 @@ class SchoolClass extends Model
         return $this->belongsToMany(Teacher::class, 'school_class_teacher');
     }
 
-    public function classMessages()
+    /** Groupe EEHT Connect de la classe. */
+    public function conversation()
     {
-        return $this->hasMany(ClassMessage::class);
+        return $this->hasOne(Conversation::class);
     }
 
     public function lessonLogs()

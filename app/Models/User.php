@@ -62,6 +62,26 @@ class User extends Authenticatable
         return $this->hasMany(SalaryPayment::class);
     }
 
+    public function conversations()
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_participants')
+            ->withPivot(['is_admin', 'is_favorite', 'last_read_message_id'])
+            ->withTimestamps();
+    }
+
+    public function announcementsReceived()
+    {
+        return $this->belongsToMany(Announcement::class, 'announcement_user')
+            ->withPivot(['read_at', 'pushed_at'])
+            ->withTimestamps();
+    }
+
+    /** « En ligne » : une page de l'application a été chargée ou interrogée il y a moins de 2 minutes. */
+    public function isOnline(): bool
+    {
+        return $this->last_seen_at !== null && $this->last_seen_at->gt(now()->subMinutes(2));
+    }
+
     /**
      * Administrative staff: everyone except users whose only roles belong to
      * the dedicated Élèves/Enseignants modules (teachers, students, parents).
@@ -86,6 +106,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'hire_date' => 'date',
             'monthly_salary' => 'decimal:2',
         ];

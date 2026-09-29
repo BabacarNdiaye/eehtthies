@@ -8,7 +8,7 @@ type Row = {
     id: number;
     name: string;
     formation: { id: number; name: string } | null;
-    class_messages_count: number;
+    messages_count: number;
 };
 
 export default function Index({ schoolClasses }: { schoolClasses: Row[] }) {
@@ -36,7 +36,7 @@ export default function Index({ schoolClasses }: { schoolClasses: Row[] }) {
                                 <tr key={c.id} className="hover:bg-ink-50/60">
                                     <td className="px-5 py-3 font-medium text-ink-900">{c.name}</td>
                                     <td className="px-5 py-3 text-ink-600">{c.formation?.name ?? '—'}</td>
-                                    <td className="px-5 py-3 text-ink-600">{c.class_messages_count}</td>
+                                    <td className="px-5 py-3 text-ink-600">{c.messages_count}</td>
                                     <td className="px-5 py-3 text-right">
                                         <Link
                                             href={route('admin.class-discussions.show', c.id)}

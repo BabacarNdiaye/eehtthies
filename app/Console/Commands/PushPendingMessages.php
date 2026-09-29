@@ -2,44 +2,63 @@
 
 namespace App\Console\Commands;
 
-use App\Models\InternalMessage;
-use App\Notifications\PushAlert;
+use App\Models\Announcement;
+use App\Models\ConversationMessage;
+use App\Models\User;
+use App\Services\Messenger;
+use App\Services\SafePush;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
+/**
+ * Envoie en différé les notifications push qui n'ont pas pu partir pendant la
+ * requête : messages de grands groupes EEHT Connect et annonces (remises à
+ * des centaines de destinataires d'un coup).
+ */
 class PushPendingMessages extends Command
 {
     protected $signature = 'app:push-pending-messages';
 
-    protected $description = 'Envoie les notifications push des messages internes créés en masse (annonces, envois de classe) sans bloquer la requête qui les a créés.';
+    protected $description = 'Envoie les notifications push en attente (messages de groupe EEHT Connect et annonces).';
 
-    public function handle(): int
+    public function handle(Messenger $messenger): int
     {
-        // TEMPORARY guard — remove once the pushed_at migration has run on this
-        // environment (EEHT Connect Phase 1 deploy, 2026-09-28).
-        if (! Schema::hasColumn('internal_messages', 'pushed_at')) {
-            $this->warn('Colonne pushed_at absente — migration pas encore appliquée, rien à faire.');
+        $messages = 0;
 
-            return self::SUCCESS;
-        }
+        ConversationMessage::whereNull('pushed_at')
+            ->with('conversation.participants.user', 'user')
+            ->chunkById(50, function ($batch) use ($messenger, &$messages) {
+                foreach ($batch as $message) {
+                    [$title, $body, $url] = $messenger->pushContent($message->conversation, $message, $message->user);
 
-        $count = 0;
+                    $message->conversation->participants
+                        ->where('user_id', '!=', $message->user_id)
+                        ->each(fn ($p) => SafePush::send($p->user, $title, $body, $url));
 
-        InternalMessage::whereNull('pushed_at')
-            ->with('sender:id,name', 'recipient')
-            ->chunkById(50, function ($messages) use (&$count) {
-                foreach ($messages as $message) {
-                    $message->recipient?->notify(new PushAlert(
-                        $message->sender?->name ?? 'Administration',
-                        $message->body,
-                        '/notifications'
-                    ));
                     $message->forceFill(['pushed_at' => now()])->saveQuietly();
-                    $count++;
+                    $messages++;
                 }
             });
 
-        $this->info("{$count} message(s) poussé(s).");
+        $announcements = 0;
+
+        DB::table('announcement_user')->whereNull('pushed_at')->orderBy('id')
+            ->chunkById(200, function ($rows) use (&$announcements) {
+                $byAnnouncement = Announcement::whereIn('id', $rows->pluck('announcement_id')->unique())->get()->keyBy('id');
+                $users = User::whereIn('id', $rows->pluck('user_id')->unique())->get()->keyBy('id');
+
+                foreach ($rows as $row) {
+                    $announcement = $byAnnouncement[$row->announcement_id] ?? null;
+                    if ($announcement) {
+                        $title = $announcement->priority === 'urgente' ? "[URGENT] {$announcement->title}" : "Annonce — {$announcement->title}";
+                        SafePush::send($users[$row->user_id] ?? null, $title, $announcement->body, '/connect?section=announcements');
+                    }
+                    DB::table('announcement_user')->where('id', $row->id)->update(['pushed_at' => now()]);
+                    $announcements++;
+                }
+            });
+
+        $this->info("{$messages} message(s) et {$announcements} annonce(s) poussé(s).");
 
         return self::SUCCESS;
     }

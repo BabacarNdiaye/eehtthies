@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\ConnectReminders;
 use Illuminate\Database\Eloquent\Model;
 
 class TimetableEntry extends Model
@@ -10,6 +11,17 @@ class TimetableEntry extends Model
         'school_class_id', 'subject_id', 'teacher_id', 'room_id',
         'day_of_week', 'start_time', 'end_time',
     ];
+
+    protected static function booted(): void
+    {
+        // Changements publiés dans le groupe EEHT Connect de la classe
+        // (regroupés par app:connect-reminders).
+        foreach (['created', 'updated', 'deleted'] as $event) {
+            static::$event(fn (TimetableEntry $entry) => ConnectReminders::safely(
+                fn (ConnectReminders $reminders) => $reminders->recordTimetableChange($entry, $event)
+            ));
+        }
+    }
 
     public const DAYS = [
         1 => 'Lundi',
