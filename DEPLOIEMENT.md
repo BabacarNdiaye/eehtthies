@@ -9,7 +9,7 @@ Vérifiez dans **cPanel › Sélectionner une version de PHP** (ou « MultiPHP �
 
 | Élément | Exigence |
 |---|---|
-| PHP | **8.3 minimum** (8.4 conseillé) |
+| PHP | **8.4 minimum** (8.4.1 ou plus : les dépendances — Symfony 8.1 — le refusent en 8.3) |
 | Extensions | `bcmath` **ou** `gmp` (**obligatoire**, sinon l'envoi de messages plante à cause des notifications push), `pdo_mysql`, `mbstring`, `openssl`, `gd`, `zip`, `fileinfo`, `exif`, `intl`, `xml`, `curl` |
 | `memory_limit` | 256M ou plus (génération des bulletins PDF et des exports Excel) |
 | `upload_max_filesize` / `post_max_size` | 20M ou plus |
