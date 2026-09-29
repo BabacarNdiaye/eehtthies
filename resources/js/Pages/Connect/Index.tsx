@@ -315,6 +315,7 @@ export default function ConnectIndex({ me, canCreateGroups, links, ai, calls, in
                                     onToggleFavorite={toggleFavorite}
                                     onMarkUnread={markUnread}
                                     onLeave={leave}
+                                    onConversationChanged={() => loadConversations(true)}
                                 />
                             </div>
                             {active && infoOpen && (
@@ -334,6 +335,11 @@ export default function ConnectIndex({ me, canCreateGroups, links, ai, calls, in
                                             onShowGroups={() => changeSection('groups')}
                                             onLeave={leave}
                                             onCall={startCall}
+                                            meId={me.id}
+                                            onGroupChanged={() => {
+                                                loadDetails(active.id);
+                                                loadConversations(true);
+                                            }}
                                         />
                                     </div>
                                 </>

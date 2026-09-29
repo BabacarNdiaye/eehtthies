@@ -262,7 +262,18 @@ export function ProfileSection({ me, links }: { me: Profile; links: ConnectLinks
 
 // ---------------------------------------------------------------------------
 
-export function NewGroupModal({ onClose, onCreated }: { onClose: () => void; onCreated: (id: number) => void }) {
+/**
+ * Création d'un groupe, ou ajout de membres à un groupe existant (`addTo`).
+ */
+export function NewGroupModal({
+    onClose,
+    onCreated,
+    addTo,
+}: {
+    onClose: () => void;
+    onCreated: (id: number) => void;
+    addTo?: { conversationId: number; existingIds: number[] };
+}) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [q, setQ] = useState('');
@@ -270,7 +281,8 @@ export function NewGroupModal({ onClose, onCreated }: { onClose: () => void; onC
     const [selected, setSelected] = useState<Person[]>([]);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const contacts = useContacts(q, role);
+    const allContacts = useContacts(q, role);
+    const contacts = addTo ? allContacts?.filter((c) => !addTo.existingIds.includes(c.id)) : allContacts;
 
     const toggle = (p: Person) =>
         setSelected((prev) => (prev.some((x) => x.id === p.id) ? prev.filter((x) => x.id !== p.id) : [...prev, p]));
@@ -282,6 +294,11 @@ export function NewGroupModal({ onClose, onCreated }: { onClose: () => void; onC
         setSaving(true);
         setError(null);
         try {
+            if (addTo) {
+                await window.axios.post(route('connect.members.add', addTo.conversationId), { user_ids: selected.map((s) => s.id) });
+                onCreated(addTo.conversationId);
+                return;
+            }
             const res = await window.axios.post(route('connect.groups.store'), {
                 name,
                 description: description || null,
@@ -300,13 +317,13 @@ export function NewGroupModal({ onClose, onCreated }: { onClose: () => void; onC
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/60 p-4" onClick={onClose}>
             <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-elevated" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between border-b border-ink-100 px-6 py-4">
-                    <h2 className="font-serif text-lg font-bold text-ink-900">Nouveau groupe</h2>
+                    <h2 className="font-serif text-lg font-bold text-ink-900">{addTo ? 'Ajouter des membres' : 'Nouveau groupe'}</h2>
                     <button onClick={onClose} className="rounded-full p-1.5 text-ink-500 hover:bg-ink-50" aria-label="Fermer">
                         <X className="h-5 w-5" />
                     </button>
                 </div>
                 <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className={`grid gap-3 sm:grid-cols-2 ${addTo ? 'hidden' : ''}`}>
                         <input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -376,10 +393,10 @@ export function NewGroupModal({ onClose, onCreated }: { onClose: () => void; onC
                     </button>
                     <button
                         onClick={create}
-                        disabled={saving || !name.trim() || selected.length === 0}
+                        disabled={saving || (!addTo && !name.trim()) || selected.length === 0}
                         className="rounded-xl bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-ink-800 disabled:opacity-40"
                     >
-                        Créer le groupe ({selected.length} membre{selected.length > 1 ? 's' : ''})
+                        {addTo ? 'Ajouter' : 'Créer le groupe'} ({selected.length} membre{selected.length > 1 ? 's' : ''})
                     </button>
                 </div>
             </div>

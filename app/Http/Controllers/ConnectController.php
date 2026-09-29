@@ -17,6 +17,7 @@ use App\Services\Messenger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -143,14 +144,16 @@ class ConnectController extends Controller
                 'type' => $c->type,
                 'is_class' => $c->isClassGroup(),
                 'name' => $c->isDirect() ? ($other?->name ?? 'Utilisateur supprimé') : $c->name,
-                'avatar' => $other ? $this->messenger->avatarUrl($other) : null,
+                'avatar' => $other ? $this->messenger->avatarUrl($other) : $c->avatarUrl(),
                 'other' => $other ? $this->messenger->presentUser($other) : null,
                 'members_count' => $c->participants->count(),
                 'is_favorite' => (bool) $mine?->is_favorite,
+                'muted' => (bool) $mine?->isMuted(),
+                'muted_until' => $mine?->isMuted() ? $mine->muted_until->toIso8601String() : null,
                 'unread' => $unread[$c->id] ?? 0,
                 'mentions' => $mentions[$c->id] ?? 0,
                 'last' => $last ? [
-                    'body' => $last->body ?? ($last->attachment_name ? '📎 '.$last->attachment_name : ''),
+                    'body' => $last->isRetracted() ? '🚫 Message supprimé' : ($last->body ?? ($last->attachment_name ? '📎 '.$last->attachment_name : '')),
                     'sender_name' => $last->user_id === $me->id ? 'Vous' : ($last->user?->name ?? ($last->isSystem() ? 'EEHT Connect' : null)),
                     'created_at' => $last->created_at->toIso8601String(),
                 ] : null,
@@ -194,6 +197,8 @@ class ConnectController extends Controller
         $aroundId = $request->integer('around');
 
         $query = fn () => $conversation->messages()->with(Messenger::MESSAGE_RELATIONS);
+        $isAdmin = $this->messenger->isGroupAdmin($conversation, $me);
+        $present = fn ($m) => $this->messenger->presentMessage($m, $me->id, $isAdmin);
         $hasNewer = false;
 
         if ($afterId) {
@@ -220,7 +225,7 @@ class ConnectController extends Controller
             $changed = $query()->where('id', '<=', $afterId)
                 ->where('updated_at', '>', Carbon::parse($request->string('since')->value()))
                 ->limit(100)->get()
-                ->map(fn ($m) => $this->messenger->presentMessage($m, $me->id))->all();
+                ->map($present)->all();
         }
 
         // Lu par tous les autres jusqu'à cet id (coches de lecture).
@@ -235,16 +240,26 @@ class ConnectController extends Controller
         $pinned = $conversation->messages()->whereNotNull('pinned_at')->with('user:id,name')->latest('pinned_at')->limit(5)->get()
             ->map(fn ($m) => ['id' => $m->id, 'sender_name' => $m->user?->name ?? 'EEHT Connect', 'body' => $m->body ? mb_strimwidth($m->body, 0, 120, '…') : ($m->attachment_name ? '📎 '.$m->attachment_name : '')]);
 
+        // Positions de lecture des autres membres d'un groupe (« Vu par N »).
+        $readPositions = $conversation->isDirect() || $conversation->isAssistant() ? [] : $conversation->participants()
+            ->where('user_id', '!=', $me->id)->pluck('last_read_message_id')->map(fn ($id) => (int) $id)->all();
+
+        $canWrite = ! $conversation->isAssistant() && (! $conversation->only_admins_can_write || $isAdmin);
+
         return response()->json([
-            'messages' => $messages->map(fn ($m) => $this->messenger->presentMessage($m, $me->id))->all(),
+            'messages' => $messages->map($present)->all(),
             'changed' => $changed,
             'has_more' => ! $afterId && $messages->isNotEmpty() && $conversation->messages()->where('id', '<', $messages->first()->id)->exists(),
             'has_newer' => $hasNewer,
             'others_read_up_to' => (int) $othersReadUpTo,
             'other' => $other,
             'pinned' => $pinned,
-            'can_write' => ! $conversation->isAssistant(),
+            'can_write' => $canWrite,
+            'write_restricted' => ! $canWrite && ! $conversation->isAssistant(),
             'can_pin' => $this->canPin($conversation, $me),
+            'is_admin' => $isAdmin,
+            'typing' => $this->typingNames($conversation, $me),
+            'read_positions' => $readPositions,
             'server_time' => now()->toIso8601String(),
         ]);
     }
@@ -264,6 +279,11 @@ class ConnectController extends Controller
         $me = $this->me($request);
         $this->participantOrFail($conversation, $me);
         abort_if($conversation->isAssistant(), 422, "L'assistant EEHT Connect ne reçoit pas de messages.");
+        abort_if(
+            $conversation->only_admins_can_write && ! $this->messenger->isGroupAdmin($conversation, $me),
+            403,
+            'Seuls les administrateurs du groupe peuvent envoyer des messages.',
+        );
 
         $data = $request->validate([
             'body' => ['nullable', 'string', 'max:5000', 'required_without:attachment'],
@@ -281,14 +301,118 @@ class ConnectController extends Controller
             replyTo: isset($data['reply_to_id']) ? ConversationMessage::find($data['reply_to_id']) : null,
             mentionIds: array_map('intval', $data['mention_ids'] ?? []),
         );
+        $this->stopTyping($conversation, $me);
 
         return response()->json(['message' => $this->messenger->presentMessage($message->load(Messenger::MESSAGE_RELATIONS), $me->id)]);
+    }
+
+    /** Modifier son message (texte), dans les 15 minutes suivant l'envoi. */
+    public function updateMessage(Request $request, ConversationMessage $message): JsonResponse
+    {
+        $me = $this->me($request);
+        $this->participantOrFail($message->conversation, $me);
+        abort_unless($message->editableBy($me->id), 403, 'Ce message ne peut plus être modifié (délai de '.ConversationMessage::EDIT_WINDOW_MINUTES.' minutes dépassé).');
+
+        $data = $request->validate(['body' => ['required', 'string', 'max:5000']]);
+        $body = trim($data['body']);
+        abort_if($body === '', 422, 'Le message ne peut pas être vide.');
+
+        if ($body !== $message->body) {
+            $message->forceFill(['body' => $body, 'edited_at' => now()])->save();
+        }
+
+        return response()->json(['message' => $this->messenger->presentMessage($message->fresh(Messenger::MESSAGE_RELATIONS), $me->id)]);
+    }
+
+    /** Supprimer un message pour tout le monde (auteur dans les 24 h, ou administrateur du groupe). */
+    public function destroyMessage(Request $request, ConversationMessage $message): JsonResponse
+    {
+        $me = $this->me($request);
+        $conversation = $message->conversation;
+        $this->participantOrFail($conversation, $me);
+
+        $isAdmin = $this->messenger->isGroupAdmin($conversation, $me);
+        abort_if($message->isSystem() || $message->isRetracted(), 422, 'Ce message ne peut pas être supprimé.');
+        abort_unless(
+            $message->retractableBy($me->id) || ($isAdmin && $message->user_id !== $me->id),
+            403,
+            'Vous ne pouvez plus supprimer ce message pour tout le monde.',
+        );
+
+        $this->messenger->retract($message, $me);
+
+        return response()->json(['message' => $this->messenger->presentMessage($message->fresh(Messenger::MESSAGE_RELATIONS), $me->id, $isAdmin)]);
+    }
+
+    /** Qui a lu mon message (groupes : « Vu par »). */
+    public function readers(Request $request, ConversationMessage $message): JsonResponse
+    {
+        $me = $request->user();
+        $this->participantOrFail($message->conversation, $me);
+        abort_unless($message->user_id === $me->id, 403, 'Seul l’auteur du message peut voir qui l’a lu.');
+
+        $participants = $message->conversation->participants()
+            ->where('user_id', '!=', $me->id)
+            ->with(['user' => fn ($q) => $q->with(Messenger::USER_RELATIONS)])
+            ->get()
+            ->filter(fn ($p) => $p->user);
+
+        [$read, $unread] = $participants->partition(fn ($p) => (int) $p->last_read_message_id >= $message->id);
+        $present = fn ($list) => $list->map(fn ($p) => $this->messenger->presentUser($p->user))->sortBy('name')->values();
+
+        return response()->json(['read' => $present($read), 'unread' => $present($unread)]);
+    }
+
+    // -----------------------------------------------------------------
+    // « En train d'écrire… » (mémorisé quelques secondes dans le cache)
+    // -----------------------------------------------------------------
+
+    private const TYPING_SECONDS = 6;
+
+    private function typingKey(Conversation $conversation): string
+    {
+        return "connect:typing:{$conversation->id}";
+    }
+
+    /** @return array<int, string> */
+    private function typingNames(Conversation $conversation, User $me): array
+    {
+        $now = now()->timestamp;
+
+        return collect(Cache::get($this->typingKey($conversation), []))
+            ->filter(fn ($t, $userId) => (int) $userId !== $me->id && $t['until'] >= $now)
+            ->pluck('name')->values()->all();
+    }
+
+    private function stopTyping(Conversation $conversation, User $me): void
+    {
+        $list = Cache::get($this->typingKey($conversation), []);
+        if (isset($list[$me->id])) {
+            unset($list[$me->id]);
+            Cache::put($this->typingKey($conversation), $list, 60);
+        }
+    }
+
+    public function typing(Request $request, Conversation $conversation): JsonResponse
+    {
+        $me = $request->user();
+        $this->participantOrFail($conversation, $me);
+
+        $now = now()->timestamp;
+        $list = collect(Cache::get($this->typingKey($conversation), []))
+            ->filter(fn ($t) => $t['until'] >= $now)
+            ->all();
+        $list[$me->id] = ['name' => $me->name, 'until' => $now + self::TYPING_SECONDS];
+        Cache::put($this->typingKey($conversation), $list, 60);
+
+        return response()->json(['ok' => true]);
     }
 
     public function react(Request $request, ConversationMessage $message): JsonResponse
     {
         $me = $request->user();
         $this->participantOrFail($message->conversation, $me);
+        abort_if($message->isRetracted(), 422, 'Ce message a été supprimé.');
         $data = $request->validate(['emoji' => ['required', 'string', Rule::in(MessageReaction::ALLOWED)]]);
 
         $existing = $message->reactions()->where('user_id', $me->id)->where('emoji', $data['emoji'])->first();
@@ -303,6 +427,7 @@ class ConnectController extends Controller
         $me = $this->me($request);
         $this->participantOrFail($message->conversation, $me);
         abort_unless($this->canPin($message->conversation, $me), 403, 'Seuls les enseignants et les responsables du groupe peuvent épingler.');
+        abort_if($message->isRetracted(), 422, 'Ce message a été supprimé.');
 
         $message->forceFill($message->pinned_at
             ? ['pinned_at' => null, 'pinned_by' => null]
@@ -423,6 +548,153 @@ class ConnectController extends Controller
         return response()->json(['is_favorite' => $participant->is_favorite]);
     }
 
+    /** Couper les notifications : 60 / 480 / 10080 minutes, « toujours » (null) ou réactiver (0). */
+    public function mute(Request $request, Conversation $conversation): JsonResponse
+    {
+        $participant = $this->participantOrFail($conversation, $request->user());
+        $data = $request->validate(['minutes' => ['present', 'nullable', 'integer', Rule::in([0, 60, 480, 10080])]]);
+
+        $participant->update(['muted_until' => match (true) {
+            $data['minutes'] === null => ConversationParticipant::MUTED_FOREVER,
+            (int) $data['minutes'] === 0 => null,
+            default => now()->addMinutes((int) $data['minutes']),
+        }]);
+
+        return response()->json([
+            'muted' => $participant->isMuted(),
+            'muted_until' => $participant->isMuted() ? $participant->muted_until->toIso8601String() : null,
+        ]);
+    }
+
+    // -----------------------------------------------------------------
+    // Gestion des groupes (administrateurs)
+    // -----------------------------------------------------------------
+
+    private function groupAdminOrFail(Conversation $conversation, User $me): void
+    {
+        $this->participantOrFail($conversation, $me);
+        abort_unless($this->messenger->isGroupAdmin($conversation, $me), 403, 'Seuls les administrateurs du groupe peuvent faire cette modification.');
+    }
+
+    /** Groupe libre (les membres des groupes de classe sont gérés automatiquement). */
+    private function editableGroupOrFail(Conversation $conversation): void
+    {
+        abort_unless($conversation->type === Conversation::TYPE_GROUP && ! $conversation->isClassGroup(), 422, 'Les membres d’un groupe de classe sont mis à jour automatiquement.');
+    }
+
+    private function logGroupEvent(Conversation $conversation, string $text): void
+    {
+        $this->messenger->sendSystem($conversation, $text, ['type' => 'group'], push: false);
+    }
+
+    public function updateGroup(Request $request, Conversation $conversation): JsonResponse
+    {
+        $me = $this->me($request);
+        $this->groupAdminOrFail($conversation, $me);
+
+        $data = $request->validate([
+            'name' => ['sometimes', 'required', 'string', 'max:100'],
+            'description' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'only_admins_can_write' => ['sometimes', 'boolean'],
+        ]);
+
+        if ($conversation->isClassGroup()) {
+            // Le nom d'un groupe de classe suit celui de la classe.
+            unset($data['name']);
+        }
+
+        if (isset($data['name']) && $data['name'] !== $conversation->name) {
+            $this->logGroupEvent($conversation, "{$me->name} a renommé le groupe en « {$data['name']} ».");
+        }
+        if (array_key_exists('only_admins_can_write', $data) && (bool) $data['only_admins_can_write'] !== $conversation->only_admins_can_write) {
+            $this->logGroupEvent($conversation, $data['only_admins_can_write']
+                ? "{$me->name} a réservé l'envoi de messages aux administrateurs."
+                : "{$me->name} a autorisé tous les membres à envoyer des messages.");
+        }
+
+        $conversation->update($data);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function updateGroupAvatar(Request $request, Conversation $conversation): JsonResponse
+    {
+        $me = $this->me($request);
+        $this->groupAdminOrFail($conversation, $me);
+        $request->validate(['avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096']]);
+
+        if ($conversation->avatar_path) {
+            Storage::disk('public')->delete($conversation->avatar_path);
+        }
+        $path = $request->file('avatar')?->store('connect-groups', 'public');
+        $conversation->update(['avatar_path' => $path]);
+        $this->logGroupEvent($conversation, $path ? "{$me->name} a changé la photo du groupe." : "{$me->name} a retiré la photo du groupe.");
+
+        return response()->json(['avatar' => $conversation->avatarUrl()]);
+    }
+
+    public function addMembers(Request $request, Conversation $conversation): JsonResponse
+    {
+        $me = $this->me($request);
+        $this->groupAdminOrFail($conversation, $me);
+        $this->editableGroupOrFail($conversation);
+
+        $data = $request->validate([
+            'user_ids' => ['required', 'array', 'min:1', 'max:200'],
+            'user_ids.*' => ['integer', 'distinct', Rule::exists('users', 'id')->where('is_active', true)],
+        ]);
+
+        $existing = $conversation->participants()->pluck('user_id')->all();
+        $latestId = $conversation->messages()->max('id');
+        $added = User::whereIn('id', array_diff(array_map('intval', $data['user_ids']), $existing))->orderBy('name')->get();
+
+        foreach ($added as $user) {
+            // Le nouveau membre voit l'historique sans qu'il compte comme non lu.
+            $conversation->participants()->create(['user_id' => $user->id, 'last_read_message_id' => $latestId]);
+        }
+
+        if ($added->isNotEmpty()) {
+            $this->logGroupEvent($conversation, "{$me->name} a ajouté ".$added->pluck('name')->join(', ', ' et ').'.');
+        }
+
+        return response()->json(['added' => $added->count()]);
+    }
+
+    public function removeMember(Request $request, Conversation $conversation, User $user): JsonResponse
+    {
+        $me = $this->me($request);
+        $this->groupAdminOrFail($conversation, $me);
+        $this->editableGroupOrFail($conversation);
+        abort_if($user->id === $me->id, 422, 'Pour partir, utilisez « Quitter le groupe ».');
+
+        $removed = $conversation->participants()->where('user_id', $user->id)->delete();
+        if ($removed) {
+            $this->logGroupEvent($conversation, "{$me->name} a retiré {$user->name} du groupe.");
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function toggleAdmin(Request $request, Conversation $conversation, User $user): JsonResponse
+    {
+        $me = $this->me($request);
+        $this->groupAdminOrFail($conversation, $me);
+        $this->editableGroupOrFail($conversation);
+
+        $participant = $conversation->participants()->where('user_id', $user->id)->firstOrFail();
+
+        if ($participant->is_admin && $conversation->participants()->where('is_admin', true)->count() === 1) {
+            abort(422, 'Le groupe doit garder au moins un administrateur.');
+        }
+
+        $participant->update(['is_admin' => ! $participant->is_admin]);
+        $this->logGroupEvent($conversation, $participant->is_admin
+            ? "{$me->name} a nommé {$user->name} administrateur du groupe."
+            : "{$user->name} n'est plus administrateur du groupe.");
+
+        return response()->json(['is_admin' => $participant->is_admin]);
+    }
+
     public function markUnread(Request $request, Conversation $conversation): JsonResponse
     {
         $participant = $this->participantOrFail($conversation, $request->user());
@@ -480,6 +752,10 @@ class ConnectController extends Controller
                     default => null,
                 },
                 'is_class' => $conversation->isClassGroup(),
+                'avatar' => $conversation->avatarUrl(),
+                'only_admins_can_write' => $conversation->only_admins_can_write,
+                'can_manage' => $this->messenger->isGroupAdmin($conversation, $me),
+                'can_manage_members' => $this->messenger->isGroupAdmin($conversation, $me) && $conversation->type === Conversation::TYPE_GROUP && ! $conversation->isClassGroup(),
                 'can_leave' => ! $conversation->isClassGroup() && ! $conversation->isAssistant(),
                 'members' => $members->filter(fn ($p) => $p->user)->map(fn ($p) => [
                     ...$this->messenger->presentUser($p->user),

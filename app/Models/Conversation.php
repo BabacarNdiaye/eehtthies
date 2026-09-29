@@ -19,10 +19,11 @@ class Conversation extends Model
     /** Conversation personnelle où EEHT Connect dépose les rappels et alertes d'un utilisateur. */
     public const TYPE_ASSISTANT = 'assistant';
 
-    protected $fillable = ['type', 'name', 'description', 'school_class_id', 'created_by', 'last_message_at'];
+    protected $fillable = ['type', 'name', 'description', 'school_class_id', 'created_by', 'last_message_at', 'avatar_path', 'only_admins_can_write'];
 
     protected $casts = [
         'last_message_at' => 'datetime',
+        'only_admins_can_write' => 'boolean',
     ];
 
     public function participants()
@@ -33,7 +34,7 @@ class Conversation extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'conversation_participants')
-            ->withPivot(['is_admin', 'is_favorite', 'last_read_message_id'])
+            ->withPivot(['is_admin', 'is_favorite', 'last_read_message_id', 'muted_until'])
             ->withTimestamps();
     }
 
@@ -65,6 +66,11 @@ class Conversation extends Model
     public function isClassGroup(): bool
     {
         return $this->school_class_id !== null;
+    }
+
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar_path ? '/storage/'.ltrim($this->avatar_path, '/') : null;
     }
 
     public function scopeForUser(Builder $query, int $userId): Builder

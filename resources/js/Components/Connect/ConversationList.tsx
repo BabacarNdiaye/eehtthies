@@ -1,4 +1,4 @@
-import { FileText, Loader2, MessageSquareText, Plus, Search } from 'lucide-react';
+import { BellOff, FileText, Loader2, MessageSquareText, Plus, Search } from 'lucide-react';
 import Avatar, { groupIconFor } from './Avatar';
 import { ConversationSummary, SearchResult, Tab } from './types';
 import { listTime } from './utils';
@@ -146,13 +146,16 @@ export default function ConversationList({
                                               : 'Nouvelle conversation'}
                                     </span>
                                     <span className="flex shrink-0 items-center gap-1">
+                                        {c.muted && <BellOff className="h-3.5 w-3.5 text-ink-400" aria-label="Notifications coupées" />}
                                         {c.mentions > 0 && (
                                             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gold-500 text-[11px] font-bold text-ink-900" title="Vous avez été mentionné(e)">
                                                 @
                                             </span>
                                         )}
                                         {c.unread > 0 && (
-                                            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-ink-900 px-1.5 text-[10px] font-bold text-white">
+                                            <span
+                                                className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white ${c.muted ? 'bg-ink-300' : 'bg-ink-900'}`}
+                                            >
                                                 {c.unread}
                                             </span>
                                         )}

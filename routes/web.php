@@ -624,9 +624,19 @@ Route::prefix('connect')->name('connect.')->middleware(['auth', 'verified'])->gr
         Route::post('/conversations/{conversation}/favorite', [ConnectController::class, 'toggleFavorite'])->name('favorite');
         Route::post('/conversations/{conversation}/unread', [ConnectController::class, 'markUnread'])->name('unread');
         Route::post('/conversations/{conversation}/leave', [ConnectController::class, 'leave'])->name('leave');
+        Route::post('/conversations/{conversation}/mute', [ConnectController::class, 'mute'])->name('mute');
+        Route::post('/conversations/{conversation}/typing', [ConnectController::class, 'typing'])->middleware('throttle:60,1')->name('typing');
+        Route::patch('/conversations/{conversation}/group', [ConnectController::class, 'updateGroup'])->name('group.update');
+        Route::post('/conversations/{conversation}/group/avatar', [ConnectController::class, 'updateGroupAvatar'])->name('group.avatar');
+        Route::post('/conversations/{conversation}/members', [ConnectController::class, 'addMembers'])->name('members.add');
+        Route::delete('/conversations/{conversation}/members/{user}', [ConnectController::class, 'removeMember'])->name('members.remove');
+        Route::post('/conversations/{conversation}/members/{user}/admin', [ConnectController::class, 'toggleAdmin'])->name('members.admin');
         Route::get('/messages/{message}/attachment', [ConnectController::class, 'attachment'])->name('attachment');
         Route::post('/messages/{message}/reactions', [ConnectController::class, 'react'])->name('react');
         Route::post('/messages/{message}/pin', [ConnectController::class, 'pin'])->name('pin');
+        Route::patch('/messages/{message}', [ConnectController::class, 'updateMessage'])->name('messages.update');
+        Route::delete('/messages/{message}', [ConnectController::class, 'destroyMessage'])->name('messages.destroy');
+        Route::get('/messages/{message}/readers', [ConnectController::class, 'readers'])->name('messages.readers');
         Route::get('/search', [ConnectController::class, 'search'])->name('search');
 
         // Appels audio/vidéo en ligne (WebRTC, mise en relation par interrogation).

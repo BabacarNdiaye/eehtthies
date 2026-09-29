@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Cœur d'EEHT Connect : envoi des messages (avec notification push) et mise
@@ -130,15 +131,15 @@ class Messenger
     /** @param  array<int, int>  $mentionIds */
     private function pushNow(Conversation $conversation, ConversationMessage $message, ?User $sender, array $mentionIds = []): void
     {
-        $recipients = User::whereIn(
-            'id',
-            $conversation->participants()->where('user_id', '!=', $sender?->id ?? 0)->pluck('user_id')
-        )->get();
+        $participants = $conversation->participants()->where('user_id', '!=', $sender?->id ?? 0)->get(['user_id', 'muted_until']);
+        $recipients = User::whereIn('id', $participants->pluck('user_id'))->get();
+        $muted = $participants->filter(fn (ConversationParticipant $p) => $p->isMuted())->pluck('user_id')->all();
 
         [$title, $text, $url] = $this->pushContent($conversation, $message, $sender);
 
         // Les personnes @mentionnées sont toujours prévenues tout de suite,
-        // même dans un grand groupe.
+        // même dans un grand groupe et même si elles ont mis la conversation
+        // en sourdine.
         foreach ($recipients->whereIn('id', $mentionIds) as $mentioned) {
             SafePush::send($mentioned, ($sender?->name ?? 'EEHT Connect').' vous a mentionné(e)'.($conversation->isDirect() ? '' : " dans {$conversation->name}"), $text, $url);
         }
@@ -147,7 +148,7 @@ class Messenger
             return; // laissé à app:push-pending-messages (pushed_at reste null)
         }
 
-        foreach ($recipients->whereNotIn('id', $mentionIds) as $recipient) {
+        foreach ($recipients->whereNotIn('id', [...$mentionIds, ...$muted]) as $recipient) {
             SafePush::send($recipient, $title, $text, $url);
         }
 
@@ -165,6 +166,53 @@ class Messenger
         $text = $message->body ?? ($message->attachment_name ? "📎 {$message->attachment_name}" : '');
 
         return [$title, $text, '/connect?conversation='.$conversation->id];
+    }
+
+    /**
+     * Administrateur d'un groupe : responsable désigné (ou créateur) d'un
+     * groupe libre, enseignant d'un groupe de classe ; le personnel de
+     * l'établissement l'est de tous les groupes dont il fait partie.
+     */
+    public function isGroupAdmin(Conversation $conversation, User $user): bool
+    {
+        if ($conversation->isDirect() || $conversation->isAssistant()) {
+            return false;
+        }
+
+        if ($this->isStaffUser($user)) {
+            return true;
+        }
+
+        return $conversation->isClassGroup()
+            ? (bool) $user->teacher
+            : (bool) $conversation->participants()->where('user_id', $user->id)->value('is_admin');
+    }
+
+    /** Suppression « pour tout le monde » : le contenu et la pièce jointe sont effacés. */
+    public function retract(ConversationMessage $message, User $by): void
+    {
+        if ($message->attachment_path) {
+            foreach (['local', 'public'] as $disk) {
+                Storage::disk($disk)->delete($message->attachment_path);
+            }
+        }
+
+        DB::transaction(function () use ($message, $by) {
+            $message->reactions()->delete();
+            $message->mentions()->detach();
+            $message->forceFill([
+                'subject' => null,
+                'body' => null,
+                'attachment_path' => null,
+                'attachment_name' => null,
+                'attachment_size' => null,
+                'attachment_mime' => null,
+                'pinned_at' => null,
+                'pinned_by' => null,
+                'retracted_at' => now(),
+                'retracted_by' => $by->id,
+            ])->save();
+        });
     }
 
     // -----------------------------------------------------------------
@@ -279,13 +327,17 @@ class Messenger
     /** Relations à charger avant presentMessage() sur une liste de messages. */
     public const MESSAGE_RELATIONS = [
         'user:id,name,avatar', 'user.teacher:id,user_id,photo', 'user.student:id,user_id,photo',
-        'replyTo:id,user_id,body,attachment_name,kind', 'replyTo.user:id,name',
+        'replyTo:id,user_id,body,attachment_name,kind,retracted_at', 'replyTo.user:id,name',
         'reactions:id,conversation_message_id,user_id,emoji', 'mentions:id,name',
     ];
 
-    public function presentMessage(ConversationMessage $message, ?int $viewerId = null): array
+    /**
+     * @param  bool  $canModerate  le lecteur peut supprimer les messages des autres (administrateur du groupe)
+     */
+    public function presentMessage(ConversationMessage $message, ?int $viewerId = null, bool $canModerate = false): array
     {
         $reply = $message->replyTo;
+        $retracted = $message->isRetracted();
 
         return [
             'id' => $message->id,
@@ -302,10 +354,10 @@ class Messenger
                 'mime' => $message->attachment_mime,
                 'url' => route('connect.attachment', $message),
             ] : null,
-            'reply_to' => $reply ? [
+            'reply_to' => $reply && ! $retracted ? [
                 'id' => $reply->id,
                 'sender_name' => $reply->user?->name ?? 'EEHT Connect',
-                'body' => $reply->body ? mb_strimwidth($reply->body, 0, 140, '…') : null,
+                'body' => $reply->retracted_at ? '🚫 Message supprimé' : ($reply->body ? mb_strimwidth($reply->body, 0, 140, '…') : null),
                 'attachment_name' => $reply->attachment_name,
             ] : null,
             'reactions' => $message->reactions
@@ -319,6 +371,12 @@ class Messenger
                 ->all(),
             'mentions' => $message->mentions->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->all(),
             'pinned' => $message->pinned_at !== null,
+            'edited' => $message->edited_at !== null && ! $retracted,
+            'deleted' => $retracted,
+            'deleted_by_moderator' => $retracted && $message->retracted_by !== null && $message->retracted_by !== $message->user_id,
+            'can_edit' => $viewerId !== null && $message->editableBy($viewerId),
+            'can_delete' => $viewerId !== null && ! $retracted && ! $message->isSystem()
+                && ($message->retractableBy($viewerId) || ($canModerate && $message->user_id !== $viewerId)),
             'created_at' => $message->created_at->toIso8601String(),
         ];
     }

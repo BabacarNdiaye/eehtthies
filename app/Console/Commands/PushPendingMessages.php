@@ -34,6 +34,7 @@ class PushPendingMessages extends Command
 
                     $message->conversation->participants
                         ->where('user_id', '!=', $message->user_id)
+                        ->reject(fn ($p) => $p->isMuted()) // conversation en sourdine
                         ->each(fn ($p) => SafePush::send($p->user, $title, $body, $url));
 
                     $message->forceFill(['pushed_at' => now()])->saveQuietly();

@@ -1,4 +1,4 @@
-import { BellRing, Check, CheckCheck, Copy, Download, EllipsisVertical, Languages, Pin, PinOff, Reply, SmilePlus } from 'lucide-react';
+import { Ban, BellRing, Check, CheckCheck, Copy, Download, EllipsisVertical, Eye, Languages, Pencil, Pin, PinOff, Reply, SmilePlus, Trash2 } from 'lucide-react';
 import { Fragment, ReactNode, useState } from 'react';
 import Avatar from './Avatar';
 import FileIcon from './FileIcon';
@@ -65,6 +65,11 @@ export default function MessageBubble({
     onPin,
     onTranslate,
     onJump,
+    onEdit,
+    onDelete,
+    onOpenImage,
+    onShowReaders,
+    seenBy,
 }: {
     message: ChatMessage;
     mine: boolean;
@@ -80,8 +85,43 @@ export default function MessageBubble({
     onPin: () => void;
     onTranslate: (language: string) => void;
     onJump: (id: number) => void;
+    onEdit: () => void;
+    onDelete: () => void;
+    onOpenImage: () => void;
+    onShowReaders?: () => void;
+    /** Groupes : nombre de membres ayant lu mon message (affiché sous mon dernier message). */
+    seenBy?: { count: number; total: number } | null;
 }) {
     const [menu, setMenu] = useState<'react' | 'translate' | null>(null);
+
+    // Événements (appel, membre ajouté, groupe renommé…) : simple mention centrée.
+    const eventType = message.meta?.type;
+    if (message.kind === 'system' && (eventType === 'call' || eventType === 'group')) {
+        return (
+            <div id={`msg-${message.id}`} className="flex justify-center">
+                <p className="max-w-[90%] rounded-full bg-ink-50 px-4 py-1.5 text-center text-[11px] text-ink-600">
+                    {message.body} <span className="ml-1 text-ink-400">{clockTime(message.created_at)}</span>
+                </p>
+            </div>
+        );
+    }
+
+    if (message.deleted) {
+        return (
+            <div id={`msg-${message.id}`} className={`flex items-end gap-3 ${mine ? 'justify-end' : 'justify-start'}`}>
+                {!mine && <Avatar name={message.sender_name ?? '?'} src={message.sender_avatar} size="sm" />}
+                <p
+                    className={`flex items-center gap-2 rounded-2xl border border-dashed px-4 py-2.5 text-[12px] italic ${
+                        mine ? 'rounded-br-md border-ink-300 text-ink-500' : 'rounded-bl-md border-ink-200 text-ink-500'
+                    }`}
+                >
+                    <Ban className="h-3.5 w-3.5 shrink-0" />
+                    {mine ? 'Vous avez supprimé ce message' : message.deleted_by_moderator ? 'Message supprimé par un administrateur' : 'Ce message a été supprimé'}
+                    <span className="text-[10px] not-italic text-ink-400">{clockTime(message.created_at)}</span>
+                </p>
+            </div>
+        );
+    }
 
     if (message.kind === 'system') {
         return (
@@ -138,6 +178,21 @@ export default function MessageBubble({
                     {message.body && (
                         <ActionButton label="Copier" onClick={() => navigator.clipboard?.writeText(message.body ?? '')}>
                             <Copy className="h-4 w-4" />
+                        </ActionButton>
+                    )}
+                    {message.can_edit && (
+                        <ActionButton label="Modifier" onClick={onEdit}>
+                            <Pencil className="h-4 w-4" />
+                        </ActionButton>
+                    )}
+                    {mine && isGroup && onShowReaders && (
+                        <ActionButton label="Vu par" onClick={onShowReaders}>
+                            <Eye className="h-4 w-4" />
+                        </ActionButton>
+                    )}
+                    {message.can_delete && (
+                        <ActionButton label="Supprimer pour tout le monde" onClick={onDelete}>
+                            <Trash2 className="h-4 w-4 text-red-600" />
                         </ActionButton>
                     )}
 
@@ -211,6 +266,7 @@ export default function MessageBubble({
                             </div>
                         )}
                         <p className={`mt-1.5 flex items-center justify-end gap-1.5 text-[10px] ${mine ? 'text-white/70' : 'text-ink-400'}`}>
+                            {message.edited && <span className="italic">modifié</span>}
                             {clockTime(message.created_at)}
                             {ticks}
                         </p>
@@ -218,9 +274,13 @@ export default function MessageBubble({
                 )}
 
                 {message.attachment && kind === 'image' && (
-                    <a href={message.attachment.url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-2xl border border-ink-100 shadow-sm">
+                    <button
+                        onClick={onOpenImage}
+                        className="block overflow-hidden rounded-2xl border border-ink-100 shadow-sm transition hover:opacity-95"
+                        aria-label={`Agrandir la photo ${message.attachment.name}`}
+                    >
                         <img src={message.attachment.url} alt={message.attachment.name} className="max-h-72 max-w-full object-cover" loading="lazy" />
-                    </a>
+                    </button>
                 )}
 
                 {message.attachment && kind === 'audio' && (
@@ -267,6 +327,13 @@ export default function MessageBubble({
                             </button>
                         ))}
                     </div>
+                )}
+
+                {seenBy && (
+                    <button onClick={onShowReaders} className="-mt-0.5 flex items-center gap-1 px-1 text-[10px] text-ink-500 hover:text-ink-800">
+                        <Eye className="h-3 w-3" />
+                        {seenBy.count === 0 ? 'Pas encore lu' : seenBy.count >= seenBy.total ? 'Vu par tout le monde' : `Vu par ${seenBy.count}`}
+                    </button>
                 )}
             </div>
         </div>
