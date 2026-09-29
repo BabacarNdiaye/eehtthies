@@ -93,7 +93,7 @@ class Messenger
      * Message automatique d'EEHT Connect (rappel d'examen, devoir, emploi du
      * temps, absence) : sans auteur, affiché comme une carte d'information.
      */
-    public function sendSystem(Conversation $conversation, string $body, array $meta = []): ConversationMessage
+    public function sendSystem(Conversation $conversation, string $body, array $meta = [], bool $push = true): ConversationMessage
     {
         $message = $this->store($conversation, null, [
             'conversation_id' => $conversation->id,
@@ -102,7 +102,11 @@ class Messenger
             'meta' => $meta ?: null,
         ]);
 
-        $this->pushNow($conversation, $message, null);
+        if ($push) {
+            $this->pushNow($conversation, $message, null);
+        } else {
+            $message->forceFill(['pushed_at' => now()])->saveQuietly();
+        }
 
         return $message;
     }

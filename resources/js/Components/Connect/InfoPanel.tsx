@@ -46,6 +46,7 @@ export default function InfoPanel({
     onShowDocuments,
     onShowGroups,
     onLeave,
+    onCall,
 }: {
     conversation: ConversationSummary;
     details: ConversationDetails | null;
@@ -55,6 +56,7 @@ export default function InfoPanel({
     onShowDocuments: () => void;
     onShowGroups: () => void;
     onLeave: () => void;
+    onCall: (type: 'audio' | 'video') => void;
 }) {
     const [allMembers, setAllMembers] = useState(false);
     const profile = details?.profile;
@@ -99,16 +101,10 @@ export default function InfoPanel({
                     <button onClick={onFocusComposer} className="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-ink-900 px-2 py-2.5 text-[11px] font-semibold text-white hover:bg-ink-800">
                         <MessageSquareText className="h-4 w-4" /> Message
                     </button>
-                    {profile?.phone ? (
-                        <a href={`tel:${profile.phone}`} className={`${button} hover:bg-ink-50`}>
-                            <Phone className="h-4 w-4" /> Appel
-                        </a>
-                    ) : (
-                        <button disabled className={`${button} cursor-not-allowed opacity-40`} title="Aucun numéro professionnel renseigné">
-                            <Phone className="h-4 w-4" /> Appel
-                        </button>
-                    )}
-                    <button disabled className={`${button} cursor-not-allowed opacity-40`} title="Appel vidéo : bientôt disponible">
+                    <button onClick={() => onCall('audio')} className={`${button} hover:bg-ink-50`}>
+                        <Phone className="h-4 w-4" /> Appel
+                    </button>
+                    <button onClick={() => onCall('video')} className={`${button} hover:bg-ink-50`}>
                         <Video className="h-4 w-4" /> Vidéo
                     </button>
                     <button onClick={onShowDocuments} className="flex shrink-0 items-center justify-center rounded-lg border border-ink-200 px-2 text-ink-700 hover:bg-ink-50" aria-label="Plus">

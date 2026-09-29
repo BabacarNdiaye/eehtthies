@@ -56,7 +56,7 @@ function normalize(s: string) {
 export default function ChatPane({
     conversation,
     meId,
-    phone,
+    onCall,
     members,
     ai,
     focusMessageId,
@@ -70,7 +70,7 @@ export default function ChatPane({
 }: {
     conversation: ConversationSummary | null;
     meId: number;
-    phone: string | null;
+    onCall: (type: 'audio' | 'video') => void;
     members: Person[];
     ai: AiConfig;
     focusMessageId: number | null;
@@ -510,20 +510,15 @@ export default function ChatPane({
                 </button>
 
                 <div className="ml-auto flex items-center gap-2">
-                    {conversation.type === 'direct' &&
-                        (phone ? (
-                            <a href={`tel:${phone}`} className={toolButton} aria-label="Appeler" title={`Appeler ${phone}`}>
-                                <Phone className="h-4 w-4" />
-                            </a>
-                        ) : (
-                            <button disabled className={`${toolButton} cursor-not-allowed opacity-40`} title="Aucun numéro professionnel renseigné">
+                    {conversation.type === 'direct' && (
+                        <>
+                            <button onClick={() => onCall('audio')} className={toolButton} aria-label="Appel vocal" title="Appel vocal">
                                 <Phone className="h-4 w-4" />
                             </button>
-                        ))}
-                    {!isAssistant && (
-                        <button disabled className={`${toolButton} hidden cursor-not-allowed opacity-40 sm:flex`} title="Appel vidéo : bientôt disponible">
-                            <Video className="h-4 w-4" />
-                        </button>
+                            <button onClick={() => onCall('video')} className={toolButton} aria-label="Appel vidéo" title="Appel vidéo">
+                                <Video className="h-4 w-4" />
+                            </button>
+                        </>
                     )}
                     <div className="relative">
                         <button onClick={() => setPopover(popover === 'menu' ? null : 'menu')} className={toolButton} aria-label="Plus d'options">

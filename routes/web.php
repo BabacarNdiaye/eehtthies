@@ -65,6 +65,7 @@ use App\Http\Controllers\Portal\TeacherLibraryController;
 use App\Http\Controllers\Portal\TeacherSkillController;
 use App\Http\Controllers\Portal\TeacherLessonLogController;
 use App\Http\Controllers\Portal\TeacherPortalController;
+use App\Http\Controllers\CallController;
 use App\Http\Controllers\ConnectController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Site\AlumniController;
@@ -623,6 +624,15 @@ Route::prefix('connect')->name('connect.')->middleware(['auth', 'verified'])->gr
         Route::post('/messages/{message}/reactions', [ConnectController::class, 'react'])->name('react');
         Route::post('/messages/{message}/pin', [ConnectController::class, 'pin'])->name('pin');
         Route::get('/search', [ConnectController::class, 'search'])->name('search');
+
+        // Appels audio/vidéo en ligne (WebRTC, mise en relation par interrogation).
+        Route::post('/conversations/{conversation}/calls', [CallController::class, 'start'])->name('calls.start');
+        Route::get('/calls/incoming', [CallController::class, 'incoming'])->name('calls.incoming');
+        Route::get('/calls/{call}', [CallController::class, 'show'])->name('calls.show');
+        Route::post('/calls/{call}/answer', [CallController::class, 'answer'])->name('calls.answer');
+        Route::post('/calls/{call}/decline', [CallController::class, 'decline'])->name('calls.decline');
+        Route::post('/calls/{call}/hangup', [CallController::class, 'hangup'])->name('calls.hangup');
+        Route::post('/calls/{call}/signals', [CallController::class, 'signal'])->middleware('throttle:600,1')->name('calls.signal');
 
         // Assistant IA (Claude) — limité pour maîtriser le coût.
         Route::middleware('throttle:20,1')->prefix('ai')->name('ai.')->group(function () {

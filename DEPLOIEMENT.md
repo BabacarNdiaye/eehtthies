@@ -153,6 +153,23 @@ et votre identifiant) :
 - [ ] Envoyer un message interne, sans erreur 500 (extension `bcmath`/`gmp`)
 - [ ] Le lendemain : **Admin › Sauvegardes**, vérifier qu'une sauvegarde de 02:00 existe
 
+## Appels audio et vidéo (EEHT Connect)
+
+Les appels passent **directement entre les navigateurs** (WebRTC) : ni le son
+ni l'image ne transitent par l'hébergement, qui ne sert qu'à mettre les deux
+appareils en relation. Deux conditions :
+
+- le site doit être en **https** (le navigateur refuse sinon l'accès au micro
+  et à la caméra) : activez AutoSSL (étape 4) ;
+- les utilisateurs doivent autoriser le micro (et la caméra pour la vidéo)
+  quand le navigateur le demande.
+
+Entre certains réseaux restrictifs (réseaux mobiles, pare-feux d'entreprise),
+la connexion directe peut échouer (« Connexion impossible entre les deux
+appareils »). Il faut alors un **relais TURN** : renseignez `TURN_URL`,
+`TURN_USERNAME` et `TURN_CREDENTIAL` dans le `.env` (service TURN hébergé,
+par exemple Metered, Twilio ou Xirsys, ou votre propre serveur coturn).
+
 ## Déploiement automatique (GitHub Actions + FTP)
 
 Au lieu de construire et téléverser l'archive à la main, GitHub peut le faire

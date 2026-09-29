@@ -16,6 +16,16 @@ return [
 
     // Assistant IA d'EEHT Connect (suggestions de réponses, résumés,
     // reformulation, traduction). Désactivé tant qu'aucune clé n'est définie.
+    // Relais TURN facultatif pour les appels EEHT Connect : indispensable
+    // quand les deux personnes sont derrière des réseaux restrictifs (certains
+    // réseaux mobiles, pare-feux d'entreprise). Plusieurs URL séparées par des
+    // virgules, ex. « turn:turn.exemple.sn:3478,turns:turn.exemple.sn:5349 ».
+    'turn' => [
+        'url' => env('TURN_URL'),
+        'username' => env('TURN_USERNAME'),
+        'credential' => env('TURN_CREDENTIAL'),
+    ],
+
     'anthropic' => [
         'key' => env('ANTHROPIC_API_KEY'),
         'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
