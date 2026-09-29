@@ -133,8 +133,10 @@ class ConnectController extends Controller
     {
         $unread = $this->messenger->unreadCounts($me->id);
         $mentions = $this->messenger->unreadMentionCounts($me->id);
+        // « écrit… » dans la liste : une seule lecture du cache pour toutes les conversations.
+        $typing = $conversations->isEmpty() ? [] : Cache::many($conversations->map(fn ($c) => $this->typingKey($c))->all());
 
-        return $conversations->map(function (Conversation $c) use ($me, $unread, $mentions) {
+        return $conversations->map(function (Conversation $c) use ($me, $unread, $mentions, $typing) {
             $mine = $c->participants->firstWhere('user_id', $me->id);
             $last = $c->latestMessage;
             $other = $c->isDirect() ? $c->participants->firstWhere('user_id', '!=', $me->id)?->user : null;
@@ -152,6 +154,7 @@ class ConnectController extends Controller
                 'muted_until' => $mine?->isMuted() ? $mine->muted_until->toIso8601String() : null,
                 'unread' => $unread[$c->id] ?? 0,
                 'mentions' => $mentions[$c->id] ?? 0,
+                'typing' => $this->activeTypists($typing[$this->typingKey($c)] ?? null, $me),
                 'last' => $last ? [
                     'body' => $last->isRetracted() ? '🚫 Message supprimé' : ($last->body ?? ($last->attachment_name ? '📎 '.$last->attachment_name : '')),
                     'sender_name' => $last->user_id === $me->id ? 'Vous' : ($last->user?->name ?? ($last->isSystem() ? 'EEHT Connect' : null)),
@@ -367,7 +370,7 @@ class ConnectController extends Controller
     // « En train d'écrire… » (mémorisé quelques secondes dans le cache)
     // -----------------------------------------------------------------
 
-    private const TYPING_SECONDS = 6;
+    private const TYPING_SECONDS = 8;
 
     private function typingKey(Conversation $conversation): string
     {
@@ -377,9 +380,18 @@ class ConnectController extends Controller
     /** @return array<int, string> */
     private function typingNames(Conversation $conversation, User $me): array
     {
+        return $this->activeTypists(Cache::get($this->typingKey($conversation)), $me);
+    }
+
+    /**
+     * @param  array<int, array{name: string, until: int}>|null  $list
+     * @return array<int, string> noms des autres personnes en train d'écrire
+     */
+    private function activeTypists(?array $list, User $me): array
+    {
         $now = now()->timestamp;
 
-        return collect(Cache::get($this->typingKey($conversation), []))
+        return collect($list ?? [])
             ->filter(fn ($t, $userId) => (int) $userId !== $me->id && $t['until'] >= $now)
             ->pluck('name')->values()->all();
     }

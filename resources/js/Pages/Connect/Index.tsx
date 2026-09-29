@@ -104,7 +104,7 @@ export default function ConnectIndex({ me, canCreateGroups, links, ai, calls, in
     }, []);
 
     useEffect(() => {
-        const list = setInterval(() => loadConversations(true), 8000);
+        const list = setInterval(() => loadConversations(true), 5000); // assez souvent pour « écrit… »
         const unread = setInterval(loadUnread, 20000);
         return () => {
             clearInterval(list);

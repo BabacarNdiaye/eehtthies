@@ -30,6 +30,8 @@ export interface ConversationSummary {
     muted_until: string | null;
     unread: number;
     mentions: number;
+    /** Personnes en train d'écrire dans cette conversation. */
+    typing?: string[];
     last: { body: string; sender_name: string | null; created_at: string } | null;
     last_message_at: string;
 }
