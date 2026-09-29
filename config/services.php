@@ -14,6 +14,14 @@ return [
     |
     */
 
+    // Assistant IA d'EEHT Connect (suggestions de réponses, résumés,
+    // reformulation, traduction). Désactivé tant qu'aucune clé n'est définie.
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
+        'effort' => env('ANTHROPIC_EFFORT', 'low'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

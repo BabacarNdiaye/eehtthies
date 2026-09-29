@@ -7,18 +7,19 @@ import ConnectSidebar from '@/Components/Connect/ConnectSidebar';
 import ConversationList from '@/Components/Connect/ConversationList';
 import InfoPanel from '@/Components/Connect/InfoPanel';
 import { AnnouncementsSection, ContactsSection, DocumentsSection, NewGroupModal, ProfileSection } from '@/Components/Connect/Sections';
-import { ChatMessage, ConnectLinks, ConversationDetails, ConversationSummary, Profile, Section, Tab } from '@/Components/Connect/types';
+import { AiConfig, ChatMessage, ConnectLinks, ConversationDetails, ConversationSummary, Profile, SearchResult, Section, Tab } from '@/Components/Connect/types';
 
 interface Props {
     me: Profile;
     canCreateGroups: boolean;
     links: ConnectLinks;
+    ai: AiConfig;
     initial: { conversation: number | null; class: number | null; user: number | null; section: string | null };
 }
 
 const SECTIONS: Section[] = ['messages', 'groups', 'announcements', 'documents', 'contacts', 'profile'];
 
-export default function ConnectIndex({ me, canCreateGroups, links, initial }: Props) {
+export default function ConnectIndex({ me, canCreateGroups, links, ai, initial }: Props) {
     useAutoPushSubscribe();
 
     const initialSection = SECTIONS.includes(initial.section as Section) ? (initial.section as Section) : 'messages';
@@ -34,6 +35,8 @@ export default function ConnectIndex({ me, canCreateGroups, links, initial }: Pr
     const [details, setDetails] = useState<ConversationDetails | null>(null);
     const [unreadAnnouncements, setUnreadAnnouncements] = useState(0);
     const [showNewGroup, setShowNewGroup] = useState(false);
+    const [searchResults, setSearchResults] = useState<SearchResult[] | 'loading' | null>(null);
+    const [focus, setFocus] = useState<{ conversationId: number; messageId: number } | null>(null);
     const activeIdRef = useRef<number | null>(null);
     activeIdRef.current = activeId;
 
@@ -63,7 +66,8 @@ export default function ConnectIndex({ me, canCreateGroups, links, initial }: Pr
         }
     }, []);
 
-    const openConversation = useCallback((id: number) => {
+    const openConversation = useCallback((id: number, messageId?: number) => {
+        setFocus(messageId ? { conversationId: id, messageId } : null);
         setActiveId(id);
         setSection((s) => (s === 'groups' ? 'groups' : 'messages'));
         setSidebarOpen(false);
@@ -101,6 +105,25 @@ export default function ConnectIndex({ me, canCreateGroups, links, initial }: Pr
             clearInterval(unread);
         };
     }, [loadConversations, loadUnread]);
+
+    // Recherche dans le contenu des messages (en plus du filtre sur les noms).
+    useEffect(() => {
+        const q = search.trim();
+        if (q.length < 2) {
+            setSearchResults(null);
+            return;
+        }
+        setSearchResults('loading');
+        const t = setTimeout(async () => {
+            try {
+                const res = await window.axios.get(route('connect.search'), { params: { q } });
+                setSearchResults(res.data.results);
+            } catch {
+                setSearchResults([]);
+            }
+        }, 300);
+        return () => clearTimeout(t);
+    }, [search]);
 
     const loadDetails = useCallback(async (id: number) => {
         try {
@@ -224,8 +247,10 @@ export default function ConnectIndex({ me, canCreateGroups, links, initial }: Pr
                                     onTab={changeTab}
                                     search={search}
                                     onSearch={setSearch}
-                                    onOpen={openConversation}
+                                    onOpen={(id) => openConversation(id)}
                                     onNew={() => changeSection('contacts')}
+                                    searchResults={searchResults}
+                                    onOpenResult={(r) => openConversation(r.conversation_id, r.id)}
                                 />
                             </div>
                             <div className={`min-h-0 min-w-0 flex-1 lg:block ${active ? 'block' : 'hidden'}`}>
@@ -233,6 +258,9 @@ export default function ConnectIndex({ me, canCreateGroups, links, initial }: Pr
                                     conversation={active}
                                     meId={me.id}
                                     phone={details?.profile?.phone ?? null}
+                                    members={details?.group?.members ?? []}
+                                    ai={ai}
+                                    focusMessageId={focus && focus.conversationId === activeId ? focus.messageId : null}
                                     infoOpen={infoOpen}
                                     onToggleInfo={() => setInfoOpen((v) => !v)}
                                     onBack={() => {

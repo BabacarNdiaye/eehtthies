@@ -16,6 +16,9 @@ class Conversation extends Model
 
     public const TYPE_GROUP = 'group';
 
+    /** Conversation personnelle où EEHT Connect dépose les rappels et alertes d'un utilisateur. */
+    public const TYPE_ASSISTANT = 'assistant';
+
     protected $fillable = ['type', 'name', 'description', 'school_class_id', 'created_by', 'last_message_at'];
 
     protected $casts = [
@@ -52,6 +55,11 @@ class Conversation extends Model
     public function isDirect(): bool
     {
         return $this->type === self::TYPE_DIRECT;
+    }
+
+    public function isAssistant(): bool
+    {
+        return $this->type === self::TYPE_ASSISTANT;
     }
 
     public function isClassGroup(): bool

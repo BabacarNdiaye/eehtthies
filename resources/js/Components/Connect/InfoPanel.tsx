@@ -59,7 +59,7 @@ export default function InfoPanel({
     const [allMembers, setAllMembers] = useState(false);
     const profile = details?.profile;
     const group = details?.group;
-    const isGroup = conversation.type === 'group';
+    const isGroup = conversation.type !== 'direct';
     const button = 'flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-ink-200 px-2 py-2.5 text-[11px] font-medium text-ink-800';
 
     return (
@@ -74,7 +74,7 @@ export default function InfoPanel({
                     src={conversation.avatar}
                     size="lg"
                     group={isGroup}
-                    groupIcon={groupIconFor(conversation.name, conversation.is_class)}
+                    groupIcon={groupIconFor(conversation.name, conversation.is_class, conversation.type)}
                 />
                 <div className="min-w-0">
                     <p className="font-serif text-lg font-bold text-ink-900">{conversation.name}</p>
@@ -85,9 +85,11 @@ export default function InfoPanel({
                         </p>
                     )}
                     <p className="mt-2 text-xs text-ink-600">
-                        {isGroup
-                            ? `${conversation.members_count} membres${group?.is_class ? ' · Groupe de classe' : ''}`
-                            : [profile?.role, profile?.subtitle].filter(Boolean).join('  ·  ')}
+                        {conversation.type === 'assistant'
+                            ? 'Rappels automatiques'
+                            : isGroup
+                              ? `${conversation.members_count} membres${group?.is_class ? ' · Groupe de classe' : ''}`
+                              : [profile?.role, profile?.subtitle].filter(Boolean).join('  ·  ')}
                     </p>
                 </div>
             </div>
@@ -134,24 +136,28 @@ export default function InfoPanel({
             {details && isGroup && group && (
                 <div className="mt-6">
                     {group.description && <p className="mb-4 text-[13px] leading-relaxed text-ink-700">{group.description}</p>}
-                    <SectionTitle
-                        title={`Membres (${group.members.length})`}
-                        action={group.members.length > 8 ? { label: allMembers ? 'Réduire' : 'Voir tout', onClick: () => setAllMembers((v) => !v) } : undefined}
-                    />
-                    <ul className="space-y-1">
-                        {(allMembers ? group.members : group.members.slice(0, 8)).map((m) => (
-                            <li key={m.id} className="flex items-center gap-3 py-1.5">
-                                <Avatar name={m.name} src={m.avatar} size="sm" online={m.online} />
-                                <span className="min-w-0 flex-1 leading-tight">
-                                    <span className="block truncate text-[13px] font-medium text-ink-900">{m.name}</span>
-                                    <span className="block truncate text-[11px] text-ink-500">
-                                        {m.role}
-                                        {m.is_admin ? ' · Administrateur du groupe' : ''}
-                                    </span>
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
+                    {conversation.type !== 'assistant' && (
+                        <>
+                            <SectionTitle
+                                title={`Membres (${group.members.length})`}
+                                action={group.members.length > 8 ? { label: allMembers ? 'Réduire' : 'Voir tout', onClick: () => setAllMembers((v) => !v) } : undefined}
+                            />
+                            <ul className="space-y-1">
+                                {(allMembers ? group.members : group.members.slice(0, 8)).map((m) => (
+                                    <li key={m.id} className="flex items-center gap-3 py-1.5">
+                                        <Avatar name={m.name} src={m.avatar} size="sm" online={m.online} />
+                                        <span className="min-w-0 flex-1 leading-tight">
+                                            <span className="block truncate text-[13px] font-medium text-ink-900">{m.name}</span>
+                                            <span className="block truncate text-[11px] text-ink-500">
+                                                {m.role}
+                                                {m.is_admin ? ' · Administrateur du groupe' : ''}
+                                            </span>
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
                     {group.can_leave && (
                         <button onClick={onLeave} className="mt-3 flex items-center gap-2 text-xs font-medium text-red-600 hover:underline">
                             <LogOut className="h-3.5 w-3.5" /> Quitter le groupe

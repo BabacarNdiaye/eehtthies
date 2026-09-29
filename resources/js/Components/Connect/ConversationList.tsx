@@ -1,6 +1,6 @@
-import { Plus, Search } from 'lucide-react';
+import { FileText, Loader2, MessageSquareText, Plus, Search } from 'lucide-react';
 import Avatar, { groupIconFor } from './Avatar';
-import { ConversationSummary, Tab } from './types';
+import { ConversationSummary, SearchResult, Tab } from './types';
 import { listTime } from './utils';
 
 const tabs: { key: Tab; label: string }[] = [
@@ -13,7 +13,7 @@ const tabs: { key: Tab; label: string }[] = [
 export function filterConversations(conversations: ConversationSummary[], tab: Tab, search: string): ConversationSummary[] {
     const q = search.trim().toLowerCase();
     return conversations.filter((c) => {
-        if (tab === 'direct' && c.type !== 'direct') return false;
+        if (tab === 'direct' && c.type === 'group') return false;
         if (tab === 'group' && c.type !== 'group') return false;
         if (tab === 'favorites' && !c.is_favorite) return false;
         if (q && !c.name.toLowerCase().includes(q) && !(c.last?.body ?? '').toLowerCase().includes(q)) return false;
@@ -31,6 +31,8 @@ export default function ConversationList({
     onSearch,
     onOpen,
     onNew,
+    searchResults,
+    onOpenResult,
 }: {
     conversations: ConversationSummary[];
     loading: boolean;
@@ -41,6 +43,8 @@ export default function ConversationList({
     onSearch: (v: string) => void;
     onOpen: (id: number) => void;
     onNew: () => void;
+    searchResults: SearchResult[] | 'loading' | null;
+    onOpenResult: (result: SearchResult) => void;
 }) {
     const countFor = (t: Tab) => filterConversations(conversations, t, '').filter((c) => c.unread > 0).length;
     const visible = filterConversations(conversations, tab, search);
@@ -97,7 +101,7 @@ export default function ConversationList({
 
             <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
                 {loading && <p className="px-4 py-8 text-center text-sm text-ink-400">Chargement…</p>}
-                {!loading && visible.length === 0 && (
+                {!loading && visible.length === 0 && !searchResults && (
                     <p className="px-4 py-8 text-center text-sm text-ink-400">
                         {search ? 'Aucun résultat.' : tab === 'favorites' ? 'Aucune conversation en favori.' : 'Aucune conversation.'}
                     </p>
@@ -116,8 +120,8 @@ export default function ConversationList({
                             <Avatar
                                 name={c.name}
                                 src={c.avatar}
-                                group={c.type === 'group'}
-                                groupIcon={groupIconFor(c.name, c.is_class)}
+                                group={c.type !== 'direct'}
+                                groupIcon={groupIconFor(c.name, c.is_class, c.type)}
                             />
                             <span className="min-w-0 flex-1">
                                 <span className="flex items-start justify-between gap-2">
@@ -141,17 +145,68 @@ export default function ConversationList({
                                               ? `${c.members_count} membres`
                                               : 'Nouvelle conversation'}
                                     </span>
-                                    {c.unread > 0 && (
-                                        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-ink-900 px-1.5 text-[10px] font-bold text-white">
-                                            {c.unread}
-                                        </span>
-                                    )}
+                                    <span className="flex shrink-0 items-center gap-1">
+                                        {c.mentions > 0 && (
+                                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gold-500 text-[11px] font-bold text-ink-900" title="Vous avez été mentionné(e)">
+                                                @
+                                            </span>
+                                        )}
+                                        {c.unread > 0 && (
+                                            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-ink-900 px-1.5 text-[10px] font-bold text-white">
+                                                {c.unread}
+                                            </span>
+                                        )}
+                                    </span>
                                 </span>
                             </span>
                         </button>
                     );
                 })}
+
+                {searchResults && (
+                    <div className="mt-2 border-t border-ink-100 pt-3">
+                        <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-500">Dans les messages</p>
+                        {searchResults === 'loading' && (
+                            <p className="flex items-center gap-2 px-3 py-2 text-xs text-ink-400">
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Recherche…
+                            </p>
+                        )}
+                        {searchResults !== 'loading' && searchResults.length === 0 && <p className="px-3 py-2 text-xs text-ink-400">Aucun message trouvé.</p>}
+                        {searchResults !== 'loading' &&
+                            searchResults.map((r) => (
+                                <button key={r.id} onClick={() => onOpenResult(r)} className="flex w-full gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-ink-50/70">
+                                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-50 text-ink-600">
+                                        {r.is_file ? <FileText className="h-4 w-4" /> : <MessageSquareText className="h-4 w-4" />}
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                        <span className="flex justify-between gap-2">
+                                            <span className="truncate text-xs font-semibold text-ink-900">{r.conversation_name}</span>
+                                            <span className="shrink-0 text-[10px] text-ink-400">{listTime(r.created_at)}</span>
+                                        </span>
+                                        <span className="block text-[11px] text-ink-500">{r.sender_name}</span>
+                                        <span className="line-clamp-2 text-xs text-ink-700">
+                                            <Highlight text={r.snippet} query={search} />
+                                        </span>
+                                    </span>
+                                </button>
+                            ))}
+                    </div>
+                )}
             </div>
         </section>
+    );
+}
+
+function Highlight({ text, query }: { text: string; query: string }) {
+    const q = query.trim();
+    if (!q) return <>{text}</>;
+    const index = text.toLowerCase().indexOf(q.toLowerCase());
+    if (index < 0) return <>{text}</>;
+    return (
+        <>
+            {text.slice(0, index)}
+            <mark className="rounded bg-gold-200 px-0.5 text-ink-900">{text.slice(index, index + q.length)}</mark>
+            {text.slice(index + q.length)}
+        </>
     );
 }

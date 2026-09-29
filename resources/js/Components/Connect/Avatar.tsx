@@ -1,4 +1,4 @@
-import { Building2, Users, UsersRound } from 'lucide-react';
+import { Building2, Sparkles, Users, UsersRound } from 'lucide-react';
 import { initials } from './utils';
 
 const palette = ['bg-ink-700', 'bg-gold-600', 'bg-blue-600', 'bg-emerald-600', 'bg-rose-600', 'bg-purple-600'];
@@ -29,16 +29,20 @@ export default function Avatar({
     size?: keyof typeof sizes;
     online?: boolean;
     group?: boolean;
-    groupIcon?: 'users' | 'class' | 'building';
+    groupIcon?: 'users' | 'class' | 'building' | 'assistant';
 }) {
-    const GroupIcon = groupIcon === 'building' ? Building2 : groupIcon === 'class' ? UsersRound : Users;
+    const GroupIcon = groupIcon === 'assistant' ? Sparkles : groupIcon === 'building' ? Building2 : groupIcon === 'class' ? UsersRound : Users;
 
     return (
         <span className={`relative inline-flex shrink-0 ${sizes[size]}`}>
             {src ? (
                 <img src={src} alt={name} className="h-full w-full rounded-full object-cover ring-2 ring-white" />
             ) : group ? (
-                <span className="flex h-full w-full items-center justify-center rounded-full bg-ink-900 text-white ring-2 ring-white">
+                <span
+                    className={`flex h-full w-full items-center justify-center rounded-full text-white ring-2 ring-white ${
+                        groupIcon === 'assistant' ? 'bg-gradient-to-br from-gold-500 to-gold-700' : 'bg-ink-900'
+                    }`}
+                >
                     <GroupIcon className="h-1/2 w-1/2" />
                 </span>
             ) : (
@@ -60,7 +64,8 @@ export default function Avatar({
     );
 }
 
-export function groupIconFor(name: string, isClass: boolean): 'users' | 'class' | 'building' {
+export function groupIconFor(name: string, isClass: boolean, type?: string): 'users' | 'class' | 'building' | 'assistant' {
+    if (type === 'assistant') return 'assistant';
     if (isClass) return 'class';
     return /admin|direction|secr[ée]tariat/i.test(name) ? 'building' : 'users';
 }

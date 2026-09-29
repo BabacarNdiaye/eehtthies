@@ -19,7 +19,7 @@ export interface Profile extends Person {
 
 export interface ConversationSummary {
     id: number;
-    type: 'direct' | 'group';
+    type: 'direct' | 'group' | 'assistant';
     is_class: boolean;
     name: string;
     avatar: string | null;
@@ -27,6 +27,7 @@ export interface ConversationSummary {
     members_count: number;
     is_favorite: boolean;
     unread: number;
+    mentions: number;
     last: { body: string; sender_name: string | null; created_at: string } | null;
     last_message_at: string;
 }
@@ -39,15 +40,49 @@ export interface Attachment {
     created_at?: string;
 }
 
+export interface Reaction {
+    emoji: string;
+    count: number;
+    mine: boolean;
+}
+
 export interface ChatMessage {
     id: number;
+    kind: 'user' | 'system';
     user_id: number | null;
     sender_name: string | null;
     sender_avatar: string | null;
     subject: string | null;
     body: string | null;
     attachment: Attachment | null;
+    meta: Record<string, unknown> | null;
+    reply_to: { id: number; sender_name: string; body: string | null; attachment_name: string | null } | null;
+    reactions: Reaction[];
+    mentions: { id: number; name: string }[];
+    pinned: boolean;
     created_at: string;
+}
+
+export interface PinnedMessage {
+    id: number;
+    sender_name: string;
+    body: string;
+}
+
+export interface SearchResult {
+    id: number;
+    conversation_id: number;
+    conversation_name: string;
+    conversation_type: ConversationSummary['type'];
+    sender_name: string;
+    snippet: string;
+    is_file: boolean;
+    created_at: string;
+}
+
+export interface AiConfig {
+    enabled: boolean;
+    languages: Record<string, string>;
 }
 
 export interface ConversationDetails {

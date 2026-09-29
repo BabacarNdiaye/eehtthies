@@ -6,13 +6,17 @@ use App\Models\Announcement;
 use App\Models\Conversation;
 use App\Models\ConversationMessage;
 use App\Models\ConversationParticipant;
+use App\Models\MessageReaction;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Services\Ai\AssistantUnavailable;
+use App\Services\Ai\ConnectAssistant;
 use App\Services\ClassGroupSync;
 use App\Services\Messenger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -33,6 +37,7 @@ class ConnectController extends Controller
     public function __construct(
         private readonly Messenger $messenger,
         private readonly ClassGroupSync $classGroups,
+        private readonly ConnectAssistant $assistant,
     ) {}
 
     private function me(Request $request): User
@@ -101,6 +106,10 @@ class ConnectController extends Controller
             'me' => $this->messenger->profile($me),
             'canCreateGroups' => $this->canCreateGroups($me),
             'links' => $this->spaceLinks($me),
+            'ai' => [
+                'enabled' => $this->assistant->enabled(),
+                'languages' => ConnectAssistant::LANGUAGES,
+            ],
             'initial' => [
                 'conversation' => $request->integer('conversation') ?: null,
                 'class' => $request->integer('class') ?: null,
@@ -117,8 +126,9 @@ class ConnectController extends Controller
     private function summaries(User $me, $conversations): array
     {
         $unread = $this->messenger->unreadCounts($me->id);
+        $mentions = $this->messenger->unreadMentionCounts($me->id);
 
-        return $conversations->map(function (Conversation $c) use ($me, $unread) {
+        return $conversations->map(function (Conversation $c) use ($me, $unread, $mentions) {
             $mine = $c->participants->firstWhere('user_id', $me->id);
             $last = $c->latestMessage;
             $other = $c->isDirect() ? $c->participants->firstWhere('user_id', '!=', $me->id)?->user : null;
@@ -133,9 +143,10 @@ class ConnectController extends Controller
                 'members_count' => $c->participants->count(),
                 'is_favorite' => (bool) $mine?->is_favorite,
                 'unread' => $unread[$c->id] ?? 0,
+                'mentions' => $mentions[$c->id] ?? 0,
                 'last' => $last ? [
                     'body' => $last->body ?? ($last->attachment_name ? '📎 '.$last->attachment_name : ''),
-                    'sender_name' => $last->user_id === $me->id ? 'Vous' : $last->user?->name,
+                    'sender_name' => $last->user_id === $me->id ? 'Vous' : ($last->user?->name ?? ($last->isSystem() ? 'EEHT Connect' : null)),
                     'created_at' => $last->created_at->toIso8601String(),
                 ] : null,
                 'last_message_at' => ($c->last_message_at ?? $c->created_at)->toIso8601String(),
@@ -175,19 +186,36 @@ class ConnectController extends Controller
         $participant = $this->participantOrFail($conversation, $me);
         $afterId = $request->integer('after');
         $beforeId = $request->integer('before');
+        $aroundId = $request->integer('around');
 
-        $query = $conversation->messages()->with('user:id,name,avatar', 'user.teacher:id,user_id,photo', 'user.student:id,user_id,photo');
+        $query = fn () => $conversation->messages()->with(Messenger::MESSAGE_RELATIONS);
+        $hasNewer = false;
 
         if ($afterId) {
-            $messages = $query->where('id', '>', $afterId)->orderBy('id')->get();
+            $messages = $query()->where('id', '>', $afterId)->orderBy('id')->limit(200)->get();
+        } elseif ($aroundId) {
+            // Saut vers un message (résultat de recherche, citation, épingle).
+            $older = $query()->where('id', '<=', $aroundId)->orderByDesc('id')->limit(25)->get()->reverse();
+            $newer = $query()->where('id', '>', $aroundId)->orderBy('id')->limit(25)->get();
+            $messages = $older->concat($newer)->values();
+            $hasNewer = $newer->isNotEmpty() && $conversation->messages()->where('id', '>', $newer->last()->id)->exists();
         } else {
-            $messages = $query->when($beforeId, fn ($q) => $q->where('id', '<', $beforeId))
+            $messages = $query()->when($beforeId, fn ($q) => $q->where('id', '<', $beforeId))
                 ->orderByDesc('id')->limit(50)->get()->reverse()->values();
         }
 
         $latestId = $conversation->messages()->max('id');
-        if ($latestId && $latestId > (int) $participant->last_read_message_id) {
+        if (! $hasNewer && $latestId && $latestId > (int) $participant->last_read_message_id) {
             $participant->update(['last_read_message_id' => $latestId]);
+        }
+
+        // Réactions / épingles modifiées depuis le dernier passage (messages déjà affichés).
+        $changed = [];
+        if ($afterId && $request->filled('since')) {
+            $changed = $query()->where('id', '<=', $afterId)
+                ->where('updated_at', '>', Carbon::parse($request->string('since')->value()))
+                ->limit(100)->get()
+                ->map(fn ($m) => $this->messenger->presentMessage($m, $me->id))->all();
         }
 
         // Lu par tous les autres jusqu'à cet id (coches de lecture).
@@ -199,27 +227,128 @@ class ConnectController extends Controller
             $other = $otherUser ? $this->messenger->presentUser($otherUser->load(Messenger::USER_RELATIONS)) : null;
         }
 
+        $pinned = $conversation->messages()->whereNotNull('pinned_at')->with('user:id,name')->latest('pinned_at')->limit(5)->get()
+            ->map(fn ($m) => ['id' => $m->id, 'sender_name' => $m->user?->name ?? 'EEHT Connect', 'body' => $m->body ? mb_strimwidth($m->body, 0, 120, '…') : ($m->attachment_name ? '📎 '.$m->attachment_name : '')]);
+
         return response()->json([
-            'messages' => $messages->map(fn ($m) => $this->messenger->presentMessage($m))->all(),
+            'messages' => $messages->map(fn ($m) => $this->messenger->presentMessage($m, $me->id))->all(),
+            'changed' => $changed,
             'has_more' => ! $afterId && $messages->isNotEmpty() && $conversation->messages()->where('id', '<', $messages->first()->id)->exists(),
+            'has_newer' => $hasNewer,
             'others_read_up_to' => (int) $othersReadUpTo,
             'other' => $other,
+            'pinned' => $pinned,
+            'can_write' => ! $conversation->isAssistant(),
+            'can_pin' => $this->canPin($conversation, $me),
+            'server_time' => now()->toIso8601String(),
         ]);
+    }
+
+    private function canPin(Conversation $conversation, User $user): bool
+    {
+        return match (true) {
+            $conversation->isDirect(), $conversation->isAssistant() => true,
+            $conversation->isClassGroup() => (bool) $user->teacher || $this->messenger->isStaffUser($user),
+            default => (bool) $conversation->participants()->where('user_id', $user->id)->value('is_admin')
+                || $this->messenger->isStaffUser($user),
+        };
     }
 
     public function send(Request $request, Conversation $conversation): JsonResponse
     {
         $me = $this->me($request);
         $this->participantOrFail($conversation, $me);
+        abort_if($conversation->isAssistant(), 422, "L'assistant EEHT Connect ne reçoit pas de messages.");
 
-        $request->validate([
+        $data = $request->validate([
             'body' => ['nullable', 'string', 'max:5000', 'required_without:attachment'],
             'attachment' => ['nullable', 'file', 'mimes:'.self::ATTACHMENT_MIMES, 'max:10240'],
+            'reply_to_id' => ['nullable', 'integer', Rule::exists('conversation_messages', 'id')->where('conversation_id', $conversation->id)],
+            'mention_ids' => ['nullable', 'array', 'max:100'],
+            'mention_ids.*' => ['integer'],
         ]);
 
-        $message = $this->messenger->send($conversation, $me, $request->input('body'), $request->file('attachment'));
+        $message = $this->messenger->send(
+            $conversation,
+            $me,
+            $data['body'] ?? null,
+            $request->file('attachment'),
+            replyTo: isset($data['reply_to_id']) ? ConversationMessage::find($data['reply_to_id']) : null,
+            mentionIds: array_map('intval', $data['mention_ids'] ?? []),
+        );
 
-        return response()->json(['message' => $this->messenger->presentMessage($message->load('user'))]);
+        return response()->json(['message' => $this->messenger->presentMessage($message->load(Messenger::MESSAGE_RELATIONS), $me->id)]);
+    }
+
+    public function react(Request $request, ConversationMessage $message): JsonResponse
+    {
+        $me = $request->user();
+        $this->participantOrFail($message->conversation, $me);
+        $data = $request->validate(['emoji' => ['required', 'string', Rule::in(MessageReaction::ALLOWED)]]);
+
+        $existing = $message->reactions()->where('user_id', $me->id)->where('emoji', $data['emoji'])->first();
+        $existing ? $existing->delete() : $message->reactions()->create(['user_id' => $me->id, 'emoji' => $data['emoji']]);
+        $message->touch();
+
+        return response()->json(['message' => $this->messenger->presentMessage($message->fresh(Messenger::MESSAGE_RELATIONS), $me->id)]);
+    }
+
+    public function pin(Request $request, ConversationMessage $message): JsonResponse
+    {
+        $me = $this->me($request);
+        $this->participantOrFail($message->conversation, $me);
+        abort_unless($this->canPin($message->conversation, $me), 403, 'Seuls les enseignants et les responsables du groupe peuvent épingler.');
+
+        $message->forceFill($message->pinned_at
+            ? ['pinned_at' => null, 'pinned_by' => null]
+            : ['pinned_at' => now(), 'pinned_by' => $me->id])->save();
+
+        return response()->json(['message' => $this->messenger->presentMessage($message->fresh(Messenger::MESSAGE_RELATIONS), $me->id)]);
+    }
+
+    /** Recherche plein texte dans les messages et fichiers de toutes mes conversations. */
+    public function search(Request $request): JsonResponse
+    {
+        $me = $request->user();
+        $q = trim($request->string('q')->value());
+
+        if (mb_strlen($q) < 2) {
+            return response()->json(['results' => []]);
+        }
+
+        $like = "%{$q}%";
+
+        $results = ConversationMessage::whereIn('conversation_id', ConversationParticipant::where('user_id', $me->id)->select('conversation_id'))
+            ->where(fn ($w) => $w->where('body', 'like', $like)->orWhere('attachment_name', 'like', $like)->orWhere('subject', 'like', $like))
+            ->with('user:id,name', 'conversation.participants.user:id,name')
+            ->latest('id')
+            ->limit(50)
+            ->get()
+            ->map(function (ConversationMessage $m) use ($me, $q) {
+                $conversation = $m->conversation;
+                $text = $m->body ?? $m->attachment_name ?? '';
+                $pos = mb_stripos($text, $q);
+                $start = max(0, ($pos === false ? 0 : $pos) - 40);
+                if ($start > 0 && ($space = mb_strpos($text, ' ', $start)) !== false && $space < ($pos ?: $start)) {
+                    $start = $space + 1; // l'extrait commence sur un mot entier
+                }
+
+                return [
+                    'id' => $m->id,
+                    'conversation_id' => $conversation->id,
+                    'conversation_name' => match (true) {
+                        $conversation->isDirect() => $conversation->participants->firstWhere('user_id', '!=', $me->id)?->user?->name ?? 'Conversation',
+                        default => $conversation->name,
+                    },
+                    'conversation_type' => $conversation->type,
+                    'sender_name' => $m->user?->name ?? 'EEHT Connect',
+                    'snippet' => ($start > 0 ? '…' : '').mb_substr($text, $start, 160).(mb_strlen($text) > $start + 160 ? '…' : ''),
+                    'is_file' => $m->body === null && $m->attachment_name !== null,
+                    'created_at' => $m->created_at->toIso8601String(),
+                ];
+            });
+
+        return response()->json(['results' => $results]);
     }
 
     public function attachment(Request $request, ConversationMessage $message)
@@ -305,7 +434,7 @@ class ConnectController extends Controller
     public function leave(Request $request, Conversation $conversation): JsonResponse
     {
         $participant = $this->participantOrFail($conversation, $request->user());
-        abort_if($conversation->isDirect() || $conversation->isClassGroup(), 422, 'Vous ne pouvez pas quitter cette conversation.');
+        abort_if($conversation->isDirect() || $conversation->isClassGroup() || $conversation->isAssistant(), 422, 'Vous ne pouvez pas quitter cette conversation.');
 
         $participant->delete();
 
@@ -340,9 +469,13 @@ class ConnectController extends Controller
             $members = $conversation->participants()->with(['user' => fn ($q) => $q->with(Messenger::USER_RELATIONS)])->get();
             $payload['group'] = [
                 'name' => $conversation->name,
-                'description' => $conversation->description ?? ($conversation->isClassGroup() ? 'Groupe de la classe : élèves et enseignants.' : null),
+                'description' => $conversation->description ?? match (true) {
+                    $conversation->isClassGroup() => 'Groupe de la classe : élèves et enseignants.',
+                    $conversation->isAssistant() => 'Vos rappels automatiques : examens, devoirs, changements d\'emploi du temps et absences.',
+                    default => null,
+                },
                 'is_class' => $conversation->isClassGroup(),
-                'can_leave' => ! $conversation->isClassGroup(),
+                'can_leave' => ! $conversation->isClassGroup() && ! $conversation->isAssistant(),
                 'members' => $members->filter(fn ($p) => $p->user)->map(fn ($p) => [
                     ...$this->messenger->presentUser($p->user),
                     'is_admin' => $p->is_admin,
@@ -448,6 +581,66 @@ class ConnectController extends Controller
             });
 
         return response()->json(['documents' => $documents]);
+    }
+
+    // -----------------------------------------------------------------
+    // Assistant IA
+    // -----------------------------------------------------------------
+
+    private function withAssistant(callable $callback): JsonResponse
+    {
+        abort_unless($this->assistant->enabled(), 404, "L'assistant IA n'est pas activé.");
+
+        try {
+            return response()->json($callback());
+        } catch (AssistantUnavailable $e) {
+            return response()->json(['message' => $e->getMessage()], 503);
+        }
+    }
+
+    public function aiSuggest(Request $request, Conversation $conversation): JsonResponse
+    {
+        $me = $request->user();
+        $this->participantOrFail($conversation, $me);
+
+        return $this->withAssistant(fn () => ['suggestions' => $this->assistant->suggestReplies($conversation, $me)]);
+    }
+
+    public function aiSummarize(Request $request, Conversation $conversation): JsonResponse
+    {
+        $me = $request->user();
+        $this->participantOrFail($conversation, $me);
+
+        return $this->withAssistant(fn () => $this->assistant->summarize($conversation, $me));
+    }
+
+    public function aiRewrite(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'text' => ['required', 'string', 'max:5000'],
+            'mode' => ['required', Rule::in(array_keys(ConnectAssistant::REWRITE_MODES))],
+        ]);
+
+        return $this->withAssistant(fn () => ['text' => $this->assistant->rewrite($data['text'], $data['mode'])]);
+    }
+
+    public function aiTranslate(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'text' => ['required_without:message_id', 'nullable', 'string', 'max:5000'],
+            'message_id' => ['nullable', 'integer', 'exists:conversation_messages,id'],
+            'language' => ['required', Rule::in(array_keys(ConnectAssistant::LANGUAGES))],
+        ]);
+
+        $text = $data['text'] ?? null;
+        if (! empty($data['message_id'])) {
+            $message = ConversationMessage::findOrFail($data['message_id']);
+            $this->participantOrFail($message->conversation, $request->user());
+            $text = $message->body;
+            abort_unless($text, 422, 'Ce message ne contient pas de texte à traduire.');
+        }
+
+        return $this->withAssistant(fn () => ['text' => $this->assistant->translate($text, $data['language'])]);
     }
 
     public function unreadCount(Request $request): JsonResponse

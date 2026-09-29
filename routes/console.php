@@ -50,4 +50,9 @@ Schedule::command('app:send-candidature-followups')->dailyAt('09:00')->onOneServ
 // Notifications push différées d'EEHT Connect : messages des grands groupes
 // et annonces, remis en masse sans bloquer la requête qui les crée
 // (voir Messenger::SYNC_PUSH_LIMIT et AnnouncementController::store).
+// Rappels automatiques EEHT Connect (examens J-7 / veille, changements
+// d'emploi du temps regroupés). Les devoirs et absences partent à
+// l'enregistrement.
+Schedule::command('app:connect-reminders')->everyFifteenMinutes()->withoutOverlapping()->onOneServer();
+
 Schedule::command('app:push-pending-messages')->everyMinute()->withoutOverlapping()->onOneServer();

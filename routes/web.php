@@ -620,6 +620,17 @@ Route::prefix('connect')->name('connect.')->middleware(['auth', 'verified'])->gr
         Route::post('/conversations/{conversation}/unread', [ConnectController::class, 'markUnread'])->name('unread');
         Route::post('/conversations/{conversation}/leave', [ConnectController::class, 'leave'])->name('leave');
         Route::get('/messages/{message}/attachment', [ConnectController::class, 'attachment'])->name('attachment');
+        Route::post('/messages/{message}/reactions', [ConnectController::class, 'react'])->name('react');
+        Route::post('/messages/{message}/pin', [ConnectController::class, 'pin'])->name('pin');
+        Route::get('/search', [ConnectController::class, 'search'])->name('search');
+
+        // Assistant IA (Claude) — limité pour maîtriser le coût.
+        Route::middleware('throttle:20,1')->prefix('ai')->name('ai.')->group(function () {
+            Route::post('/conversations/{conversation}/suggest', [ConnectController::class, 'aiSuggest'])->name('suggest');
+            Route::post('/conversations/{conversation}/summarize', [ConnectController::class, 'aiSummarize'])->name('summarize');
+            Route::post('/rewrite', [ConnectController::class, 'aiRewrite'])->name('rewrite');
+            Route::post('/translate', [ConnectController::class, 'aiTranslate'])->name('translate');
+        });
         Route::get('/contacts', [ConnectController::class, 'contacts'])->name('contacts');
         Route::get('/announcements', [ConnectController::class, 'announcements'])->name('announcements');
         Route::post('/announcements/{announcement}/read', [ConnectController::class, 'readAnnouncement'])->name('announcements.read');

@@ -97,7 +97,7 @@ export function AnnouncementsSection({ onRead }: { onRead: () => void }) {
 
 // ---------------------------------------------------------------------------
 
-export function DocumentsSection({ onOpenConversation }: { onOpenConversation: (id: number) => void }) {
+export function DocumentsSection({ onOpenConversation }: { onOpenConversation: (id: number, messageId?: number) => void }) {
     const [items, setItems] = useState<DocumentItem[] | null>(null);
     const [q, setQ] = useState('');
 
@@ -122,7 +122,7 @@ export function DocumentsSection({ onOpenConversation }: { onOpenConversation: (
                                 {formatSize(d.size)} • {shortDate(d.created_at)} • {d.sender_name ?? '—'}
                             </p>
                         </a>
-                        <button onClick={() => onOpenConversation(d.conversation_id)} className="hidden truncate text-xs text-blue-700 hover:underline sm:block sm:max-w-[180px]">
+                        <button onClick={() => onOpenConversation(d.conversation_id, d.id)} className="hidden truncate text-xs text-blue-700 hover:underline sm:block sm:max-w-[180px]">
                             {d.conversation_name}
                         </button>
                         <a href={`${d.url}?download=1`} className="rounded-md p-1.5 text-ink-600 hover:bg-ink-50" aria-label="Télécharger">

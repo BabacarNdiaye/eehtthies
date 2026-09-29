@@ -77,6 +77,11 @@ remplissez toutes les lignes marquées **« À REMPLIR »** :
 
 Vérifiez bien que `APP_ENV=production` et `APP_DEBUG=false`.
 
+**Assistant IA (facultatif)** : pour activer les suggestions de réponses,
+résumés, corrections et traductions dans EEHT Connect, renseignez
+`ANTHROPIC_API_KEY` (clé créée sur https://platform.claude.com, facturée à
+l'usage). Sans clé, l'assistant est simplement masqué.
+
 ## 6. Initialiser l'application (Terminal cPanel)
 
 ```bash
@@ -131,7 +136,9 @@ et votre identifiant) :
 ```
 
 - La première déclenche les sauvegardes quotidiennes, les rappels de
-  factures impayées, les alertes d'absence et les synthèses.
+  factures impayées, les alertes d'absence et les synthèses, ainsi que les
+  rappels automatiques d'EEHT Connect (examens J-7 et veille, changements
+  d'emploi du temps) et ses notifications push différées.
 - La seconde traite la file d'attente : **sans elle, les e-mails ne partent
   pas.** Un mutualisé n'autorise pas de processus permanent, d'où
   l'exécution chaque minute.

@@ -31,16 +31,35 @@ class Messenger
         });
     }
 
+    /** Conversation personnelle « Assistant EEHT Connect » de l'utilisateur (rappels, alertes), créée au besoin. */
+    public function assistantConversation(User $user): Conversation
+    {
+        $existing = Conversation::where('type', Conversation::TYPE_ASSISTANT)->forUser($user->id)->first();
+
+        return $existing ?? DB::transaction(function () use ($user) {
+            $conversation = Conversation::create(['type' => Conversation::TYPE_ASSISTANT, 'name' => 'Assistant EEHT Connect']);
+            $conversation->participants()->create(['user_id' => $user->id]);
+
+            return $conversation;
+        });
+    }
+
+    /**
+     * @param  array<int, int>  $mentionIds  personnes @mentionnées (doivent faire partie de la conversation)
+     */
     public function send(
         Conversation $conversation,
         ?User $sender,
         ?string $body,
         ?UploadedFile $file = null,
         ?string $subject = null,
+        ?ConversationMessage $replyTo = null,
+        array $mentionIds = [],
     ): ConversationMessage {
         $attributes = [
             'conversation_id' => $conversation->id,
             'user_id' => $sender?->id,
+            'reply_to_id' => $replyTo?->id,
             'subject' => $subject,
             'body' => $body !== null && trim($body) !== '' ? $body : null,
         ];
@@ -54,7 +73,43 @@ class Messenger
             ];
         }
 
-        $message = DB::transaction(function () use ($conversation, $sender, $attributes) {
+        $message = $this->store($conversation, $sender, $attributes);
+
+        $mentionIds = $conversation->participants()
+            ->whereIn('user_id', $mentionIds)
+            ->where('user_id', '!=', $sender?->id ?? 0)
+            ->pluck('user_id')
+            ->all();
+        if ($mentionIds) {
+            $message->mentions()->attach($mentionIds);
+        }
+
+        $this->pushNow($conversation, $message, $sender, $mentionIds);
+
+        return $message;
+    }
+
+    /**
+     * Message automatique d'EEHT Connect (rappel d'examen, devoir, emploi du
+     * temps, absence) : sans auteur, affiché comme une carte d'information.
+     */
+    public function sendSystem(Conversation $conversation, string $body, array $meta = []): ConversationMessage
+    {
+        $message = $this->store($conversation, null, [
+            'conversation_id' => $conversation->id,
+            'kind' => ConversationMessage::KIND_SYSTEM,
+            'body' => $body,
+            'meta' => $meta ?: null,
+        ]);
+
+        $this->pushNow($conversation, $message, null);
+
+        return $message;
+    }
+
+    private function store(Conversation $conversation, ?User $sender, array $attributes): ConversationMessage
+    {
+        return DB::transaction(function () use ($conversation, $sender, $attributes) {
             $message = ConversationMessage::create($attributes);
             $conversation->forceFill(['last_message_at' => $message->created_at])->save();
 
@@ -66,25 +121,30 @@ class Messenger
 
             return $message;
         });
-
-        $this->pushNow($conversation, $message, $sender);
-
-        return $message;
     }
 
-    private function pushNow(Conversation $conversation, ConversationMessage $message, ?User $sender): void
+    /** @param  array<int, int>  $mentionIds */
+    private function pushNow(Conversation $conversation, ConversationMessage $message, ?User $sender, array $mentionIds = []): void
     {
         $recipients = User::whereIn(
             'id',
             $conversation->participants()->where('user_id', '!=', $sender?->id ?? 0)->pluck('user_id')
         )->get();
 
+        [$title, $text, $url] = $this->pushContent($conversation, $message, $sender);
+
+        // Les personnes @mentionnées sont toujours prévenues tout de suite,
+        // même dans un grand groupe.
+        foreach ($recipients->whereIn('id', $mentionIds) as $mentioned) {
+            SafePush::send($mentioned, ($sender?->name ?? 'EEHT Connect').' vous a mentionné(e)'.($conversation->isDirect() ? '' : " dans {$conversation->name}"), $text, $url);
+        }
+
         if ($recipients->count() > self::SYNC_PUSH_LIMIT) {
             return; // laissé à app:push-pending-messages (pushed_at reste null)
         }
 
-        foreach ($recipients as $recipient) {
-            SafePush::send($recipient, ...$this->pushContent($conversation, $message, $sender));
+        foreach ($recipients->whereNotIn('id', $mentionIds) as $recipient) {
+            SafePush::send($recipient, $title, $text, $url);
         }
 
         $message->forceFill(['pushed_at' => now()])->saveQuietly();
@@ -93,8 +153,11 @@ class Messenger
     /** @return array{0: string, 1: string, 2: string} titre, texte, lien */
     public function pushContent(Conversation $conversation, ConversationMessage $message, ?User $sender): array
     {
-        $senderName = $sender?->name ?? 'Administration';
-        $title = $conversation->isDirect() ? $senderName : "{$conversation->name} — {$senderName}";
+        $senderName = $sender?->name ?? ($message->isSystem() ? 'EEHT Connect' : 'Administration');
+        $title = match (true) {
+            $conversation->isDirect(), $conversation->isAssistant() => $senderName,
+            default => "{$conversation->name} — {$senderName}",
+        };
         $text = $message->body ?? ($message->attachment_name ? "📎 {$message->attachment_name}" : '');
 
         return [$title, $text, '/connect?conversation='.$conversation->id];
@@ -209,23 +272,73 @@ class Messenger
         return "{$dayLabel} : {$hour($entries->min('start_time'))} - {$hour($entries->max('end_time'))}";
     }
 
-    public function presentMessage(ConversationMessage $message): array
+    /** Relations à charger avant presentMessage() sur une liste de messages. */
+    public const MESSAGE_RELATIONS = [
+        'user:id,name,avatar', 'user.teacher:id,user_id,photo', 'user.student:id,user_id,photo',
+        'replyTo:id,user_id,body,attachment_name,kind', 'replyTo.user:id,name',
+        'reactions:id,conversation_message_id,user_id,emoji', 'mentions:id,name',
+    ];
+
+    public function presentMessage(ConversationMessage $message, ?int $viewerId = null): array
     {
+        $reply = $message->replyTo;
+
         return [
             'id' => $message->id,
+            'kind' => $message->kind ?? ConversationMessage::KIND_USER,
             'user_id' => $message->user_id,
-            'sender_name' => $message->user?->name,
+            'sender_name' => $message->user?->name ?? ($message->isSystem() ? 'EEHT Connect' : null),
             'sender_avatar' => $message->user ? $this->avatarUrl($message->user) : null,
             'subject' => $message->subject,
             'body' => $message->body,
+            'meta' => $message->meta,
             'attachment' => $message->attachment_path ? [
                 'name' => $message->attachment_name,
                 'size' => $message->attachment_size,
                 'mime' => $message->attachment_mime,
                 'url' => route('connect.attachment', $message),
             ] : null,
+            'reply_to' => $reply ? [
+                'id' => $reply->id,
+                'sender_name' => $reply->user?->name ?? 'EEHT Connect',
+                'body' => $reply->body ? mb_strimwidth($reply->body, 0, 140, '…') : null,
+                'attachment_name' => $reply->attachment_name,
+            ] : null,
+            'reactions' => $message->reactions
+                ->groupBy('emoji')
+                ->map(fn ($group, $emoji) => [
+                    'emoji' => $emoji,
+                    'count' => $group->count(),
+                    'mine' => $viewerId !== null && $group->contains('user_id', $viewerId),
+                ])
+                ->values()
+                ->all(),
+            'mentions' => $message->mentions->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->all(),
+            'pinned' => $message->pinned_at !== null,
             'created_at' => $message->created_at->toIso8601String(),
         ];
+    }
+
+    /**
+     * Mentions non lues par conversation (messages où l'utilisateur est
+     *
+     * @mentionné, postérieurs à sa dernière lecture).
+     *
+     * @return Collection<int, int> conversation_id => nombre
+     */
+    public function unreadMentionCounts(int $userId): Collection
+    {
+        return DB::table('message_mentions as mm')
+            ->join('conversation_messages as m', 'm.id', '=', 'mm.conversation_message_id')
+            ->join('conversation_participants as p', function ($join) use ($userId) {
+                $join->on('p.conversation_id', '=', 'm.conversation_id')->where('p.user_id', '=', $userId);
+            })
+            ->where('mm.user_id', $userId)
+            ->whereRaw('m.id > COALESCE(p.last_read_message_id, 0)')
+            ->groupBy('m.conversation_id')
+            ->selectRaw('m.conversation_id, COUNT(*) as mentions')
+            ->pluck('mentions', 'conversation_id')
+            ->map(fn ($n) => (int) $n);
     }
 
     /**
