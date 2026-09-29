@@ -1,6 +1,11 @@
 import {
+    Bell,
+    BellOff,
+    Check,
     ChevronLeft,
     FileText,
+    Lock,
+    Pencil,
     Image as ImageIcon,
     Info,
     Link2,
@@ -27,9 +32,36 @@ import {
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Avatar, { groupIconFor } from './Avatar';
 import FileIcon from './FileIcon';
+import ImageViewer from './ImageViewer';
 import MessageBubble from './MessageBubble';
 import { AiConfig, ChatMessage, ConversationSummary, Person, PinnedMessage } from './types';
-import { dayLabel, formatSize } from './utils';
+import { dayLabel, fileKind, formatSize } from './utils';
+
+const MUTE_OPTIONS: { minutes: number | null; label: string }[] = [
+    { minutes: 60, label: 'Pendant 1 heure' },
+    { minutes: 480, label: 'Pendant 8 heures' },
+    { minutes: 10080, label: 'Pendant 1 semaine' },
+    { minutes: null, label: 'Toujours' },
+];
+
+/** « Aminata écrit… », « Aminata et Bineta écrivent… », « 3 personnes écrivent… » */
+function typingLabel(names: string[]): string {
+    const first = (n: string) => n.split(' ')[0];
+    if (names.length === 1) return `${first(names[0])} écrit`;
+    if (names.length === 2) return `${first(names[0])} et ${first(names[1])} écrivent`;
+    return `${names.length} personnes écrivent`;
+}
+
+/** Aperçu local d'une photo choisie, avant envoi. */
+function AttachmentPreview({ file }: { file: File }) {
+    const [url, setUrl] = useState<string | null>(null);
+    useEffect(() => {
+        const u = URL.createObjectURL(file);
+        setUrl(u);
+        return () => URL.revokeObjectURL(u);
+    }, [file]);
+    return url ? <img src={url} alt="" className="h-12 w-12 rounded-lg object-cover" /> : null;
+}
 
 const EMOJIS = ['😀', '😂', '😊', '😍', '🙏', '👍', '👏', '🙌', '👋', '🎉', '🔥', '💯', '✅', '❌', '⚠️', '📌', '📚', '📝', '📅', '⏰', '🍽️', '👨‍🍳', '🏨', '✈️', '❤️', '💪', '🤝', '😅', '🤔', '😢', '😮', '😎'];
 
@@ -67,6 +99,7 @@ export default function ChatPane({
     onToggleFavorite,
     onMarkUnread,
     onLeave,
+    onConversationChanged,
 }: {
     conversation: ConversationSummary | null;
     meId: number;
@@ -81,6 +114,8 @@ export default function ChatPane({
     onToggleFavorite: () => void;
     onMarkUnread: () => void;
     onLeave: () => void;
+    /** Réglage de la conversation modifié (sourdine…) : rafraîchir la liste. */
+    onConversationChanged: () => void;
 }) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [hasMore, setHasMore] = useState(false);
@@ -91,6 +126,15 @@ export default function ChatPane({
     const [canPin, setCanPin] = useState(false);
     const [loading, setLoading] = useState(false);
     const [highlightId, setHighlightId] = useState<number | null>(null);
+    const [writeRestricted, setWriteRestricted] = useState(false);
+    const [typing, setTyping] = useState<string[]>([]);
+    const [readPositions, setReadPositions] = useState<number[]>([]);
+    const [editing, setEditing] = useState<ChatMessage | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<ChatMessage | null>(null);
+    const [viewerId, setViewerId] = useState<number | null>(null);
+    const [readers, setReaders] = useState<{ read: Person[]; unread: Person[] } | 'loading' | null>(null);
+    const [muted, setMuted] = useState(false);
+    const lastTypingPing = useRef(0);
 
     const [body, setBody] = useState('');
     const [attachment, setAttachment] = useState<File | null>(null);
@@ -99,7 +143,7 @@ export default function ChatPane({
     const [mentionQuery, setMentionQuery] = useState<{ start: number; query: string } | null>(null);
     const [sending, setSending] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [popover, setPopover] = useState<'emoji' | 'more' | 'menu' | 'ai' | null>(null);
+    const [popover, setPopover] = useState<'emoji' | 'more' | 'menu' | 'mute' | 'ai' | null>(null);
     const [recording, setRecording] = useState<{ recorder: MediaRecorder; started: number } | null>(null);
     const [recordSeconds, setRecordSeconds] = useState(0);
 
@@ -138,14 +182,20 @@ export default function ChatPane({
         other: Person | null;
         pinned: PinnedMessage[];
         can_write: boolean;
+        write_restricted: boolean;
         can_pin: boolean;
+        typing: string[];
+        read_positions: number[];
         server_time: string;
     }) => {
         setReadUpTo(data.others_read_up_to);
         if (data.other) setOther(data.other);
         setPinned(data.pinned);
         setCanWrite(data.can_write);
+        setWriteRestricted(data.write_restricted);
         setCanPin(data.can_pin);
+        setTyping(data.typing ?? []);
+        setReadPositions(data.read_positions ?? []);
         sinceRef.current = data.server_time;
     };
 
@@ -184,6 +234,12 @@ export default function ChatPane({
         setPreviousBody(null);
         setSummary(null);
         setTranslations({});
+        setTyping([]);
+        setReadPositions([]);
+        setEditing(null);
+        setConfirmDelete(null);
+        setViewerId(null);
+        setReaders(null);
         lastIdRef.current = 0;
         sinceRef.current = null;
         load(focusMessageId);
@@ -197,6 +253,8 @@ export default function ChatPane({
         },
         [messages, load],
     );
+
+    useEffect(() => setMuted(!!conversation?.muted), [conversation?.muted, conversationId]);
 
     // Saut demandé de l'extérieur (résultat de recherche, épingle) dans la conversation déjà ouverte.
     useEffect(() => {
@@ -229,7 +287,9 @@ export default function ChatPane({
                     setMessages((prev) => {
                         const byId = new Map(changed.map((m) => [m.id, m]));
                         const known = new Set(prev.map((m) => m.id));
-                        return [...prev.map((m) => byId.get(m.id) ?? m), ...fresh.filter((m) => !known.has(m.id))];
+                        const added = fresh.filter((m) => !known.has(m.id));
+                        const merged = [...prev.map((m) => byId.get(m.id) ?? m), ...added];
+                        return added.length ? merged.sort((x, y) => x.id - y.id) : merged;
                     });
                 }
             } catch {
@@ -259,6 +319,76 @@ export default function ChatPane({
         });
     };
 
+    const saveEdit = async () => {
+        if (!editing || !body.trim()) return;
+        setSending(true);
+        setError(null);
+        try {
+            const res = await window.axios.patch(route('connect.messages.update', editing.id), { body: body.trim() });
+            replaceMessage(res.data.message);
+            setEditing(null);
+            setBody('');
+        } catch (e) {
+            setError(apiError(e, "Le message n'a pas pu être modifié."));
+        } finally {
+            setSending(false);
+        }
+    };
+
+    const startEdit = (m: ChatMessage) => {
+        setEditing(m);
+        setReplyTo(null);
+        setAttachment(null);
+        setBody(m.body ?? '');
+        requestAnimationFrame(() => textarea.current?.focus());
+    };
+
+    const cancelEdit = () => {
+        setEditing(null);
+        setBody('');
+    };
+
+    const deleteMessage = async (m: ChatMessage) => {
+        setConfirmDelete(null);
+        try {
+            const res = await window.axios.delete(route('connect.messages.destroy', m.id));
+            replaceMessage(res.data.message);
+            setPinned((prev) => prev.filter((p) => p.id !== m.id));
+            onConversationChanged();
+        } catch (e) {
+            setError(apiError(e, "Le message n'a pas pu être supprimé."));
+        }
+    };
+
+    const showReaders = async (m: ChatMessage) => {
+        setReaders('loading');
+        try {
+            const res = await window.axios.get(route('connect.messages.readers', m.id));
+            setReaders(res.data);
+        } catch {
+            setReaders(null);
+        }
+    };
+
+    const mute = async (minutes: number | null) => {
+        setPopover(null);
+        if (!conversationId) return;
+        try {
+            const res = await window.axios.post(route('connect.mute', conversationId), { minutes });
+            setMuted(res.data.muted);
+            onConversationChanged();
+        } catch (e) {
+            setError(apiError(e, 'Réglage impossible pour le moment.'));
+        }
+    };
+
+    /** Signale « en train d'écrire » au plus toutes les 3 secondes. */
+    const pingTyping = () => {
+        if (!conversationId || Date.now() - lastTypingPing.current < 3000) return;
+        lastTypingPing.current = Date.now();
+        window.axios.post(route('connect.typing', conversationId)).catch(() => undefined);
+    };
+
     const send = useCallback(
         async (file?: File | null) => {
             const toSend = file ?? attachment;
@@ -273,8 +403,9 @@ export default function ChatPane({
                 mentioned.filter((m) => body.includes(`@${m.name}`)).forEach((m) => form.append('mention_ids[]', String(m.id)));
                 const res = await window.axios.post(route('connect.send', conversationId), form);
                 stickToBottom.current = true;
+                // lastIdRef n'est pas avancé : un message reçu juste avant le nôtre
+                // (id inférieur) sera quand même récupéré au prochain passage.
                 setMessages((prev) => (prev.some((m) => m.id === res.data.message.id) ? prev : [...prev, res.data.message]));
-                lastIdRef.current = Math.max(lastIdRef.current, res.data.message.id);
                 onSent(res.data.message);
                 setBody('');
                 setAttachment(null);
@@ -316,6 +447,7 @@ export default function ChatPane({
 
     const onBodyChange = (value: string, caret: number) => {
         setBody(value);
+        if (value.trim() && !editing) pingTyping();
         if (!isGroup) return;
         const match = value.slice(0, caret).match(/(^|\s)@([^\s@]{0,20})$/);
         setMentionQuery(match ? { start: caret - match[2].length - 1, query: match[2] } : null);
@@ -469,6 +601,10 @@ export default function ChatPane({
         : isGroup
           ? `${conversation.members_count} membres`
           : (other?.subtitle ?? other?.role);
+    const lastMineId = [...messages].reverse().find((m) => m.user_id === meId && !m.deleted && m.kind === 'user')?.id ?? null;
+    const images = messages
+        .filter((m) => m.attachment && !m.deleted && fileKind(m.attachment.name, m.attachment.mime) === 'image')
+        .map((m) => ({ id: m.id, url: m.attachment!.url, name: m.attachment!.name, sender_name: m.sender_name, created_at: m.created_at }));
     const toolButton = 'flex h-10 w-10 items-center justify-center rounded-full border border-ink-100 text-ink-800 transition-colors hover:bg-ink-50';
     const menuItem = 'flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-ink-700 hover:bg-ink-50';
 
@@ -498,7 +634,10 @@ export default function ChatPane({
                     <span className="min-w-0">
                         <span className="block truncate font-serif text-base font-bold text-ink-900">{conversation.name}</span>
                         <span className="flex items-center gap-2 text-xs text-ink-500">
-                            {conversation.type === 'direct' && other && (
+                            {muted && <BellOff className="h-3.5 w-3.5 shrink-0 text-ink-400" aria-label="Notifications coupées" />}
+                            {conversation.type === 'direct' && typing.length > 0 ? (
+                                <span className="font-medium text-emerald-600">écrit…</span>
+                            ) : conversation.type === 'direct' && other && (
                                 <span className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap ${other.online ? 'text-ink-700' : ''}`}>
                                     <span className={`h-2 w-2 rounded-full ${other.online ? 'bg-emerald-500' : 'bg-ink-300'}`} />
                                     {other.online ? 'En ligne' : 'Hors ligne'}
@@ -537,11 +676,28 @@ export default function ChatPane({
                                 <button onClick={() => { setPopover(null); onMarkUnread(); }} className={menuItem}>
                                     <MailOpen className="h-4 w-4" /> Marquer comme non lu
                                 </button>
+                                {!isAssistant && (
+                                    <button onClick={() => (muted ? mute(0) : setPopover('mute'))} className={menuItem}>
+                                        {muted ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+                                        {muted ? 'Réactiver les notifications' : 'Couper les notifications…'}
+                                    </button>
+                                )}
                                 {isGroup && !conversation.is_class && (
                                     <button onClick={() => { setPopover(null); onLeave(); }} className={`${menuItem} !text-red-600 hover:!bg-red-50`}>
                                         <LogOut className="h-4 w-4" /> Quitter le groupe
                                     </button>
                                 )}
+                            </div>
+                        )}
+                        {popover === 'mute' && (
+                            <div className="absolute right-0 z-30 mt-2 w-64 overflow-hidden rounded-xl border border-ink-100 bg-white py-1 shadow-elevated">
+                                <p className="px-4 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-ink-400">Couper les notifications</p>
+                                {MUTE_OPTIONS.map((o) => (
+                                    <button key={o.label} onClick={() => mute(o.minutes)} className={menuItem}>
+                                        <BellOff className="h-4 w-4" /> {o.label}
+                                    </button>
+                                ))}
+                                <p className="px-4 pb-2 pt-1 text-[11px] leading-snug text-ink-400">Vous serez toujours prévenu(e) si quelqu'un vous @mentionne.</p>
                             </div>
                         )}
                     </div>
@@ -604,6 +760,15 @@ export default function ChatPane({
                                 onPin={() => togglePin(m)}
                                 onTranslate={(language) => translateMessage(m, language)}
                                 onJump={jumpTo}
+                                onEdit={() => startEdit(m)}
+                                onDelete={() => setConfirmDelete(m)}
+                                onOpenImage={() => setViewerId(m.id)}
+                                onShowReaders={isGroup ? () => showReaders(m) : undefined}
+                                seenBy={
+                                    isGroup && m.id === lastMineId && readPositions.length > 0
+                                        ? { count: readPositions.filter((p) => p >= m.id).length, total: readPositions.length }
+                                        : null
+                                }
                             />
                         </Fragment>
                     );
@@ -653,14 +818,47 @@ export default function ChatPane({
                 </div>
             )}
 
+            {typing.length > 0 && isGroup && (
+                <p className="flex items-center gap-2 px-6 pb-1 text-[11px] text-ink-500" aria-live="polite">
+                    <span className="flex gap-0.5">
+                        {[0, 150, 300].map((d) => (
+                            <span key={d} className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-400" style={{ animationDelay: `${d}ms` }} />
+                        ))}
+                    </span>
+                    {typingLabel(typing)}…
+                </p>
+            )}
+
             {!canWrite ? (
                 <div className="border-t border-ink-100 px-5 py-4 text-center text-xs text-ink-500">
-                    <Sparkles className="mr-1 inline h-3.5 w-3.5 text-gold-600" />
-                    Cette conversation reçoit vos rappels automatiques : examens, devoirs, emploi du temps et absences.
+                    {writeRestricted ? (
+                        <>
+                            <Lock className="mr-1 inline h-3.5 w-3.5" />
+                            Seuls les administrateurs peuvent envoyer des messages dans ce groupe.
+                        </>
+                    ) : (
+                        <>
+                            <Sparkles className="mr-1 inline h-3.5 w-3.5 text-gold-600" />
+                            Cette conversation reçoit vos rappels automatiques : examens, devoirs, emploi du temps et absences.
+                        </>
+                    )}
                 </div>
             ) : (
                 <div className="border-t border-ink-100 px-3 pb-3 pt-3 sm:px-5">
                     {error && <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>}
+
+                    {editing && (
+                        <div className="mb-2 flex items-center gap-3 rounded-lg border-l-4 border-gold-500 bg-gold-50 px-3 py-2 text-xs">
+                            <Pencil className="h-4 w-4 shrink-0 text-gold-700" />
+                            <span className="min-w-0 flex-1">
+                                <span className="font-semibold text-ink-900">Modification du message</span>
+                                <span className="block truncate text-ink-600">{editing.body}</span>
+                            </span>
+                            <button onClick={cancelEdit} className="text-ink-400 hover:text-ink-700" aria-label="Annuler la modification">
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                    )}
 
                     {suggestions && suggestions.length > 0 && (
                         <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -711,7 +909,7 @@ export default function ChatPane({
 
                     {attachment && (
                         <div className="mb-2 flex items-center gap-2 rounded-lg bg-ink-50 px-3 py-2 text-xs text-ink-700">
-                            <FileIcon name={attachment.name} mime={attachment.type} size="sm" />
+                            {attachment.type.startsWith('image/') ? <AttachmentPreview file={attachment} /> : <FileIcon name={attachment.name} mime={attachment.type} size="sm" />}
                             <span className="truncate">{attachment.name}</span>
                             <span className="shrink-0 text-ink-400">{formatSize(attachment.size)}</span>
                             <button
@@ -842,10 +1040,14 @@ export default function ChatPane({
                                         pickMention(mentionCandidates[0]);
                                         return;
                                     }
-                                    if (e.key === 'Escape') setMentionQuery(null);
+                                    if (e.key === 'Escape') {
+                                        setMentionQuery(null);
+                                        if (editing) cancelEdit();
+                                    }
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                         e.preventDefault();
-                                        send();
+                                        if (editing) saveEdit();
+                                        else send();
                                     }
                                 }}
                                 rows={1}
@@ -854,12 +1056,12 @@ export default function ChatPane({
                                 className="max-h-32 min-w-0 flex-1 resize-none border-0 bg-transparent px-2 py-2 text-sm placeholder:text-ink-400 focus:outline-none focus:ring-0"
                             />
                             <button
-                                onClick={() => send()}
-                                disabled={sending || (!body.trim() && !attachment)}
+                                onClick={() => (editing ? saveEdit() : send())}
+                                disabled={sending || (!body.trim() && (!attachment || !!editing))}
                                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-md transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
-                                aria-label="Envoyer"
+                                aria-label={editing ? 'Enregistrer la modification' : 'Envoyer'}
                             >
-                                <Send className="h-5 w-5" />
+                                {editing ? <Check className="h-5 w-5" /> : <Send className="h-5 w-5" />}
                             </button>
                         </div>
                     )}
@@ -896,6 +1098,68 @@ export default function ChatPane({
                     </div>
                 </div>
             )}
+
+            {confirmDelete && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink-950/40 p-4" onClick={() => setConfirmDelete(null)}>
+                    <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-elevated" role="alertdialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+                        <p className="font-serif text-lg font-bold text-ink-900">Supprimer ce message ?</p>
+                        <p className="mt-2 text-sm text-ink-600">
+                            {confirmDelete.user_id === meId
+                                ? 'Il sera supprimé pour tout le monde. Cette action est définitive.'
+                                : `Vous supprimez le message de ${confirmDelete.sender_name} en tant qu'administrateur. Cette action est définitive.`}
+                        </p>
+                        <div className="mt-5 flex justify-end gap-2">
+                            <button onClick={() => setConfirmDelete(null)} className="rounded-lg px-4 py-2 text-sm font-medium text-ink-700 hover:bg-ink-50">
+                                Annuler
+                            </button>
+                            <button onClick={() => deleteMessage(confirmDelete)} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">
+                                Supprimer pour tout le monde
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {readers && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink-950/40 p-4" onClick={() => setReaders(null)}>
+                    <div className="flex max-h-[80vh] w-full max-w-sm flex-col rounded-2xl bg-white shadow-elevated" role="dialog" aria-modal="true" aria-label="Lu par" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between border-b border-ink-100 px-5 py-4">
+                            <p className="font-serif text-lg font-bold text-ink-900">Infos du message</p>
+                            <button onClick={() => setReaders(null)} className="rounded-full p-1 text-ink-400 hover:bg-ink-50" aria-label="Fermer">
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                        {readers === 'loading' ? (
+                            <p className="flex items-center gap-2 px-5 py-6 text-sm text-ink-500">
+                                <Loader2 className="h-4 w-4 animate-spin" /> Chargement…
+                            </p>
+                        ) : (
+                            <div className="overflow-y-auto px-5 py-4">
+                                {[
+                                    { title: `Lu par (${readers.read.length})`, people: readers.read, empty: 'Personne pour le moment.' },
+                                    { title: `Pas encore lu (${readers.unread.length})`, people: readers.unread, empty: 'Tout le monde a lu ce message.' },
+                                ].map((block) => (
+                                    <div key={block.title} className="mb-4 last:mb-0">
+                                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-400">{block.title}</p>
+                                        {block.people.length === 0 && <p className="text-xs text-ink-400">{block.empty}</p>}
+                                        {block.people.map((p) => (
+                                            <div key={p.id} className="flex items-center gap-3 py-1.5">
+                                                <Avatar name={p.name} src={p.avatar} size="sm" online={p.online} />
+                                                <span className="min-w-0 leading-tight">
+                                                    <span className="block truncate text-[13px] font-medium text-ink-900">{p.name}</span>
+                                                    <span className="block truncate text-[11px] text-ink-500">{p.role}</span>
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {viewerId !== null && images.length > 0 && <ImageViewer images={images} startId={viewerId} onClose={() => setViewerId(null)} />}
         </section>
     );
 }

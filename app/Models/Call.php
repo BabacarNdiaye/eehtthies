@@ -16,12 +16,20 @@ class Call extends Model
 
     public const OPEN_STATUSES = ['ringing', 'active'];
 
-    protected $fillable = ['conversation_id', 'caller_id', 'callee_id', 'type', 'status', 'answered_at', 'ended_at'];
+    protected $fillable = ['conversation_id', 'caller_id', 'callee_id', 'type', 'status', 'answered_at', 'ended_at', 'remind_at', 'reminded_at'];
 
     protected $casts = [
         'answered_at' => 'datetime',
         'ended_at' => 'datetime',
+        'remind_at' => 'datetime',
+        'reminded_at' => 'datetime',
     ];
+
+    /** Délais proposés pour « Me le rappeler » (en minutes). */
+    public const REMIND_DELAYS = [10, 60];
+
+    /** Types de messages de mise en relation échangés entre les navigateurs. */
+    public const SIGNAL_TYPES = ['offer', 'answer', 'candidate', 'state'];
 
     public function conversation()
     {

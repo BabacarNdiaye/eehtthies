@@ -35,37 +35,62 @@ self.addEventListener('fetch', (event) => {
 });
 
 // Push notifications — the payload is built server-side by the WebPush
-// notification channel (title/body/icon/data.url).
+// notification channel (title/body/icon/data, plus tag/actions/vibrate for
+// EEHT Connect calls so the call rings on the lock screen).
 self.addEventListener('push', (event) => {
     if (!event.data) return;
 
     const payload = event.data.json();
-    const url = payload.data?.url || '/';
+    const data = { ...(payload.data || {}), url: payload.data?.url || '/' };
 
     event.waitUntil(
         self.registration.showNotification(payload.title || 'EEHT de Thiès', {
             body: payload.body,
             icon: payload.icon || '/icons/icon-192.png',
-            badge: payload.icon || '/icons/icon-192.png',
-            data: { url },
+            badge: '/icons/icon-192.png',
+            tag: payload.tag,
+            renotify: !!payload.tag && !!payload.renotify,
+            requireInteraction: !!payload.requireInteraction,
+            vibrate: payload.vibrate,
+            actions: payload.actions,
+            silent: false,
+            timestamp: Date.now(),
+            data,
         }),
     );
 });
 
+// Open (or reuse) an app window on the given URL.
+function openApp(url) {
+    return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+        for (const client of clients) {
+            if (client.url.endsWith(url) && 'focus' in client) {
+                return client.focus();
+            }
+        }
+        const existing = clients.find((c) => 'navigate' in c);
+        if (existing) {
+            return existing.navigate(url).then((c) => (c || existing).focus());
+        }
+        if (self.clients.openWindow) {
+            return self.clients.openWindow(url);
+        }
+    });
+}
+
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
-    const url = event.notification.data?.url || '/';
+    const data = event.notification.data || {};
+    const url = data.url || '/';
 
-    event.waitUntil(
-        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-            for (const client of clients) {
-                if (client.url.includes(url) && 'focus' in client) {
-                    return client.focus();
-                }
-            }
-            if (self.clients.openWindow) {
-                return self.clients.openWindow(url);
-            }
-        }),
-    );
+    // Refuser un appel sans ouvrir l'application (adresse signée).
+    if (event.action === 'decline' && data.decline_url) {
+        event.waitUntil(fetch(data.decline_url, { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json' } }).catch(() => undefined));
+        return;
+    }
+
+    // Répondre : l'application s'ouvre et décroche directement.
+    const target = event.action === 'answer' ? url + (url.includes('?') ? '&' : '?') + 'answer=1' : url;
+
+    event.waitUntil(openApp(target));
 });

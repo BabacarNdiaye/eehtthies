@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Announcement;
+use App\Models\Call;
 use App\Models\ConversationMessage;
 use App\Models\User;
 use App\Services\Messenger;
@@ -33,6 +34,7 @@ class PushPendingMessages extends Command
 
                     $message->conversation->participants
                         ->where('user_id', '!=', $message->user_id)
+                        ->reject(fn ($p) => $p->isMuted()) // conversation en sourdine
                         ->each(fn ($p) => SafePush::send($p->user, $title, $body, $url));
 
                     $message->forceFill(['pushed_at' => now()])->saveQuietly();
@@ -58,7 +60,26 @@ class PushPendingMessages extends Command
                 }
             });
 
-        $this->info("{$messages} message(s) et {$announcements} annonce(s) poussé(s).");
+        // « Me le rappeler » : rappels d'appels arrivés à échéance.
+        $reminders = 0;
+        Call::whereNotNull('remind_at')->whereNull('reminded_at')->where('remind_at', '<=', now())
+            ->with('caller', 'callee')->get()
+            ->each(function (Call $call) use ($messenger, &$reminders) {
+                $call->forceFill(['reminded_at' => now()])->save();
+                if (! $call->callee || ! $call->caller) {
+                    return;
+                }
+                $messenger->sendSystem(
+                    $messenger->assistantConversation($call->callee),
+                    "⏰ Pensez à rappeler {$call->caller->name} (".($call->type === 'video' ? 'appel vidéo' : 'appel vocal').' de '.$call->created_at->format('H:i').').',
+                    ['type' => 'call_reminder', 'call_id' => $call->id, 'conversation_id' => $call->conversation_id],
+                    push: false,
+                );
+                SafePush::send($call->callee, "⏰ Rappeler {$call->caller->name}", 'Vous avez demandé à être prévenu(e). Appuyez pour ouvrir la conversation.', "/connect?conversation={$call->conversation_id}");
+                $reminders++;
+            });
+
+        $this->info("{$messages} message(s), {$announcements} annonce(s) et {$reminders} rappel(s) d'appel poussé(s).");
 
         return self::SUCCESS;
     }

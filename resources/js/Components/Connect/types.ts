@@ -26,6 +26,8 @@ export interface ConversationSummary {
     other: Person | null;
     members_count: number;
     is_favorite: boolean;
+    muted: boolean;
+    muted_until: string | null;
     unread: number;
     mentions: number;
     last: { body: string; sender_name: string | null; created_at: string } | null;
@@ -60,6 +62,11 @@ export interface ChatMessage {
     reactions: Reaction[];
     mentions: { id: number; name: string }[];
     pinned: boolean;
+    edited: boolean;
+    deleted: boolean;
+    deleted_by_moderator: boolean;
+    can_edit: boolean;
+    can_delete: boolean;
     created_at: string;
 }
 
@@ -94,6 +101,10 @@ export interface ConversationDetails {
         name: string;
         description: string | null;
         is_class: boolean;
+        avatar: string | null;
+        only_admins_can_write: boolean;
+        can_manage: boolean;
+        can_manage_members: boolean;
         can_leave: boolean;
         members: (Person & { is_admin: boolean })[];
     };

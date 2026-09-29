@@ -11,6 +11,7 @@ use App\Services\SafePush;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 
 /**
@@ -99,13 +100,26 @@ class CallController extends Controller
             default => $label.' manqué',
         };
 
-        // Un appel manqué est notifié ; un appel terminé est seulement journalisé.
         $this->messenger->sendSystem(
             $call->conversation,
             $body,
             ['type' => 'call', 'call_id' => $call->id, 'status' => $status, 'call_type' => $call->type],
-            push: $status !== 'ended' || ! $call->answered_at,
+            push: false,
         );
+
+        // Seul un appel manqué est notifié, à la personne appelée : la
+        // notification remplace celle de la sonnerie (même étiquette). Décroché
+        // ou refusé, la sonnerie est retirée par l'appareil lui-même.
+        if (in_array($status, ['missed', 'cancelled'], true)) {
+            $call->loadMissing('caller');
+            SafePush::send(
+                User::find($call->callee_id),
+                $body,
+                'De '.$call->caller?->name.'. Appuyez pour rappeler.',
+                "/connect?conversation={$call->conversation_id}",
+                ['tag' => "call-{$call->id}", 'data' => ['type' => 'call-missed', 'call_id' => $call->id]],
+            );
+        }
     }
 
     private function duration(float $seconds): string
@@ -148,11 +162,25 @@ class CallController extends Controller
             'status' => 'ringing',
         ]);
 
+        // Notification « sonnerie » : visible sur l'écran verrouillé, persistante,
+        // prioritaire, avec les boutons Répondre / Refuser.
         SafePush::send(
             User::find($calleeId),
             ($data['type'] === 'video' ? '🎥 ' : '📞 ').$me->name.' vous appelle',
-            'Appuyez pour répondre dans EEHT Connect.',
+            $data['type'] === 'video' ? 'Appel vidéo entrant — EEHT Connect' : 'Appel vocal entrant — EEHT Connect',
             "/connect?conversation={$conversation->id}&call={$call->id}",
+            [
+                'tag' => "call-{$call->id}",
+                'require_interaction' => true,
+                'vibrate' => [700, 300, 700, 300, 700, 300, 700, 300, 700],
+                'actions' => ['answer' => 'Répondre', 'decline' => 'Refuser'],
+                'data' => [
+                    'type' => 'call',
+                    'call_id' => $call->id,
+                    'decline_url' => URL::temporarySignedRoute('connect.calls.push-decline', now()->addSeconds(Call::RING_TIMEOUT_SECONDS + 60), ['call' => $call->id], absolute: false),
+                ],
+                'options' => ['urgency' => 'high', 'TTL' => Call::RING_TIMEOUT_SECONDS],
+            ],
         );
 
         return response()->json(['call' => $this->present($call, $me->id)]);
@@ -210,11 +238,31 @@ class CallController extends Controller
         $call = $this->callOrFail($call, $me);
         abort_unless($call->callee_id === $me->id, 403);
 
+        // « Me le rappeler dans … minutes »
+        $data = $request->validate(['remind_in' => ['nullable', 'integer', Rule::in(Call::REMIND_DELAYS)]]);
+
         if ($call->status === 'ringing') {
             $this->finish($call, 'declined');
         }
 
+        if (! empty($data['remind_in']) && ! $call->isOpen()) {
+            $call->forceFill(['remind_at' => now()->addMinutes($data['remind_in']), 'reminded_at' => null])->save();
+        }
+
         return response()->json(['call' => $this->present($call->refresh(), $me->id)]);
+    }
+
+    /**
+     * Bouton « Refuser » de la notification : appelé par le service worker
+     * via une adresse signée à durée limitée (sans session ni jeton CSRF).
+     */
+    public function pushDecline(Call $call): JsonResponse
+    {
+        if ($this->expireIfStale($call)->status === 'ringing') {
+            $this->finish($call, 'declined');
+        }
+
+        return response()->json(['ok' => true]);
     }
 
     public function hangup(Request $request, Call $call): JsonResponse
@@ -237,7 +285,7 @@ class CallController extends Controller
         abort_unless($call->isOpen(), 409, 'Cet appel est terminé.');
 
         $data = $request->validate([
-            'type' => ['required', Rule::in(['offer', 'answer', 'candidate'])],
+            'type' => ['required', Rule::in(Call::SIGNAL_TYPES)],
             'payload' => ['required', 'string', 'max:30000'],
         ]);
 

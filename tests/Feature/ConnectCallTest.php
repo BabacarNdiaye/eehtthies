@@ -10,6 +10,7 @@ use App\Notifications\PushAlert;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class ConnectCallTest extends TestCase
@@ -113,6 +114,65 @@ class ConnectCallTest extends TestCase
         $this->actingAs($this->alice)->postJson(route('connect.calls.hangup', $call['id']))->assertJsonPath('call.status', 'cancelled');
 
         $this->assertSame('📞 Appel vocal manqué', ConversationMessage::where('kind', 'system')->sole()->body);
+
+        // La notification « appel manqué » remplace la sonnerie chez l'appelé uniquement.
+        Notification::assertSentTo($this->bob, PushAlert::class, fn (PushAlert $n) => $n->toWebPush($this->bob, $n)->toArray()['data']['type'] === 'call-missed');
+        Notification::assertNotSentTo($this->alice, PushAlert::class);
+    }
+
+    public function test_ringing_notification_rings_on_lock_screen_with_actions(): void
+    {
+        $call = $this->startCall('video');
+
+        Notification::assertSentTo($this->bob, PushAlert::class, function (PushAlert $n) use ($call) {
+            $message = $n->toWebPush($this->bob, $n);
+            $payload = $message->toArray();
+
+            return $payload['tag'] === "call-{$call['id']}"
+                && $payload['requireInteraction'] === true
+                && array_column($payload['actions'], 'action') === ['answer', 'decline']
+                && $payload['data']['type'] === 'call'
+                && str_contains($payload['data']['decline_url'], 'signature=')
+                && $message->getOptions()['urgency'] === 'high';
+        });
+    }
+
+    public function test_decline_from_notification_uses_signed_url_without_session(): void
+    {
+        $call = $this->startCall('audio');
+
+        $this->postJson("/connect/calls/{$call['id']}/push-decline")->assertForbidden();
+
+        $url = URL::temporarySignedRoute('connect.calls.push-decline', now()->addMinute(), ['call' => $call['id']], absolute: false);
+        $this->postJson($url)->assertOk();
+
+        $this->assertSame('declined', Call::find($call['id'])->status);
+    }
+
+    public function test_remind_me_later_sends_a_reminder(): void
+    {
+        $call = $this->startCall('audio');
+        $this->actingAs($this->bob)->postJson(route('connect.calls.decline', $call['id']), ['remind_in' => 7])->assertUnprocessable();
+        $this->actingAs($this->bob)->postJson(route('connect.calls.decline', $call['id']), ['remind_in' => 10])->assertJsonPath('call.status', 'declined');
+
+        $this->artisan('app:push-pending-messages');
+        $this->assertNull(Call::find($call['id'])->reminded_at);
+
+        $this->travel(11)->minutes();
+        $this->artisan('app:push-pending-messages');
+
+        $this->assertNotNull(Call::find($call['id'])->reminded_at);
+        $this->assertTrue(ConversationMessage::where('body', 'like', '⏰ Pensez à rappeler Alice Diop%')->exists());
+        Notification::assertSentTo($this->bob, PushAlert::class, fn (PushAlert $n) => str_starts_with($n->toWebPush($this->bob, $n)->toArray()['title'], '⏰ Rappeler Alice Diop'));
+    }
+
+    public function test_peers_exchange_microphone_and_camera_state(): void
+    {
+        $call = $this->startCall('audio');
+        $this->actingAs($this->bob)->postJson(route('connect.calls.answer', $call['id']));
+
+        $this->actingAs($this->bob)->postJson(route('connect.calls.signal', $call['id']), ['type' => 'state', 'payload' => '{"muted":true,"video":true,"screen":false,"recording":false}'])->assertOk();
+        $this->actingAs($this->alice)->getJson(route('connect.calls.show', $call['id']))->assertJsonPath('signals.0.type', 'state');
     }
 
     public function test_cannot_call_someone_already_on_a_call(): void

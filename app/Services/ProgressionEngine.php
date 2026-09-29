@@ -57,7 +57,7 @@ class ProgressionEngine
 
             if ($subjectAverage === null || $subjectAverage < $threshold) {
                 $passed = false;
-                $reasons[] = sprintf('Matière obligatoire non validée : %s (%s / %s requis)', $subject->name, $subjectAverage ?? 'n/a', $threshold);
+                $reasons[] = sprintf('Matière obligatoire non validée : %s (%s / %s requis)', $subject->name, $subjectAverage ?? 'non notée', $threshold);
             } else {
                 $reasons[] = sprintf('Matière obligatoire validée : %s (%s)', $subject->name, $subjectAverage);
             }

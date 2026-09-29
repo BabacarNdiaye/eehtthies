@@ -170,6 +170,21 @@ appareils »). Il faut alors un **relais TURN** : renseignez `TURN_URL`,
 `TURN_USERNAME` et `TURN_CREDENTIAL` dans le `.env` (service TURN hébergé,
 par exemple Metered, Twilio ou Xirsys, ou votre propre serveur coturn).
 
+**Appel reçu téléphone verrouillé.** Un appel entrant envoie une notification
+« sonnerie » prioritaire (vibrations, boutons *Répondre* / *Refuser*) qui
+s'affiche sur l'écran verrouillé. Conditions :
+
+- les notifications doivent être autorisées pour le site (clés `VAPID_*` du
+  `.env` renseignées, extensions PHP GMP ou BCMath actives) ;
+- sur **iPhone** : le site doit être ajouté à l'écran d'accueil (Partager →
+  « Sur l'écran d'accueil », iOS 16.4 ou plus) ; iOS n'affiche pas les boutons,
+  il suffit de toucher la notification ;
+- « Me le rappeler » (écran de sonnerie) utilise la tâche planifiée
+  `schedule:run` (cron chaque minute).
+
+Un site web ne peut pas afficher l'écran d'appel plein écran par-dessus le
+verrouillage comme une application native : la notification en tient lieu.
+
 ## Déploiement automatique (GitHub Actions + FTP)
 
 Au lieu de construire et téléverser l'archive à la main, GitHub peut le faire
