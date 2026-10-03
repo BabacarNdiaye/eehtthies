@@ -27,7 +27,7 @@ function TabBody({ tab }: { tab: BarTab }) {
             >
                 <Icon className="h-[22px] w-[22px]" strokeWidth={tab.active ? 2.4 : 2} />
                 {tab.badge ? (
-                    <span className="absolute -right-0.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                    <span className="absolute -right-0.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white ring-2 ring-white">
                         {tab.badge > 9 ? '9+' : tab.badge}
                     </span>
                 ) : null}

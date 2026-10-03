@@ -46,7 +46,7 @@ export default function InvoiceList({ invoices, receiptHref }: { invoices: Invoi
                         <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                                 <p className="text-[11px] font-medium uppercase tracking-wide text-ink-400">{invoice.reference}</p>
-                                <h3 className="mt-0.5 font-serif text-base font-semibold leading-snug text-ink-900">{invoice.label}</h3>
+                                <h2 className="mt-0.5 font-serif text-base font-semibold leading-snug text-ink-900">{invoice.label}</h2>
                                 <p className="mt-0.5 text-xs text-ink-500">
                                     {typeLabels[invoice.type]}
                                     {invoice.due_date && <> · Échéance {new Date(invoice.due_date).toLocaleDateString('fr-FR')}</>}

@@ -34,9 +34,9 @@ const statusStyles: Record<string, string> = {
 
 // Trois gros boutons pour le pouce ; « absence justifiée » se règle ensuite d'un bouton à bascule.
 const choices = [
-    { key: 'present', label: 'Présent', icon: UserCheck, on: 'border-emerald-500 bg-emerald-500 text-white' },
-    { key: 'retard', label: 'Retard', icon: Clock, on: 'border-amber-500 bg-amber-500 text-white' },
-    { key: 'absent', label: 'Absent', icon: UserX, on: 'border-red-500 bg-red-500 text-white' },
+    { key: 'present', label: 'Présent', icon: UserCheck, on: 'border-emerald-700 bg-emerald-700 text-white' },
+    { key: 'retard', label: 'Retard', icon: Clock, on: 'border-amber-700 bg-amber-700 text-white' },
+    { key: 'absent', label: 'Absent', icon: UserX, on: 'border-red-600 bg-red-600 text-white' },
 ];
 
 export default function Attendance({ pairs, students, existing, selectedClassId, selectedSubjectId, date, statuses }: Props) {
@@ -267,7 +267,7 @@ export default function Attendance({ pairs, students, existing, selectedClassId,
                             onClick={save}
                             disabled={processing}
                             className={`flex h-14 w-full items-center justify-center gap-2 rounded-2xl text-base font-semibold text-white shadow-elevated transition-colors disabled:opacity-60 ${
-                                saved ? 'bg-emerald-600' : 'bg-ink-900 active:bg-ink-800'
+                                saved ? 'bg-emerald-700' : 'bg-ink-900 active:bg-ink-800'
                             }`}
                         >
                             {saved ? (

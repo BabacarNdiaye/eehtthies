@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { cloneElement, Fragment, isValidElement, PropsWithChildren, ReactElement, useId } from 'react';
 
 export function Field({
     label,
@@ -12,13 +12,20 @@ export function Field({
     required?: boolean;
     hint?: string;
 }>) {
+    const generatedId = useId();
+    // Relie l'étiquette à son champ (toucher le libellé place le curseur dans le champ, les lecteurs d'écran
+    // l'annoncent) : quand le seul enfant est un champ, il reçoit un id — le sien s'il en a déjà un.
+    const only = isValidElement(children) ? (children as ReactElement<{ id?: string }>) : null;
+    const control = only && only.type !== Fragment && (typeof only.type !== 'string' || ['input', 'select', 'textarea'].includes(only.type)) ? only : null;
+    const controlId = control?.props.id ?? generatedId;
+
     return (
         <div>
-            <label className="mb-1.5 block text-sm font-medium text-ink-700">
+            <label htmlFor={control ? controlId : undefined} className="mb-1.5 block text-sm font-medium text-ink-700">
                 {label}
                 {required && <span className="text-red-500"> *</span>}
             </label>
-            {children}
+            {control ? cloneElement(control, { id: controlId }) : children}
             {hint && <p className="mt-1 text-xs text-ink-400">{hint}</p>}
             {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
         </div>

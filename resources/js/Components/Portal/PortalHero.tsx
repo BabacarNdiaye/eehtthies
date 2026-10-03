@@ -44,7 +44,7 @@ export default function PortalHero({ name, lines, avatar, badge, children }: Pro
                 >
                     <Bell className="h-5 w-5" />
                     {unread > 0 && (
-                        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-ink-900">
+                        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white ring-2 ring-ink-900">
                             {unread > 9 ? '9+' : unread}
                         </span>
                     )}

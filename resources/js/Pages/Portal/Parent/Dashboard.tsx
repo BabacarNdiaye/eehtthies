@@ -114,13 +114,13 @@ export default function Dashboard({ children, announcements }: { children: Child
                                         <>
                                             À payer
                                             <br />
-                                            <span className="text-xs font-bold text-red-600">{formatAmount(child.summary.balance_due)}</span>
+                                            <span className="text-xs font-bold text-red-700">{formatAmount(child.summary.balance_due)}</span>
                                         </>
                                     ) : (
                                         <>
                                             Scolarité
                                             <br />
-                                            <span className="text-xs font-bold text-emerald-600">À jour</span>
+                                            <span className="text-xs font-bold text-emerald-700">À jour</span>
                                         </>
                                     )}
                                 </span>

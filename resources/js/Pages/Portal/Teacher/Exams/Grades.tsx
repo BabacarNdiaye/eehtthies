@@ -170,7 +170,7 @@ export default function Grades({ exam, students, grades }: Props) {
                                 type="button"
                                 onClick={save}
                                 disabled={processing || hasInvalid}
-                                className={`inline-flex h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-colors disabled:opacity-50 ${saved ? 'bg-emerald-600' : 'bg-ink-900 active:bg-ink-800'}`}
+                                className={`inline-flex h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-colors disabled:opacity-50 ${saved ? 'bg-emerald-700' : 'bg-ink-900 active:bg-ink-800'}`}
                             >
                                 {saved ? (
                                     <>

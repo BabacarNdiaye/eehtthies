@@ -17,8 +17,9 @@ function seconds(time: string): number {
 }
 
 /**
- * Frise horaire des cours du jour : passé estompé, cours en cours mis en évidence (point animé), à venir en
- * doré. L'état se met à jour toutes les minutes.
+ * Frise horaire des cours du jour : passé grisé, cours en cours mis en évidence (point animé), à venir en
+ * doré. L'état se met à jour toutes les minutes. Les cours passés sont grisés par leur fond, jamais par une
+ * opacité : elle ferait tomber le contraste du texte sous le seuil de lisibilité.
  */
 export default function DayTimeline({ entries, showClass = false, emptyLabel = "Aucun cours aujourd'hui." }: Props) {
     const now = useNow(60000);
@@ -39,8 +40,8 @@ export default function DayTimeline({ entries, showClass = false, emptyLabel = "
                 return (
                     <li key={entry.id} className="flex gap-3">
                         <div className="w-11 shrink-0 pt-3 text-right">
-                            <p className={`text-sm font-bold ${state === 'past' ? 'text-ink-300' : 'text-ink-800'}`}>{hhmm(entry.start_time)}</p>
-                            <p className="text-[11px] text-ink-400">{hhmm(entry.end_time)}</p>
+                            <p className={`text-sm font-bold ${state === 'past' ? 'text-ink-500' : 'text-ink-800'}`}>{hhmm(entry.start_time)}</p>
+                            <p className="text-[11px] text-ink-500">{hhmm(entry.end_time)}</p>
                         </div>
                         <div className="relative flex flex-col items-center">
                             <span
@@ -55,14 +56,16 @@ export default function DayTimeline({ entries, showClass = false, emptyLabel = "
                                 state === 'ongoing'
                                     ? 'border-emerald-200 bg-emerald-50'
                                     : state === 'past'
-                                      ? 'border-ink-100 bg-white opacity-60'
+                                      ? 'border-ink-100 bg-ink-100/60'
                                       : 'border-ink-100 bg-white'
                             }`}
                         >
-                            <p className="line-clamp-2 text-sm font-semibold leading-snug text-ink-900">{entry.subject?.name ?? 'Cours'}</p>
+                            <p className={`line-clamp-2 text-sm font-semibold leading-snug ${state === 'past' ? 'text-ink-600' : 'text-ink-900'}`}>
+                                {entry.subject?.name ?? 'Cours'}
+                            </p>
                             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-500">
                                 {state === 'ongoing' && (
-                                    <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">En cours</span>
+                                    <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">En cours</span>
                                 )}
                                 {entry.room && (
                                     <span className="inline-flex items-center gap-1">

@@ -94,7 +94,7 @@ export default function Index({ exams, types }: Props) {
                                                     </button>
                                                 </>
                                             ) : (
-                                                !exam.can_grade && <span className="self-center text-xs italic text-ink-300">Créé par un autre enseignant</span>
+                                                !exam.can_grade && <span className="self-center text-xs italic text-ink-500">Créé par un autre enseignant</span>
                                             )}
                                         </div>
                                     </li>
@@ -146,7 +146,7 @@ export default function Index({ exams, types }: Props) {
                                                         </button>
                                                     </>
                                                 ) : (
-                                                    !exam.can_grade && <span className="text-xs italic text-ink-300">Créé par un autre enseignant</span>
+                                                    !exam.can_grade && <span className="text-xs italic text-ink-500">Créé par un autre enseignant</span>
                                                 )}
                                             </div>
                                         </td>

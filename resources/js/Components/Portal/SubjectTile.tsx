@@ -33,7 +33,7 @@ export default function SubjectTile({ name, average, href, caption }: Props) {
             <span className="min-w-0">
                 {/* Pas de « block » : il annulerait le display -webkit-box de line-clamp et le texte ne serait plus tronqué. */}
                 <span className="line-clamp-2 text-xs font-semibold leading-tight text-ink-800">{name}</span>
-                {caption && <span className="mt-0.5 line-clamp-1 text-[10.5px] text-ink-400">{caption}</span>}
+                {caption && <span className="mt-0.5 line-clamp-1 text-[10.5px] text-ink-500">{caption}</span>}
             </span>
         </Link>
     );

@@ -19,8 +19,9 @@ function timeAgo(iso: string): string {
 
 function slideStyle(item: FeedItem): string {
     if (item.kind === 'news') return 'from-brand-600 to-ink-800';
-    if (item.priority === 'urgente') return 'from-red-600 to-orange-500';
-    if (item.priority === 'importante') return 'from-amber-500 to-orange-500';
+    // Dégradés assez sombres sur toute leur largeur pour que le texte blanc reste lisible (contraste d'au moins 4,5:1).
+    if (item.priority === 'urgente') return 'from-red-700 to-orange-700';
+    if (item.priority === 'importante') return 'from-amber-700 to-orange-700';
 
     return 'from-ink-800 to-brand-700';
 }
@@ -48,9 +49,9 @@ function Slide({ item }: { item: FeedItem }) {
             <span className="relative">
                 {/* Pas de « block » : il annulerait le display -webkit-box de line-clamp. */}
                 <span className="line-clamp-2 font-serif text-lg font-bold leading-snug">{item.title}</span>
-                {item.excerpt && <span className="mt-1 line-clamp-2 text-xs text-white/80">{item.excerpt}</span>}
+                {item.excerpt && <span className="mt-1 line-clamp-2 text-xs text-white/90">{item.excerpt}</span>}
             </span>
-            <span className="relative text-[11px] text-white/70">{timeAgo(item.date)}</span>
+            <span className="relative text-[11px] text-white/90">{timeAgo(item.date)}</span>
         </Link>
     );
 }

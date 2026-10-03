@@ -1,7 +1,8 @@
 import { Building2, Sparkles, Users, UsersRound } from 'lucide-react';
 import { initials } from './utils';
 
-const palette = ['bg-ink-700', 'bg-gold-600', 'bg-blue-600', 'bg-emerald-600', 'bg-rose-600', 'bg-purple-600'];
+// Teintes assez sombres pour que les initiales blanches restent lisibles (contraste d'au moins 4,5:1).
+const palette = ['bg-ink-700', 'bg-gold-700', 'bg-blue-600', 'bg-emerald-700', 'bg-rose-600', 'bg-purple-600'];
 
 function colorFor(name: string): string {
     return palette[name.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0) % palette.length];

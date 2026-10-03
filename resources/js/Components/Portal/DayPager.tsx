@@ -22,7 +22,8 @@ function seconds(time: string): number {
 /**
  * Agenda de la semaine. Téléphone : pastilles de jours et un jour par « page » qu'on balaie au doigt (CSS
  * scroll-snap, sans bibliothèque) ; ordinateur : grille de toutes les journées. Le cours en cours est mis en
- * évidence, les cours passés du jour sont estompés. Heures lues en UTC = heure de Dakar.
+ * évidence, les cours passés du jour sont grisés (par leur fond : une opacité ferait tomber le contraste du
+ * texte sous le seuil de lisibilité). Heures lues en UTC = heure de Dakar.
  */
 export default function DayPager({ entries, days, showClass = false }: Props) {
     const now = useNow(30000);
@@ -95,19 +96,24 @@ export default function DayPager({ entries, days, showClass = false }: Props) {
                             type="button"
                             role="tab"
                             aria-selected={active}
-                            aria-label={`${label} ${date}${day === todayIso ? ', aujourd’hui' : ''}${items.length ? `, ${items.length} cours` : ', aucun cours'}`}
                             onClick={() => goTo(i)}
                             className={`relative flex min-h-[4rem] min-w-[3.25rem] flex-1 flex-col items-center justify-center rounded-2xl border px-2 py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-gold-500 ${
                                 active ? 'border-ink-900 bg-ink-900 text-white shadow-md' : 'border-ink-100 bg-white text-ink-600 active:bg-ink-50'
                             }`}
                         >
-                            <span className={`text-[11px] font-semibold uppercase tracking-wide ${active ? 'text-gold-300' : 'text-ink-400'}`}>{SHORT_DAYS[day]}</span>
+                            {/* Le nom accessible vient du contenu (jour en toutes lettres, date, cours du jour) : il contient donc le texte visible. */}
+                            <span aria-hidden="true" className={`text-[11px] font-semibold uppercase tracking-wide ${active ? 'text-gold-300' : 'text-ink-400'}`}>
+                                {SHORT_DAYS[day]}
+                            </span>
+                            <span className="sr-only">{label}</span>
                             <span className="text-lg font-bold leading-tight">{date}</span>
                             <span
+                                aria-hidden="true"
                                 className={`mt-0.5 h-1.5 w-1.5 rounded-full ${
                                     day === todayIso ? 'bg-emerald-500' : items.length > 0 ? (active ? 'bg-white/60' : 'bg-gold-500') : 'bg-transparent'
                                 }`}
                             />
+                            <span className="sr-only">{[day === todayIso ? 'aujourd’hui' : null, items.length ? `${items.length} cours` : 'aucun cours'].filter(Boolean).join(', ')}</span>
                         </button>
                     );
                 })}
@@ -125,10 +131,10 @@ export default function DayPager({ entries, days, showClass = false }: Props) {
                         aria-label={label}
                         className="w-full shrink-0 snap-center snap-always px-0.5 lg:w-auto lg:rounded-2xl lg:bg-white lg:p-4 lg:ring-1 lg:ring-ink-100"
                     >
-                        <h3 className="mb-3 hidden items-center gap-2 font-serif text-base font-bold text-ink-900 lg:flex">
+                        <h2 className="mb-3 hidden items-center gap-2 font-serif text-base font-bold text-ink-900 lg:flex">
                             {label}
                             {day === todayIso && <span className="rounded-full bg-emerald-50 px-2 py-0.5 font-sans text-[11px] font-semibold text-emerald-700">Aujourd'hui</span>}
-                        </h3>
+                        </h2>
 
                         {items.length === 0 ? (
                             <div className="flex flex-col items-center gap-2 rounded-3xl bg-white px-4 py-10 text-center ring-1 ring-ink-100 lg:bg-ink-50 lg:py-6 lg:ring-0">
@@ -146,22 +152,32 @@ export default function DayPager({ entries, days, showClass = false }: Props) {
                                     return (
                                         <li key={entry.id} className="flex gap-3">
                                             <div className="w-12 shrink-0 pt-3.5 text-right">
-                                                <p className={`text-sm font-bold ${state === 'past' ? 'text-ink-300' : 'text-ink-800'}`}>{hhmm(entry.start_time)}</p>
-                                                <p className="text-[11px] text-ink-400">{hhmm(entry.end_time)}</p>
+                                                <p className={`text-sm font-bold ${state === 'past' ? 'text-ink-500' : 'text-ink-800'}`}>{hhmm(entry.start_time)}</p>
+                                                <p className="text-[11px] text-ink-500">{hhmm(entry.end_time)}</p>
                                             </div>
                                             <div
                                                 className={`flex min-w-0 flex-1 items-center gap-3 rounded-2xl border p-3 ${
-                                                    state === 'ongoing' ? 'border-emerald-200 bg-emerald-50' : 'border-ink-100 bg-white'
-                                                } ${state === 'past' ? 'opacity-60' : ''}`}
+                                                    state === 'ongoing'
+                                                        ? 'border-emerald-200 bg-emerald-50'
+                                                        : state === 'past'
+                                                          ? 'border-ink-100 bg-ink-100/60'
+                                                          : 'border-ink-100 bg-white'
+                                                }`}
                                             >
-                                                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-sm`}>
+                                                <span
+                                                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-sm ${
+                                                        state === 'past' ? 'grayscale' : ''
+                                                    }`}
+                                                >
                                                     <Icon className="h-5 w-5" strokeWidth={1.9} />
                                                 </span>
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="line-clamp-2 text-sm font-semibold leading-snug text-ink-900">{entry.subject?.name ?? 'Cours'}</p>
+                                                    <p className={`line-clamp-2 text-sm font-semibold leading-snug ${state === 'past' ? 'text-ink-600' : 'text-ink-900'}`}>
+                                                        {entry.subject?.name ?? 'Cours'}
+                                                    </p>
                                                     <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-ink-500">
                                                         {state === 'ongoing' && (
-                                                            <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">En cours</span>
+                                                            <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">En cours</span>
                                                         )}
                                                         {showClass
                                                             ? entry.school_class && (

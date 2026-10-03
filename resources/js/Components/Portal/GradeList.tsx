@@ -56,7 +56,7 @@ export default function GradeList({ exams, grades, limit }: { exams: GradedExam[
                         ) : grade?.score != null ? (
                             <span className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-bold ${tone(Number(grade.score), max)}`}>
                                 {formatScore(grade.score)}
-                                <span className="text-[11px] font-semibold opacity-70"> /{formatScore(max)}</span>
+                                <span className="text-[11px] font-medium"> /{formatScore(max)}</span>
                             </span>
                         ) : new Date(exam.exam_date).getTime() > Date.now() ? (
                             <span className="shrink-0 rounded-full bg-gold-100 px-3 py-1.5 text-xs font-semibold text-gold-800">À venir</span>

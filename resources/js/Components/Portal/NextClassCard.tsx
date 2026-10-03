@@ -79,7 +79,7 @@ export default function NextClassCard({ next, attendanceHref, timetableHref, rel
 
     return (
         <div className={`${position} overflow-hidden rounded-3xl bg-white p-5 shadow-soft ring-1 ring-ink-100`}>
-            <p className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider ${ongoing ? 'text-emerald-600' : 'text-ink-500'}`} aria-live="polite">
+            <p className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider ${ongoing ? 'text-emerald-700' : 'text-ink-500'}`} aria-live="polite">
                 {ongoing && (
                     <span className="relative flex h-2 w-2">
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75 motion-reduce:animate-none" />

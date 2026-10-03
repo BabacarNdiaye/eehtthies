@@ -150,13 +150,13 @@ export default function Dashboard({
                                     <>
                                         À payer
                                         <br />
-                                        <span className="text-xs font-bold text-red-600">{formatAmount(balanceDue)}</span>
+                                        <span className="text-xs font-bold text-red-700">{formatAmount(balanceDue)}</span>
                                     </>
                                 ) : (
                                     <>
                                         Scolarité
                                         <br />
-                                        <span className="text-xs font-bold text-emerald-600">À jour</span>
+                                        <span className="text-xs font-bold text-emerald-700">À jour</span>
                                     </>
                                 )}
                             </span>
