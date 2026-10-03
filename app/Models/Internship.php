@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAttachments;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Internship extends Model
 {
+    use HasAttachments;
+
     protected $fillable = [
         'student_id', 'partner_id', 'internship_offer_id', 'title', 'start_date', 'end_date',
         'supervisor_name', 'supervisor_phone', 'supervisor_email', 'status',

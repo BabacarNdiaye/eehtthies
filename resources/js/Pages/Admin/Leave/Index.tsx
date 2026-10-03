@@ -1,9 +1,10 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import AttachmentsPanel from '@/Components/Admin/AttachmentsPanel';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { Field, Select, TextInput } from '@/Components/Admin/Field';
-import { Paginated } from '@/types';
+import { Attachment, Paginated } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox } from 'lucide-react';
 import { useState } from 'react';
@@ -17,6 +18,8 @@ type LeaveRequestRow = {
     status: string;
     review_notes?: string | null;
     reviewed_at?: string | null;
+    can_attach?: boolean;
+    attachments?: Attachment[];
     user?: { id: number; name: string } | null;
     reviewed_by?: { id: number; name: string } | null;
 };
@@ -123,6 +126,7 @@ export default function Index({ requests, types, statuses, canReview }: Props) {
                                 <th className="px-5 py-3">Type</th>
                                 <th className="px-5 py-3">Période</th>
                                 <th className="px-5 py-3">Motif</th>
+                                <th className="px-5 py-3">Justificatif</th>
                                 <th className="px-5 py-3">Statut</th>
                                 <th className="px-5 py-3">Actions</th>
                             </tr>
@@ -136,6 +140,9 @@ export default function Index({ requests, types, statuses, canReview }: Props) {
                                         {new Date(r.start_date).toLocaleDateString('fr-FR')} — {new Date(r.end_date).toLocaleDateString('fr-FR')}
                                     </td>
                                     <td className="max-w-xs px-5 py-3 text-ink-500">{r.reason || '—'}</td>
+                                    <td className="px-5 py-3">
+                                        <AttachmentsPanel variant="compact" target="leave" targetId={r.id} attachments={r.attachments} canManage={!!r.can_attach} />
+                                    </td>
                                     <td className="px-5 py-3">
                                         <span className={`rounded-full border px-3 py-1 text-xs font-medium ${statusStyles[r.status] ?? ''}`}>
                                             {statuses[r.status] ?? r.status}
@@ -182,7 +189,7 @@ export default function Index({ requests, types, statuses, canReview }: Props) {
                             ))}
                             {requests.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={canReview ? 6 : 5} className="px-5 py-10 text-center">
+                                    <td colSpan={canReview ? 7 : 6} className="px-5 py-10 text-center">
                                         <div className="flex flex-col items-center gap-3 text-ink-400">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />

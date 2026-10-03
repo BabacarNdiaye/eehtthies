@@ -55,7 +55,7 @@ class ExpenseController extends Controller
     public function edit(Expense $expense): Response
     {
         return Inertia::render('Admin/Expenses/Form', [
-            'expense' => $expense,
+            'expense' => $expense->load('attachments'),
             'categories' => Expense::CATEGORIES,
         ]);
     }

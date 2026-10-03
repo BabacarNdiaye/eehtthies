@@ -233,7 +233,7 @@ class InvoiceController extends Controller
     public function show(Invoice $invoice): Response
     {
         return Inertia::render('Admin/Invoices/Show', [
-            'invoice' => $invoice->load('student', 'academicYear', 'payments.receivedBy:id,name'),
+            'invoice' => $invoice->load('student', 'academicYear', 'payments.receivedBy:id,name', 'attachments'),
             'methods' => Payment::METHODS,
         ]);
     }

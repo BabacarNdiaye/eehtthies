@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import AttachmentsPanel from '@/Components/Admin/AttachmentsPanel';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
@@ -229,7 +230,9 @@ export default function Show({ invoice, methods }: Props) {
                         )}
                     </Card>
 
-                    <Card className="p-6">
+                    <AttachmentsPanel target="invoice" targetId={invoice.id} attachments={invoice.attachments} title="Pièces justificatives" hint="Preuve de paiement, reçu Wave / Orange Money, bordereau (PDF, JPG, PNG, DOC, 5 Mo maximum)." />
+
+                    <Card className="mt-6 p-6">
                         <Link href={route('admin.invoices.index')} className="text-sm font-medium text-ink-500 hover:text-ink-800">
                             ← Retour aux factures
                         </Link>

@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import AttachmentsPanel from '@/Components/Admin/AttachmentsPanel';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
@@ -143,6 +144,9 @@ export default function Form({ internship, students, partners, offers, statuses 
                     </button>
                 </div>
             </form>
+            {internship && (
+                <AttachmentsPanel target="internship" targetId={internship.id} attachments={internship.attachments} title="Documents du stage" hint="Convention de stage, attestation, évaluation (PDF, JPG, PNG, DOC, 5 Mo maximum)." />
+            )}
         </AdminLayout>
     );
 }

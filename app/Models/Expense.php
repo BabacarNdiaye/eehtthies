@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAttachments;
 use App\Support\AccountingPoster;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -9,7 +10,7 @@ use Spatie\Activitylog\Support\LogOptions;
 
 class Expense extends Model
 {
-    use LogsActivity;
+    use HasAttachments, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {

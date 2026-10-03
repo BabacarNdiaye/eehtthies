@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAttachments;
 use App\Notifications\PushAlert;
 use App\Support\AccountingPoster;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Spatie\Activitylog\Support\LogOptions;
 
 class Invoice extends Model
 {
-    use LogsActivity;
+    use HasAttachments, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {

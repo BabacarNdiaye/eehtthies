@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import AttachmentsPanel from '@/Components/Admin/AttachmentsPanel';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import {
@@ -357,6 +358,9 @@ export default function Form({ teacher, subjects, salaryPayments, monthLabels, p
                     </button>
                 </div>
             </form>
+            {teacher && (
+                <AttachmentsPanel target="teacher" targetId={teacher.id} attachments={teacher.attachments} title="Dossier de l'enseignant" hint="Contrat, CV, diplômes, pièce d'identité (PDF, JPG, PNG, DOC, 5 Mo maximum)." />
+            )}
         </AdminLayout>
     );
 }

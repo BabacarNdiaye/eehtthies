@@ -14,9 +14,10 @@ class TeacherLeaveController extends Controller
     public function index(Request $request): Response
     {
         $requests = LeaveRequest::where('user_id', $request->user()->id)
-            ->with('reviewedBy:id,name')
+            ->with('reviewedBy:id,name', 'attachments')
             ->orderByDesc('created_at')
-            ->paginate(20);
+            ->paginate(20)
+            ->through(fn (LeaveRequest $r) => tap($r, fn ($r) => $r->setAttribute('can_attach', true)));
 
         return Inertia::render('Portal/Teacher/Leave', [
             'requests' => $requests,

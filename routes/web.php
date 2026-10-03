@@ -56,6 +56,7 @@ use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
 use App\Http\Controllers\Admin\TimetableController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\CallController;
 use App\Http\Controllers\ConnectController;
 use App\Http\Controllers\Portal\ParentPortalController;
@@ -165,6 +166,12 @@ Route::get('/dashboard', function () {
 // /borne/pointage/open?token=YOUR_TOKEN&mode=gate
 Route::get('/borne/pointage/open', [AttendanceController::class, 'kioskOpen'])->name('borne.pointage.open');
 Route::post('/borne/pointage/scan/open', [AttendanceController::class, 'qrScanOpen'])->name('borne.pointage.scan.open');
+
+Route::middleware(['auth', 'verified'])->prefix('documents')->name('attachments.')->group(function () {
+    Route::post('/', [AttachmentController::class, 'store'])->name('store')->middleware('throttle:30,1');
+    Route::get('/{attachment}', [AttachmentController::class, 'download'])->name('download');
+    Route::delete('/{attachment}', [AttachmentController::class, 'destroy'])->name('destroy');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

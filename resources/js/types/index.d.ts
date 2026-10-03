@@ -96,6 +96,7 @@ export interface Formation {
 
 export interface Teacher {
     id: number;
+    attachments?: Attachment[];
     user_id?: number | null;
     matricule: string;
     first_name: string;
@@ -163,6 +164,16 @@ export interface Student {
     school_class?: { id: number; name: string } | null;
     academic_year?: { id: number; label: string } | null;
     documents?: StudentDocument[];
+}
+
+export interface Attachment {
+    id: number;
+    original_name: string;
+    mime_type?: string | null;
+    size: number;
+    uploaded_by?: number | null;
+    uploader?: { id: number; name: string } | null;
+    created_at: string;
 }
 
 export interface StudentDocument {
@@ -480,6 +491,7 @@ export interface Payment {
 
 export interface Invoice {
     id: number;
+    attachments?: Attachment[];
     reference: string;
     student_id: number;
     academic_year_id?: number | null;
@@ -508,6 +520,7 @@ export interface Expense {
     payment_method: 'especes' | 'virement' | 'mobile_money' | 'autre';
     supplier_name?: string | null;
     notes?: string | null;
+    attachments?: Attachment[];
 }
 
 export interface Supplier {
@@ -591,6 +604,7 @@ export interface InternshipOffer {
 
 export interface Internship {
     id: number;
+    attachments?: Attachment[];
     student_id: number;
     partner_id: number;
     internship_offer_id?: number | null;

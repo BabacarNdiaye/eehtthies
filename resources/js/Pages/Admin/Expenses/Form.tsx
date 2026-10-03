@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import AttachmentsPanel from '@/Components/Admin/AttachmentsPanel';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
@@ -87,6 +88,9 @@ export default function Form({ expense, categories }: Props) {
                     </button>
                 </div>
             </form>
+            {expense && (
+                <AttachmentsPanel target="expense" targetId={expense.id} attachments={expense.attachments} title="Justificatifs" hint="Facture, reçu ou bon de commande (PDF, JPG, PNG, DOC, 5 Mo maximum)." />
+            )}
         </AdminLayout>
     );
 }

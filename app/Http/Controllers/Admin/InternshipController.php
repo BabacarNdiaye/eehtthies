@@ -37,7 +37,7 @@ class InternshipController extends Controller
     private function formResponse(?Internship $internship = null): Response
     {
         return Inertia::render('Admin/Internships/Form', [
-            'internship' => $internship,
+            'internship' => $internship?->load('attachments'),
             'students' => Student::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'matricule']),
             'partners' => Partner::orderBy('name')->get(['id', 'name']),
             'offers' => InternshipOffer::orderByDesc('created_at')->get(['id', 'title', 'partner_id']),

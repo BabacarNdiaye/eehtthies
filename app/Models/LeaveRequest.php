@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAttachments;
 use App\Notifications\PushAlert;
 use Illuminate\Database\Eloquent\Model;
 
 class LeaveRequest extends Model
 {
+    use HasAttachments;
+
     protected $fillable = [
         'user_id', 'type', 'start_date', 'end_date', 'reason',
         'status', 'reviewed_by', 'reviewed_at', 'review_notes',

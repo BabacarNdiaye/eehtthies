@@ -160,7 +160,7 @@ class TeacherController extends Controller
     private function formResponse(?Teacher $teacher = null): Response
     {
         return Inertia::render('Admin/Teachers/Form', [
-            'teacher' => $teacher?->load('subjects'),
+            'teacher' => $teacher?->load('subjects', 'attachments'),
             'subjects' => Subject::orderBy('name')->get(['id', 'name']),
             'salaryPayments' => $teacher
                 ? TeacherSalaryPayment::where('teacher_id', $teacher->id)

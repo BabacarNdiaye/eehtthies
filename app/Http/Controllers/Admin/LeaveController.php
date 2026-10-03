@@ -14,7 +14,7 @@ class LeaveController extends Controller
     {
         $canReview = $request->user()->can('modifier_utilisateurs');
 
-        $query = LeaveRequest::with(['user:id,name', 'reviewedBy:id,name'])
+        $query = LeaveRequest::with(['user:id,name', 'reviewedBy:id,name', 'attachments'])
             ->orderByDesc('created_at');
 
         if (! $canReview) {
@@ -22,7 +22,8 @@ class LeaveController extends Controller
         }
 
         return Inertia::render('Admin/Leave/Index', [
-            'requests' => $query->paginate(20)->withQueryString(),
+            'requests' => $query->paginate(20)->withQueryString()
+                ->through(fn (LeaveRequest $r) => tap($r, fn ($r) => $r->setAttribute('can_attach', $r->user_id === $request->user()->id))),
             'types' => LeaveRequest::TYPES,
             'statuses' => LeaveRequest::STATUSES,
             'canReview' => $canReview,
