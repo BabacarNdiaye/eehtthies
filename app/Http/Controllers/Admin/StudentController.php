@@ -79,6 +79,10 @@ class StudentController extends Controller
             $query->where('formation_id', $request->integer('formation_id'));
         }
 
+        if ($request->filled('school_class_id')) {
+            $query->where('school_class_id', $request->integer('school_class_id'));
+        }
+
         if ($request->filled('status')) {
             $query->where('status', $request->string('status'));
         }
@@ -92,11 +96,22 @@ class StudentController extends Controller
             });
         }
 
+        $classCounts = (clone $query)->toBase()
+            ->selectRaw("coalesce(school_class_id, 'none') as class_key, count(*) as total")
+            ->groupBy('school_class_id')
+            ->pluck('total', 'class_key');
+
+        $query->orderByRaw('students.school_class_id is null')
+            ->orderBy(SchoolClass::select('name')->whereColumn('school_classes.id', 'students.school_class_id'))
+            ->orderBy('last_name')
+            ->orderBy('first_name');
+
         return Inertia::render('Admin/Students/Index', [
-            'students' => $query->latest()->paginate(15)->withQueryString(),
+            'students' => $query->paginate(15)->withQueryString(),
+            'classCounts' => $classCounts,
             'formations' => Formation::orderBy('name')->get(['id', 'name']),
             'schoolClasses' => SchoolClass::orderBy('name')->get(['id', 'name']),
-            'filters' => $request->only(['formation_id', 'status', 'search']),
+            'filters' => $request->only(['formation_id', 'school_class_id', 'status', 'search']),
         ]);
     }
 

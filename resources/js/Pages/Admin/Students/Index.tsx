@@ -9,14 +9,16 @@ import { Select, TextInput } from '@/Components/Admin/Field';
 import { Paginated, Student } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { IdCard, Mail, Pencil, Search, Trash2, Upload, UserRound, Users } from 'lucide-react';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, Fragment, useEffect, useRef, useState } from 'react';
 
 interface Props {
     students: Paginated<Student>;
     formations: { id: number; name: string }[];
     schoolClasses: { id: number; name: string }[];
+    classCounts: Record<string, number>;
     filters: {
         formation_id?: string | number;
+        school_class_id?: string | number;
         status?: string;
         search?: string;
     };
@@ -30,7 +32,7 @@ const statusLabels: Record<string, string> = {
     transfere: 'Transféré',
 };
 
-export default function Index({ students, formations, schoolClasses, filters }: Props) {
+export default function Index({ students, formations, schoolClasses, classCounts, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [showImport, setShowImport] = useState(false);
     const [cardsClassId, setCardsClassId] = useState<string>('');
@@ -59,6 +61,7 @@ export default function Index({ students, formations, schoolClasses, filters }: 
             {
                 search,
                 formation_id: filters.formation_id ?? '',
+                school_class_id: filters.school_class_id ?? '',
                 status: filters.status ?? '',
                 ...overrides,
             },
@@ -211,6 +214,20 @@ export default function Index({ students, formations, schoolClasses, filters }: 
                     ))}
                 </Select>
                 <Select
+                    value={filters.school_class_id ?? ''}
+                    onChange={(e) =>
+                        applyFilters({ school_class_id: e.target.value })
+                    }
+                    className="sm:w-48"
+                >
+                    <option value="">Toutes les classes</option>
+                    {schoolClasses.map((c) => (
+                        <option key={c.id} value={c.id}>
+                            {c.name}
+                        </option>
+                    ))}
+                </Select>
+                <Select
                     value={filters.status ?? ''}
                     onChange={(e) =>
                         applyFilters({ status: e.target.value })
@@ -241,8 +258,24 @@ export default function Index({ students, formations, schoolClasses, filters }: 
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-ink-100">
-                            {students.data.map((s) => (
-                                <tr key={s.id} className="transition-colors duration-150 hover:bg-ink-50/60">
+                            {students.data.map((s, index) => {
+                                const classKey = String(s.school_class_id ?? 'none');
+                                const previous = students.data[index - 1];
+                                const startsGroup = !previous || String(previous.school_class_id ?? 'none') !== classKey;
+
+                                return (
+                                <Fragment key={s.id}>
+                                {startsGroup && (
+                                    <tr className="bg-ink-50">
+                                        <td colSpan={5} className="px-5 py-2 text-xs font-semibold uppercase tracking-wide text-ink-600">
+                                            {s.school_class?.name ?? 'Sans classe'}
+                                            <span className="ml-2 font-normal normal-case text-ink-400">
+                                                {classCounts[classKey] ?? 0} élève{(classCounts[classKey] ?? 0) > 1 ? 's' : ''}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                )}
+                                <tr className="transition-colors duration-150 hover:bg-ink-50/60">
                                     <td className="px-5 py-3">
                                         <div className="flex items-center gap-3">
                                             {s.photo ? (
@@ -298,7 +331,9 @@ export default function Index({ students, formations, schoolClasses, filters }: 
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
+                                </Fragment>
+                                );
+                            })}
                             {students.data.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="px-5 py-16 text-center">
