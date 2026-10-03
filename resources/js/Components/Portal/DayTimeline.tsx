@@ -59,13 +59,11 @@ export default function DayTimeline({ entries, showClass = false, emptyLabel = "
                                       : 'border-ink-100 bg-white'
                             }`}
                         >
-                            <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-                                <span className="truncate">{entry.subject?.name ?? 'Cours'}</span>
+                            <p className="line-clamp-2 text-sm font-semibold leading-snug text-ink-900">{entry.subject?.name ?? 'Cours'}</p>
+                            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-500">
                                 {state === 'ongoing' && (
-                                    <span className="shrink-0 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">En cours</span>
+                                    <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">En cours</span>
                                 )}
-                            </p>
-                            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-ink-500">
                                 {entry.room && (
                                     <span className="inline-flex items-center gap-1">
                                         <MapPin className="h-3.5 w-3.5" /> {entry.room.name}

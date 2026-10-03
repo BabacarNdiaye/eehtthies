@@ -46,6 +46,16 @@ interface Props {
 export default function Dashboard({ teacher, classes, upcomingExams, entriesToday, nextClass, announcements }: Props) {
     const { portalProfile } = usePage<PageProps>().props;
 
+    // « Faire l'appel » ouvre directement la classe et la matière du cours affiché, à la date du cours.
+    const attendanceHref =
+        nextClass?.entry.school_class_id && nextClass.entry.subject_id
+            ? route('teacher.attendance.index', {
+                  school_class_id: nextClass.entry.school_class_id,
+                  subject_id: nextClass.entry.subject_id,
+                  date: nextClass.starts_at.slice(0, 10),
+              })
+            : route('teacher.attendance.index');
+
     return (
         <PortalLayout title="Espace Enseignant" nav={teacherNav}>
             <Head title="Mon espace" />
@@ -58,7 +68,7 @@ export default function Dashboard({ teacher, classes, upcomingExams, entriesToda
             />
 
             <div className="space-y-8">
-                <NextClassCard next={nextClass} attendanceHref={route('teacher.attendance.index')} timetableHref={route('teacher.timetable')} />
+                <NextClassCard next={nextClass} attendanceHref={attendanceHref} timetableHref={route('teacher.timetable')} />
 
                 <section>
                     <SectionTitle title="À la une" />

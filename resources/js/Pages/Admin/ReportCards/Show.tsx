@@ -44,7 +44,7 @@ export default function Show({ reportCard, subjects, decisions, mentions }: Prop
             <Head title={`Bulletin — ${reportCard.student?.first_name} ${reportCard.student?.last_name}`} />
             <PageHeader
                 title={`Bulletin de ${reportCard.student?.first_name} ${reportCard.student?.last_name}`}
-                subtitle={`${reportCard.schoolClass?.name ?? ''} · ${reportCard.academicYear?.label ?? ''} · ${reportCard.term}`}
+                subtitle={`${reportCard.school_class?.name ?? ''} · ${reportCard.academic_year?.label ?? ''} · ${reportCard.term}`}
             >
                 <a
                     href={route('admin.report-cards.pdf', reportCard.id)}

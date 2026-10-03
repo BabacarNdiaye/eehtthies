@@ -47,7 +47,7 @@ export default function Library({ resources }: { resources: LibraryResourceRow[]
             <Head title="Bibliothèque" />
             <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="font-serif text-2xl font-bold text-ink-900">Bibliothèque</h1>
+                    <h1 className="hidden font-serif text-2xl font-bold text-ink-900 lg:block">Bibliothèque</h1>
                     <p className="mt-1 text-sm text-ink-500">Ressources partagées, visibles par tous les élèves et enseignants.</p>
                 </div>
                 <button

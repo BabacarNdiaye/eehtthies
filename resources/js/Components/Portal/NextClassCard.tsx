@@ -127,7 +127,7 @@ export default function NextClassCard({ next, attendanceHref, timetableHref, rel
 
             {(attendanceHref || timetableHref) && (
                 <div className="mt-4 flex gap-2">
-                    {attendanceHref && !finished && (
+                    {attendanceHref && !finished && next.starts_at.slice(0, 10) === new Date(now).toISOString().slice(0, 10) && (
                         <Link
                             href={attendanceHref}
                             className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-ink-900 px-4 py-3 text-sm font-semibold text-white transition-colors active:bg-ink-800 lg:flex-none lg:px-8"

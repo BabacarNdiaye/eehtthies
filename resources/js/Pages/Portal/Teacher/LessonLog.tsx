@@ -58,7 +58,7 @@ export default function LessonLog({ entries, logs, date }: Props) {
             <Head title="Cahier de texte" />
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 className="font-serif text-2xl font-bold text-ink-900">Cahier de texte</h1>
+                    <h1 className="hidden font-serif text-2xl font-bold text-ink-900 lg:block">Cahier de texte</h1>
                     <p className="mt-1 text-sm text-ink-500">Notez ce qui a été enseigné à chaque séance du jour.</p>
                 </div>
                 <Field label="Date">

@@ -44,11 +44,11 @@ export default function BulletinVerification({ reportCard }: { reportCard: Repor
                             </div>
                             <div className="flex justify-between border-b border-ink-100 pb-3">
                                 <dt className="text-sm text-ink-500">Classe</dt>
-                                <dd className="text-sm font-semibold text-ink-900">{reportCard.schoolClass?.name}</dd>
+                                <dd className="text-sm font-semibold text-ink-900">{reportCard.school_class?.name}</dd>
                             </div>
                             <div className="flex justify-between border-b border-ink-100 pb-3">
                                 <dt className="text-sm text-ink-500">Année académique</dt>
-                                <dd className="text-sm font-semibold text-ink-900">{reportCard.academicYear?.label}</dd>
+                                <dd className="text-sm font-semibold text-ink-900">{reportCard.academic_year?.label}</dd>
                             </div>
                             <div className="flex justify-between border-b border-ink-100 pb-3">
                                 <dt className="text-sm text-ink-500">Période</dt>

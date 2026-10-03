@@ -39,7 +39,7 @@ export default function Index({ sessions }: { sessions: Paginated<PracticalSessi
                             {sessions.data.map((s) => (
                                 <tr key={s.id} className="transition-colors duration-150 hover:bg-ink-50/60">
                                     <td className="px-5 py-3 font-medium text-ink-900">{s.title}</td>
-                                    <td className="px-5 py-3 text-ink-600">{s.schoolClass?.name}</td>
+                                    <td className="px-5 py-3 text-ink-600">{s.school_class?.name}</td>
                                     <td className="px-5 py-3 text-ink-600">{s.subject?.name ?? '—'}</td>
                                     <td className="px-5 py-3 text-ink-600">{new Date(s.session_date).toLocaleDateString('fr-FR')}</td>
                                     <td className="px-5 py-3 text-ink-600">{s.items_count}</td>

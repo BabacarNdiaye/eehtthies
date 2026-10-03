@@ -14,7 +14,7 @@ export default function Classes({ classes }: { classes: ClassWithStudents[] }) {
     return (
         <PortalLayout title="Espace Enseignant" nav={teacherNav}>
             <Head title="Mes classes" />
-            <h1 className="mb-6 font-serif text-2xl font-bold text-ink-900">Mes classes</h1>
+            <h1 className="mb-6 hidden font-serif text-2xl font-bold text-ink-900 lg:block">Mes classes</h1>
 
             <div className="space-y-6">
                 {classes.map((c) => (

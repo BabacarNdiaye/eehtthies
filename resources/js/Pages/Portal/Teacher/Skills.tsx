@@ -49,7 +49,7 @@ export default function Skills({ classes, students, skills, levels, selectedClas
         <PortalLayout title="Espace Enseignant" nav={teacherNav}>
             <Head title="Compétences" />
             <div className="mb-6">
-                <h1 className="font-serif text-2xl font-bold text-ink-900">Compétences</h1>
+                <h1 className="hidden font-serif text-2xl font-bold text-ink-900 lg:block">Compétences</h1>
                 <p className="mt-1 text-sm text-ink-500">Évaluez la maîtrise des compétences de la filière pour vos élèves.</p>
             </div>
 

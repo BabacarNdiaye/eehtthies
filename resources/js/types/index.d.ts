@@ -378,7 +378,8 @@ export interface TimetableEntry {
     subject?: { id: number; name: string } | null;
     teacher?: { id: number; first_name: string; last_name: string } | null;
     room?: { id: number; name: string } | null;
-    schoolClass?: { id: number; name: string } | null;
+    // Laravel sérialise les relations en snake_case (schoolClass → school_class).
+    school_class?: { id: number; name: string } | null;
 }
 
 export interface Attendance {
@@ -429,7 +430,7 @@ export interface Exam {
     max_score: string | number;
     coefficient: string | number;
     is_published: boolean;
-    schoolClass?: { id: number; name: string } | null;
+    school_class?: { id: number; name: string } | null;
     subject?: { id: number; name: string } | null;
     invigilators?: { id: number; first_name: string; last_name: string }[];
     created_by?: number | null;
@@ -469,8 +470,8 @@ export interface ReportCard {
     is_published: boolean;
     generated_at?: string | null;
     student?: { id: number; first_name: string; last_name: string; matricule: string } | null;
-    schoolClass?: { id: number; name: string } | null;
-    academicYear?: { id: number; label: string } | null;
+    school_class?: { id: number; name: string } | null;
+    academic_year?: { id: number; label: string } | null;
 }
 
 export interface SubjectBreakdown {
@@ -513,7 +514,7 @@ export interface Invoice {
     due_date?: string | null;
     notes?: string | null;
     student?: { id: number; first_name: string; last_name: string; matricule: string } | null;
-    academicYear?: { id: number; label: string } | null;
+    academic_year?: { id: number; label: string } | null;
     payments?: Payment[];
     payments_sum_amount?: string | number | null;
     computed_status?: 'payee' | 'partielle' | 'impayee';
@@ -588,7 +589,7 @@ export interface PracticalSession {
     teacher_id?: number | null;
     session_date: string;
     notes?: string | null;
-    schoolClass?: { id: number; name: string } | null;
+    school_class?: { id: number; name: string } | null;
     subject?: { id: number; name: string } | null;
     teacher?: { id: number; first_name: string; last_name: string } | null;
     items?: PracticalSessionItem[];

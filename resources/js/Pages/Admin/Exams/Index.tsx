@@ -104,7 +104,7 @@ export default function Index({ exams, schoolClasses, types, filters }: Props) {
                                         <p className="font-medium text-ink-900">{exam.title}</p>
                                         <p className="text-xs text-ink-500">{types[exam.type]}</p>
                                     </td>
-                                    <td className="px-5 py-3 text-ink-600">{exam.schoolClass?.name ?? '—'}</td>
+                                    <td className="px-5 py-3 text-ink-600">{exam.school_class?.name ?? '—'}</td>
                                     <td className="px-5 py-3 text-ink-600">{exam.subject?.name ?? '—'}</td>
                                     <td className="px-5 py-3 text-ink-600">
                                         {new Date(exam.exam_date).toLocaleDateString('fr-FR')}

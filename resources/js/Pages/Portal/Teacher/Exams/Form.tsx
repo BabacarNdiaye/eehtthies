@@ -60,7 +60,7 @@ export default function Form({ exam, classSubjectPairs, types, terms }: Props) {
         <PortalLayout title="Espace Enseignant" nav={teacherNav}>
             <Head title={isEdit ? 'Modifier le devoir' : 'Programmer un devoir'} />
             <div className="mb-6">
-                <h1 className="font-serif text-2xl font-bold text-ink-900">
+                <h1 className="hidden font-serif text-2xl font-bold text-ink-900 lg:block">
                     {isEdit ? 'Modifier le devoir' : 'Programmer un devoir'}
                 </h1>
                 <p className="mt-1 text-sm text-ink-500">

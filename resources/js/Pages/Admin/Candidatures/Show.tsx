@@ -8,7 +8,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, Download, FileText, UserPlus } from 'lucide-react';
 
 interface CandidatureDetail extends Candidature {
-    academicYear?: { id: number; label: string } | null;
+    academic_year?: { id: number; label: string } | null;
     student_count: number;
 }
 
@@ -127,7 +127,7 @@ export default function Show({ candidature, documents, statuses }: Props) {
                             />
                             <InfoRow
                                 label="Année académique"
-                                value={candidature.academicYear?.label}
+                                value={candidature.academic_year?.label}
                             />
                             <InfoRow
                                 label="Source"

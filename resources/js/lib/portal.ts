@@ -34,6 +34,8 @@ import {
 /** Cours de l'emploi du temps, tel que l'envoie le serveur (relations Eloquent en snake_case). */
 export interface PortalEntry {
     id: number;
+    school_class_id?: number;
+    subject_id?: number;
     day_of_week: number;
     start_time: string;
     end_time: string;

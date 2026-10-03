@@ -1,69 +1,37 @@
+import DayPager from '@/Components/Portal/DayPager';
+import PortalPageHeader from '@/Components/Portal/PortalPageHeader';
 import PortalLayout from '@/Layouts/PortalLayout';
+import { PortalEntry } from '@/lib/portal';
 import { teacherNav } from '@/Pages/Portal/Teacher/Dashboard';
-import Card from '@/Components/Admin/Card';
-import { TimetableEntry } from '@/types';
 import { Head } from '@inertiajs/react';
-import { Clock, MapPin, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 
 interface Props {
-    entries: (TimetableEntry & { school_class?: { id: number; name: string } | null })[];
+    entries: PortalEntry[];
     days: Record<string, string>;
 }
 
 export default function Timetable({ entries, days }: Props) {
-    const byDay = Object.keys(days)
-        .map(Number)
-        .sort((a, b) => a - b)
-        .map((day) => ({
-            day,
-            label: days[day],
-            items: entries.filter((e) => e.day_of_week === day).sort((a, b) => a.start_time.localeCompare(b.start_time)),
-        }));
-
     return (
         <PortalLayout title="Espace Enseignant" nav={teacherNav}>
             <Head title="Mon emploi du temps" />
-            <div className="mb-6 flex items-center justify-between gap-4">
-                <h1 className="font-serif text-2xl font-bold text-ink-900">Mon emploi du temps</h1>
-                <a
-                    href={route('teacher.timetable.pdf')}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink-800"
-                >
-                    <Download className="h-4 w-4" /> Télécharger PDF
-                </a>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                {byDay.map(({ day, label, items }) => (
-                    <Card key={day} className="p-5">
-                        <h3 className="mb-3 font-serif text-base font-bold text-ink-900">{label}</h3>
-                        {items.length === 0 && <p className="text-sm text-ink-400">Aucun cours programmé.</p>}
-                        <ul className="space-y-2">
-                            {items.map((entry) => (
-                                <li key={entry.id} className="rounded-lg border border-ink-100 p-3">
-                                    <p className="text-sm font-semibold text-ink-900">
-                                        {entry.subject?.name} — {entry.school_class?.name}
-                                    </p>
-                                    <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-ink-500">
-                                        <span className="inline-flex items-center gap-1">
-                                            <Clock className="h-3.5 w-3.5" />
-                                            {entry.start_time.slice(0, 5)} - {entry.end_time.slice(0, 5)}
-                                        </span>
-                                        {entry.room && (
-                                            <span className="inline-flex items-center gap-1">
-                                                <MapPin className="h-3.5 w-3.5" />
-                                                {entry.room.name}
-                                            </span>
-                                        )}
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </Card>
-                ))}
-            </div>
+            <PortalPageHeader
+                title="Mon emploi du temps"
+                action={
+                    <a
+                        href={route('teacher.timetable.pdf')}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="Télécharger l'emploi du temps en PDF"
+                        className="inline-flex h-11 items-center gap-2 rounded-xl bg-ink-900 px-4 text-sm font-semibold text-white transition-colors active:bg-ink-800 lg:hover:bg-ink-800"
+                    >
+                        <Download className="h-4 w-4" /> PDF
+                    </a>
+                }
+            />
+
+            <DayPager entries={entries} days={days} showClass />
         </PortalLayout>
     );
 }

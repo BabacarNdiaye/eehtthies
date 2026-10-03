@@ -189,7 +189,7 @@ export default function Index({ reportCards, schoolClasses, academicYears, terms
                                         </p>
                                         <p className="text-xs text-ink-500">{rc.student?.matricule}</p>
                                     </td>
-                                    <td className="px-5 py-3 text-ink-600">{rc.schoolClass?.name ?? '—'}</td>
+                                    <td className="px-5 py-3 text-ink-600">{rc.school_class?.name ?? '—'}</td>
                                     <td className="px-5 py-3 text-ink-600">{rc.term}</td>
                                     <td className="px-5 py-3 font-medium text-ink-900">
                                         {rc.average != null ? Number(rc.average).toFixed(2) : '—'}

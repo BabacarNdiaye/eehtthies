@@ -55,7 +55,7 @@ class ParentPortalController extends Controller
         return $student;
     }
 
-    public function child(Request $request, Student $student): Response
+    public function child(Request $request, Student $student, ReportCardCalculator $calculator): Response
     {
         $student = $this->authorizeChild($request, $student)->load('formation:id,name', 'schoolClass:id,name', 'academicYear:id,label');
 
@@ -109,6 +109,17 @@ class ParentPortalController extends Controller
             'timetable' => $timetable,
             'days' => TimetableEntry::DAYS,
             'invoices' => $invoices,
+            // Les 30 derniers pointages, du plus récent au plus ancien (les totaux sont dans attendanceStats).
+            'attendanceRecords' => $student->attendances()
+                ->with('subject:id,name')
+                ->orderByDesc('date')
+                ->orderByDesc('id')
+                ->limit(30)
+                ->get(['id', 'date', 'status', 'justification', 'subject_id']),
+            'summary' => [
+                'average' => $calculator->summaryForStudent($student)['overall'],
+                'balance_due' => $student->balanceDue(),
+            ],
         ]);
     }
 

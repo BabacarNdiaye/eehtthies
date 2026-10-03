@@ -57,7 +57,7 @@ export default function Leave({ requests, types, statuses }: Props) {
         <PortalLayout title="Espace Enseignant" nav={teacherNav}>
             <Head title="Congés" />
             <div className="mb-6">
-                <h1 className="font-serif text-2xl font-bold text-ink-900">Congés</h1>
+                <h1 className="hidden font-serif text-2xl font-bold text-ink-900 lg:block">Congés</h1>
                 <p className="mt-1 text-sm text-ink-500">Vos demandes de congé.</p>
             </div>
 

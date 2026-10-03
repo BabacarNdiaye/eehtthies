@@ -10,7 +10,7 @@ import { useState } from 'react';
 type StudentRow = { id: number; matricule: string; first_name: string; last_name: string };
 
 interface Props {
-    exam: Exam & { schoolClass?: { id: number; name: string }; subject?: { id: number; name: string } };
+    exam: Exam;
     students: StudentRow[];
     grades: Record<number, Grade>;
 }
@@ -57,7 +57,7 @@ export default function Grades({ exam, students, grades }: Props) {
             <Head title={`Notes — ${exam.title}`} />
             <PageHeader
                 title={`Saisie des notes — ${exam.title}`}
-                subtitle={`${exam.schoolClass?.name ?? ''} · ${exam.subject?.name ?? ''} · Barème /${exam.max_score}`}
+                subtitle={`${exam.school_class?.name ?? ''} · ${exam.subject?.name ?? ''} · Barème /${exam.max_score}`}
             />
 
             <Card className="overflow-hidden">

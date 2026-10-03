@@ -8,7 +8,9 @@ use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\TimetableEntry;
 use App\Services\AttendanceCheckInResolver;
+use App\Support\ClassSchedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -37,6 +39,27 @@ class TeacherAttendanceController extends Controller
             ->values();
     }
 
+    /**
+     * Paire (classe, matière) du cours en cours de l'enseignant, ou qui commence dans les 20 prochaines minutes :
+     * l'appel s'y ouvre directement, sans choisir dans une liste.
+     *
+     * @return array{0: int, 1: int}|null
+     */
+    private function currentPair(Teacher $teacher): ?array
+    {
+        $next = ClassSchedule::next(TimetableEntry::where('teacher_id', $teacher->id)->get(), now());
+
+        if (! $next) {
+            return null;
+        }
+
+        if ($next['state'] !== 'ongoing' && Carbon::parse($next['starts_at'])->greaterThan(now()->addMinutes(20))) {
+            return null;
+        }
+
+        return [$next['entry']->school_class_id, $next['entry']->subject_id];
+    }
+
     private function authorizePair(Teacher $teacher, int $classId, int $subjectId): void
     {
         $allowed = $this->classSubjectPairs($teacher)->contains(
@@ -54,6 +77,11 @@ class TeacherAttendanceController extends Controller
         $schoolClassId = $request->integer('school_class_id') ?: null;
         $subjectId = $request->integer('subject_id') ?: null;
         $date = $request->string('date')->toString() ?: now()->toDateString();
+
+        // Sans choix dans l'adresse (ni même une sélection vide), on ouvre l'appel sur le cours du moment.
+        if (! $request->has('school_class_id') && ! $request->has('subject_id') && $current = $this->currentPair($teacher)) {
+            [$schoolClassId, $subjectId] = $current;
+        }
 
         $students = collect();
         $existing = collect();
