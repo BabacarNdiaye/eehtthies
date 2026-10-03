@@ -1,16 +1,18 @@
 import Carousel from '@/Components/Portal/Carousel';
 import DayTimeline from '@/Components/Portal/DayTimeline';
 import NextClassCard from '@/Components/Portal/NextClassCard';
+import { usePortal } from '@/Components/Portal/PortalContext';
 import PortalHero from '@/Components/Portal/PortalHero';
 import SectionTitle from '@/Components/Portal/SectionTitle';
 import StatRing from '@/Components/Portal/StatRing';
 import SubjectTile from '@/Components/Portal/SubjectTile';
+import useOfflineSnapshot from '@/hooks/useOfflineSnapshot';
 import PortalLayout, { PortalNavItem } from '@/Layouts/PortalLayout';
+import { toSnapshotEntries } from '@/lib/offline';
 import { FeedItem, formatAmount, NextClass, PortalEntry, SubjectSummary } from '@/lib/portal';
-import { ReportCard, Student } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { CheckCircle2, Wallet } from 'lucide-react';
-import { useEffect } from 'react';
+import { PageProps, ReportCard, Student } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { CheckCircle2, Maximize2, Wallet } from 'lucide-react';
 
 export const studentNav: PortalNavItem[] = [
     { label: 'Tableau de bord', href: 'student.dashboard', active: (c) => c === 'student.dashboard' },
@@ -29,6 +31,7 @@ interface Props {
     qrCode: string;
     nextClass: NextClass | null;
     todayEntries: PortalEntry[];
+    weekEntries: PortalEntry[];
     subjects: SubjectSummary[];
     overallAverage: number | null;
     balanceDue: number;
@@ -45,6 +48,7 @@ export default function Dashboard({
     qrCode,
     nextClass,
     todayEntries,
+    weekEntries,
     subjects,
     overallAverage,
     balanceDue,
@@ -53,13 +57,26 @@ export default function Dashboard({
     const totalAttendance = Object.values(attendanceStats).reduce((a, b) => a + b, 0);
     const absences = (attendanceStats.absent ?? 0) + (attendanceStats.absence_justifiee ?? 0);
     const average = overallAverage ?? (latestReportCard?.average != null ? Number(latestReportCard.average) : null);
+    const { auth } = usePage<PageProps>().props;
+    const name = `${student.first_name} ${student.last_name}`;
 
-    // « Ma carte » (onglet central de la barre du bas) arrive ici avec ?card=1.
-    useEffect(() => {
-        if (new URLSearchParams(window.location.search).has('card')) {
-            document.getElementById('carte')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }, []);
+    // Mode hors ligne : l'emploi du temps de la semaine et la carte restent consultables sans réseau.
+    useOfflineSnapshot({
+        userId: auth.user?.id ?? 0,
+        role: 'student',
+        name,
+        subtitle: [student.formation?.name, student.school_class?.name].filter(Boolean).join(' — ') || null,
+        week: toSnapshotEntries(weekEntries, false),
+        card: {
+            name,
+            matricule: student.matricule,
+            formation: student.formation?.name ?? null,
+            class_name: student.school_class?.name ?? null,
+            academic_year: student.academic_year?.label ?? null,
+            photo: student.photo ? `/storage/${student.photo}` : null,
+            qr: qrCode,
+        },
+    });
 
     return (
         <PortalLayout title="Espace Élève" nav={studentNav}>
@@ -147,22 +164,36 @@ export default function Dashboard({
                     </div>
                 </section>
 
-                <section id="carte" className="scroll-mt-20">
-                    <SectionTitle title="Ma carte" />
-                    <div className="flex items-center gap-4 rounded-3xl bg-white p-4 shadow-soft ring-1 ring-ink-100">
-                        <img
-                            src={`data:image/svg+xml;base64,${qrCode}`}
-                            alt="Mon code QR de pointage"
-                            className="h-28 w-28 shrink-0 rounded-2xl border border-ink-100 p-2"
-                        />
-                        <div className="min-w-0">
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-ink-400">Badge d'entrée</p>
-                            <p className="font-serif text-lg font-bold text-ink-900">{student.matricule}</p>
-                            <p className="mt-1 text-xs text-ink-500">À présenter à l'entrée de l'établissement pour le pointage.</p>
-                        </div>
-                    </div>
-                </section>
+                <CardSection qrCode={qrCode} matricule={student.matricule} />
             </div>
         </PortalLayout>
+    );
+}
+
+/** Aperçu de la carte d'étudiant ; le bouton l'ouvre en plein écran (carte retournable, écran maintenu allumé). */
+function CardSection({ qrCode, matricule }: { qrCode: string; matricule: string }) {
+    const { openCard } = usePortal();
+
+    return (
+        <section id="carte">
+            <SectionTitle title="Ma carte" />
+            <div className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-ink-100">
+                <div className="flex items-center gap-4">
+                    <img src={`data:image/svg+xml;base64,${qrCode}`} alt="Mon code QR de pointage" className="h-28 w-28 shrink-0 rounded-2xl border border-ink-100 p-2" />
+                    <div className="min-w-0">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-ink-400">Badge d'entrée</p>
+                        <p className="font-serif text-lg font-bold text-ink-900">{matricule}</p>
+                        <p className="mt-1 text-xs text-ink-500">À présenter à l'entrée de l'établissement pour le pointage.</p>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onClick={openCard}
+                    className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-ink-900 text-sm font-semibold text-white transition-colors active:bg-ink-800 lg:w-auto lg:px-8"
+                >
+                    <Maximize2 className="h-4 w-4" /> Afficher en plein écran
+                </button>
+            </div>
+        </section>
     );
 }

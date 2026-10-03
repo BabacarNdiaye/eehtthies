@@ -14,6 +14,7 @@ use App\Services\PortalFeed;
 use App\Services\ReportCardCalculator;
 use App\Support\ClassSchedule;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -61,6 +62,26 @@ class StudentPortalController extends Controller
             'balanceDue' => $student->balanceDue(),
             'announcements' => $feed->forUser($request->user()),
         ]);
+    }
+
+    /**
+     * Données de la carte d'étudiant plein écran (recto : identité, verso : code QR de pointage). Réponse jamais
+     * mise en cache : elle contient le jeton du badge.
+     */
+    public function card(Request $request): JsonResponse
+    {
+        $student = $this->student($request)->load('formation:id,name', 'schoolClass:id,name', 'academicYear:id,label');
+        $student->generateQrToken();
+
+        return response()->json([
+            'name' => $student->full_name,
+            'matricule' => $student->matricule,
+            'formation' => $student->formation?->name,
+            'class_name' => $student->schoolClass?->name,
+            'academic_year' => $student->academicYear?->label,
+            'photo' => $student->photo ? '/storage/'.$student->photo : null,
+            'qr' => base64_encode(QrCode::format('svg')->size(300)->generate($student->qr_token)),
+        ])->header('Cache-Control', 'no-store, private');
     }
 
     /**

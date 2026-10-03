@@ -527,6 +527,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
 
 Route::prefix('espace-eleve')->name('student.')->middleware(['auth', 'verified', 'role:eleve'])->group(function () {
     Route::get('/', [StudentPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/carte', [StudentPortalController::class, 'card'])->name('card');
     Route::get('/emploi-du-temps', [StudentPortalController::class, 'timetable'])->name('timetable');
     Route::get('/emploi-du-temps/pdf', [StudentPortalController::class, 'timetablePdf'])->name('timetable.pdf');
     Route::get('/notes', [StudentPortalController::class, 'grades'])->name('grades');

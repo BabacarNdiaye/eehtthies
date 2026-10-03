@@ -2,13 +2,16 @@ import NotificationBell from '@/Components/NotificationBell';
 import BottomBar, { BarTab } from '@/Components/Portal/BottomBar';
 import MenuSheet, { MenuItem } from '@/Components/Portal/MenuSheet';
 import { PortalContext } from '@/Components/Portal/PortalContext';
+import PullIndicator from '@/Components/Portal/PullIndicator';
+import StudentCardOverlay from '@/Components/Portal/StudentCardOverlay';
 import SiteLogo from '@/Components/SiteLogo';
 import useAutoPushSubscribe from '@/hooks/useAutoPushSubscribe';
 import useMediaQuery from '@/hooks/useMediaQuery';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
 import useUnreadCount from '@/hooks/useUnreadCount';
 import { haptic, navIcon } from '@/lib/portal';
 import { PageProps } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Bell, Calendar, ChevronLeft, ClipboardCheck, Home, KeyRound, LayoutGrid, LogOut, LucideIcon, MessageCircle, QrCode } from 'lucide-react';
 import { PropsWithChildren, useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -22,8 +25,8 @@ interface RoleConfig {
     label: string;
     home: string;
     agenda?: string;
-    /** Action surélevée au centre de la barre du bas. */
-    center?: { label: string; icon: LucideIcon; href: () => string };
+    /** Action surélevée au centre de la barre du bas : un lien, ou l'ouverture de la carte d'étudiant plein écran. */
+    center?: { label: string; icon: LucideIcon; href?: () => string; action?: 'card' };
 }
 
 // Onglets de la barre du bas par espace (le préfixe de route vient du premier élément de `nav`).
@@ -32,7 +35,7 @@ const ROLES: Record<string, RoleConfig> = {
         label: 'Élève',
         home: 'student.dashboard',
         agenda: 'student.timetable',
-        center: { label: 'Ma carte', icon: QrCode, href: () => route('student.dashboard', { card: 1 }) },
+        center: { label: 'Ma carte', icon: QrCode, action: 'card' },
     },
     teacher: {
         label: 'Enseignant',
@@ -56,9 +59,14 @@ export default function PortalLayout({ title, nav, children }: PropsWithChildren
     const { auth, flash, portalProfile } = props;
     const isDesktop = useMediaQuery('(min-width: 1024px)');
     const [menuOpen, setMenuOpen] = useState(false);
+    const [cardOpen, setCardOpen] = useState(false);
     // Une seule source de non-lus : la cloche de l'en-tête d'ordinateur (qui joue aussi un carillon) OU ce compteur.
     const unread = useUnreadCount(!isDesktop);
     useAutoPushSubscribe();
+
+    // « Tirer pour actualiser » dans l'application installée (désactivé quand une fenêtre modale est ouverte).
+    const refresh = useCallback(() => new Promise<void>((resolve) => router.reload({ onFinish: () => resolve() })), []);
+    const { pull, refreshing } = usePullToRefresh(refresh, !menuOpen && !cardOpen);
 
     const currentRoute = (route().current() ?? component) as string;
     const rolePrefix = nav[0]?.href.split('.')[0] ?? 'student';
@@ -81,7 +89,27 @@ export default function PortalLayout({ title, nav, children }: PropsWithChildren
 
     const openMenu = useCallback(() => setMenuOpen(true), []);
     const closeMenu = useCallback(() => setMenuOpen(false), []);
-    const context = useMemo(() => ({ unread, openMenu }), [unread, openMenu]);
+    const hasCard = config.center?.action === 'card';
+    const openCard = useCallback(() => setCardOpen(true), []);
+
+    // Fermer la carte retire aussi ?card=1 de l'adresse (sans toucher à l'état d'historique d'Inertia).
+    const closeCard = useCallback(() => {
+        setCardOpen(false);
+
+        const url = new URL(window.location.href);
+
+        if (url.searchParams.has('card')) {
+            url.searchParams.delete('card');
+            window.history.replaceState(window.history.state, '', url);
+        }
+    }, []);
+
+    // Lien direct ?card=1 (raccourci, signet) : la carte s'ouvre dès l'arrivée.
+    useEffect(() => {
+        if (hasCard && new URLSearchParams(window.location.search).has('card')) setCardOpen(true);
+    }, [hasCard]);
+
+    const context = useMemo(() => ({ unread, openMenu, openCard }), [unread, openMenu, openCard]);
 
     const profile = {
         name: portalProfile?.name ?? auth.user?.name ?? '',
@@ -99,7 +127,12 @@ export default function PortalLayout({ title, nav, children }: PropsWithChildren
     ];
 
     const center: BarTab | undefined = config.center
-        ? { key: 'center', label: config.center.label, icon: config.center.icon, href: config.center.href() }
+        ? {
+              key: 'center',
+              label: config.center.label,
+              icon: config.center.icon,
+              ...(config.center.action === 'card' ? { onClick: openCard } : { href: config.center.href?.() }),
+          }
         : undefined;
 
     const menuItems: MenuItem[] = nav.map((item) => ({
@@ -232,6 +265,8 @@ export default function PortalLayout({ title, nav, children }: PropsWithChildren
 
                 <BottomBar tabs={tabs} center={center} />
                 <MenuSheet open={menuOpen} onClose={closeMenu} profile={profile} items={menuItems} passwordHref={passwordHref} />
+                {hasCard && <StudentCardOverlay open={cardOpen} onClose={closeCard} />}
+                <PullIndicator pull={pull} refreshing={refreshing} />
             </div>
         </PortalContext.Provider>
     );

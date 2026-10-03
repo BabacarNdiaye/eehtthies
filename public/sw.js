@@ -4,12 +4,16 @@
 // haché, car leurs noms changent à chaque déploiement et une liste de pré-cache périmée casserait
 // l'application après une mise à jour.
 
-const CACHE_NAME = 'eeht-shell-v1';
+// Changer ce numéro à chaque modification de la page hors ligne : il renouvelle les fichiers gardés en cache.
+const CACHE_NAME = 'eeht-shell-v3';
 const OFFLINE_URL = '/offline.html';
+// Petits fichiers de la page hors ligne, mis en cache à l'installation pour qu'elle s'affiche sans réseau (elle lit
+// l'emploi du temps et la carte gardés dans le navigateur par l'application — voir public/offline.js).
+const OFFLINE_ASSETS = [OFFLINE_URL, '/offline.js', '/icons/icon-192.png'];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll([OFFLINE_URL])),
+        caches.open(CACHE_NAME).then((cache) => cache.addAll(OFFLINE_ASSETS)),
     );
     self.skipWaiting();
 });
@@ -24,6 +28,17 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    // Fichiers de la page hors ligne : cache d'abord (ils changent très rarement), réseau en secours.
+    if (
+        event.request.method === 'GET' &&
+        event.request.mode !== 'navigate' &&
+        OFFLINE_ASSETS.includes(new URL(event.request.url).pathname)
+    ) {
+        event.respondWith(caches.match(event.request).then((hit) => hit || fetch(event.request)));
+
+        return;
+    }
+
     if (event.request.mode !== 'navigate') {
         return;
     }

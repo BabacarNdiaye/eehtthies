@@ -1,9 +1,10 @@
 import Avatar from '@/Components/Connect/Avatar';
+import useDialogFocus from '@/hooks/useDialogFocus';
 import { haptic } from '@/lib/portal';
 import { promptInstall, useCanInstall } from '@/lib/pwa';
 import { Link } from '@inertiajs/react';
 import { Download, Globe, KeyRound, LogOut, LucideIcon } from 'lucide-react';
-import { PointerEvent, useEffect, useRef, useState } from 'react';
+import { PointerEvent, useRef, useState } from 'react';
 
 export interface MenuItem {
     label: string;
@@ -29,49 +30,11 @@ const tileIcon = 'flex h-14 w-14 items-center justify-center rounded-2xl border 
  */
 export default function MenuSheet({ open, onClose, profile, items, passwordHref }: Props) {
     const panelRef = useRef<HTMLDivElement>(null);
-    const opener = useRef<Element | null>(null);
     const startY = useRef<number | null>(null);
     const [dragY, setDragY] = useState(0);
     const canInstall = useCanInstall();
 
-    useEffect(() => {
-        if (!open) return;
-
-        opener.current = document.activeElement;
-        panelRef.current?.focus();
-
-        const onKey = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                onClose();
-
-                return;
-            }
-
-            // Le focus clavier reste dans la feuille tant qu'elle est ouverte.
-            if (event.key === 'Tab' && panelRef.current) {
-                const focusable = panelRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled])');
-                const first = focusable[0];
-                const last = focusable[focusable.length - 1];
-
-                if (event.shiftKey && (document.activeElement === first || document.activeElement === panelRef.current)) {
-                    event.preventDefault();
-                    last?.focus();
-                } else if (!event.shiftKey && document.activeElement === last) {
-                    event.preventDefault();
-                    first?.focus();
-                }
-            }
-        };
-        document.addEventListener('keydown', onKey);
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-
-        return () => {
-            document.removeEventListener('keydown', onKey);
-            document.body.style.overflow = previousOverflow;
-            (opener.current as HTMLElement | null)?.focus?.();
-        };
-    }, [open, onClose]);
+    useDialogFocus(open, panelRef, onClose);
 
     const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
         startY.current = event.clientY;

@@ -3,7 +3,9 @@ import DayTimeline from '@/Components/Portal/DayTimeline';
 import NextClassCard from '@/Components/Portal/NextClassCard';
 import PortalHero from '@/Components/Portal/PortalHero';
 import SectionTitle from '@/Components/Portal/SectionTitle';
+import useOfflineSnapshot from '@/hooks/useOfflineSnapshot';
 import PortalLayout, { PortalNavItem } from '@/Layouts/PortalLayout';
+import { toSnapshotEntries } from '@/lib/offline';
 import { FeedItem, gradientFor, navIcon, NextClass, PortalEntry } from '@/lib/portal';
 import { Exam, PageProps } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
@@ -38,13 +40,23 @@ interface Props {
     // Laravel sérialise les relations en snake_case (`school_class`), pas en camelCase.
     upcomingExams: (Exam & { school_class?: { id: number; name: string } | null; subject?: { id: number; name: string } | null })[];
     entriesToday: PortalEntry[];
+    weekEntries: PortalEntry[];
     nextClass: NextClass | null;
     announcements: FeedItem[];
 }
 
 /** Accueil de l'espace enseignant : prochain cours et appel, à la une, classes, raccourcis et journée. */
-export default function Dashboard({ teacher, classes, upcomingExams, entriesToday, nextClass, announcements }: Props) {
-    const { portalProfile } = usePage<PageProps>().props;
+export default function Dashboard({ teacher, classes, upcomingExams, entriesToday, weekEntries, nextClass, announcements }: Props) {
+    const { auth, portalProfile } = usePage<PageProps>().props;
+
+    // Mode hors ligne : l'emploi du temps de la semaine reste consultable sans réseau.
+    useOfflineSnapshot({
+        userId: auth.user?.id ?? 0,
+        role: 'teacher',
+        name: `${teacher.first_name} ${teacher.last_name}`,
+        subtitle: portalProfile?.subtitle ?? null,
+        week: toSnapshotEntries(weekEntries, true),
+    });
 
     // « Faire l'appel » ouvre directement la classe et la matière du cours affiché, à la date du cours.
     const attendanceHref =
