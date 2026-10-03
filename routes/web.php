@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ClassDiscussionController;
 use App\Http\Controllers\Admin\ClassPromotionController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DataResetController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\ExamController;
 use App\Http\Controllers\Admin\ExpenseController;
@@ -380,6 +381,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     Route::middleware('permission:voir_parametres')->group(function () {
         Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::post('settings', [SettingController::class, 'update'])->name('settings.update')->middleware('permission:modifier_parametres');
+    });
+
+    // Réinitialisation sélective des données : opération destructive, réservée au super-administrateur.
+    Route::middleware('role:super-admin')->prefix('settings/reset')->name('settings.reset.')->group(function () {
+        Route::get('/', [DataResetController::class, 'index'])->name('index');
+        Route::post('/', [DataResetController::class, 'store'])->name('store')->middleware('throttle:5,1');
     });
 
     Route::get('rooms', [RoomController::class, 'index'])->name('rooms.index')->middleware('permission:voir_salles');

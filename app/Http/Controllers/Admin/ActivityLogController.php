@@ -19,6 +19,7 @@ class ActivityLogController extends Controller
         'salaires' => 'Salaires',
         'candidatures' => 'Candidatures',
         'roles' => 'Rôles & permissions',
+        'administration' => 'Administration',
     ];
 
     private const SUBJECT_LABELS = [

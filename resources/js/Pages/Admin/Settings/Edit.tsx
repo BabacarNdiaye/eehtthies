@@ -2,9 +2,10 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Textarea } from '@/Components/Admin/Field';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Building2 } from 'lucide-react';
+import { Building2, RotateCcw } from 'lucide-react';
+import { PageProps } from '@/types';
 
 // Doit refléter App\Support\ThemePalette::DEFAULTS.
 const THEME_DEFAULTS = {
@@ -32,6 +33,9 @@ const colorFields: {
 ];
 
 export default function Edit({ settings }: { settings: Record<string, string> }) {
+    const { auth } = usePage<PageProps>().props;
+    const isSuperAdmin = auth.roles?.includes('super-admin') ?? false;
+
     const { data, setData, post, processing, errors } = useForm({
         site_name: settings.site_name ?? '',
         site_short_name: settings.site_short_name ?? '',
@@ -380,6 +384,23 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                     </button>
                 </div>
             </form>
+
+            {isSuperAdmin && (
+                <Card className="mt-8 border-red-200 p-6">
+                    <h2 className="mb-1 font-serif text-lg font-bold text-red-800">Zone sensible</h2>
+                    <p className="mb-4 text-sm text-ink-500">
+                        Remettez à zéro uniquement ce que vous choisissez (contenus du site, réglages, élèves, finances,
+                        messages…). Une sauvegarde de la base est faite automatiquement avant toute suppression.
+                    </p>
+                    <Link
+                        href={route('admin.settings.reset.index')}
+                        className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50"
+                    >
+                        <RotateCcw className="h-4 w-4" />
+                        Réinitialiser des données…
+                    </Link>
+                </Card>
+            )}
         </AdminLayout>
     );
 }
