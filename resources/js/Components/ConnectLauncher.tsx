@@ -69,7 +69,10 @@ export default function ConnectLauncher({ initialPage }: { initialPage: Page<Pag
 
     if (incoming) {
         return (
-            <div className="fixed inset-x-4 bottom-20 z-50 mx-auto flex max-w-sm items-center gap-3 rounded-2xl bg-ink-900 p-4 text-white shadow-elevated lg:bottom-6 lg:left-auto lg:right-6 lg:mx-0">
+            <div
+                className="fixed inset-x-4 bottom-20 z-50 mx-auto flex max-w-sm items-center gap-3 rounded-2xl bg-ink-900 p-4 text-white shadow-elevated lg:bottom-6 lg:left-auto lg:right-6 lg:mx-0"
+                style={{ marginBottom: 'var(--portal-bar-h, 0px)' }}
+            >
                 <span className="flex h-11 w-11 shrink-0 animate-pulse items-center justify-center rounded-full bg-emerald-500">
                     {incoming.type === 'video' ? <Video className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
                 </span>
@@ -106,7 +109,7 @@ export default function ConnectLauncher({ initialPage }: { initialPage: Page<Pag
                 router.visit(route('connect.index'));
             }}
             aria-label={unread > 0 ? `Ouvrir EEHT Connect (${unread} non lu${unread > 1 ? 's' : ''})` : 'Ouvrir EEHT Connect'}
-            className="fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-ink-900 p-4 text-white shadow-elevated ring-4 ring-white/70 transition hover:scale-105 hover:bg-ink-800 lg:bottom-6 lg:right-6 lg:px-5 lg:py-3.5"
+            className="connect-fab fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-ink-900 p-4 text-white shadow-elevated ring-4 ring-white/70 transition hover:scale-105 hover:bg-ink-800 lg:bottom-6 lg:right-6 lg:px-5 lg:py-3.5"
             style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
         >
             <span className="relative">

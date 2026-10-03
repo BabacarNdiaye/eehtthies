@@ -120,6 +120,18 @@ class Student extends Model
         return $this->hasMany(Invoice::class);
     }
 
+    /**
+     * Total restant à payer sur l'ensemble des factures. Une facture trop perçue n'est jamais déduite des
+     * autres : chaque solde est borné à zéro avant d'être additionné.
+     */
+    public function balanceDue(): float
+    {
+        return (float) $this->invoices()
+            ->withSum('payments', 'amount')
+            ->get()
+            ->sum(fn (Invoice $invoice) => max(0, round((float) $invoice->amount - (float) $invoice->discount - (float) ($invoice->payments_sum_amount ?? 0), 2)));
+    }
+
     public function internships()
     {
         return $this->hasMany(Internship::class);

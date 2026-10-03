@@ -7,6 +7,8 @@ use App\Models\Exam;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
 use App\Models\TimetableEntry;
+use App\Services\PortalFeed;
+use App\Support\ClassSchedule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,7 +29,7 @@ class TeacherPortalController extends Controller
         return TimetableEntry::where('teacher_id', $teacher->id)->distinct()->pluck('school_class_id')->all();
     }
 
-    public function dashboard(Request $request): Response
+    public function dashboard(Request $request, PortalFeed $feed): Response
     {
         $teacher = $this->teacher($request)->load('subjects:id,name');
         $classIds = $this->classIds($teacher);
@@ -64,11 +66,20 @@ class TeacherPortalController extends Controller
             ->orderBy('start_time')
             ->get();
 
+        $weekEntries = TimetableEntry::where('teacher_id', $teacher->id)
+            ->with('schoolClass:id,name', 'subject:id,name', 'room:id,name')
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get();
+
         return Inertia::render('Portal/Teacher/Dashboard', [
             'teacher' => $teacher,
             'classes' => $classes,
             'upcomingExams' => $upcomingExams,
             'entriesToday' => $entriesToday,
+            'weekEntries' => $weekEntries,
+            'nextClass' => ClassSchedule::next($weekEntries, now()),
+            'announcements' => $feed->forUser($request->user()),
         ]);
     }
 

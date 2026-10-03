@@ -223,6 +223,35 @@ class ReportCardCalculator
     }
 
     /**
+     * Synthèse de l'accueil de l'espace élève/parent : moyennes par matière et moyenne générale sur toutes les
+     * épreuves PUBLIÉES de la classe actuelle de l'élève (toutes périodes), avec les mêmes formules que les
+     * bulletins. Sans classe ou sans note publiée, les listes sont vides et la moyenne est nulle.
+     *
+     * @return array{subjects: array, overall: float|null}
+     */
+    public function summaryForStudent(Student $student): array
+    {
+        if (! $student->school_class_id) {
+            return ['subjects' => [], 'overall' => null];
+        }
+
+        $exams = Exam::where('school_class_id', $student->school_class_id)
+            ->where('is_published', true)
+            ->with('subject')
+            ->get();
+
+        $grades = Grade::whereIn('exam_id', $exams->pluck('id'))
+            ->where('student_id', $student->id)
+            ->where('is_absent', false)
+            ->whereNotNull('score')
+            ->get();
+
+        $rows = $this->computeSubjectRows($student, $exams->groupBy('subject_id'), $grades);
+
+        return ['subjects' => $rows, 'overall' => $this->overallAverage($rows)];
+    }
+
+    /**
      * Totaux de présence (retards / absences / absences injustifiées) d'un élève sur la fenêtre de dates
      * approximative de la période donnée.
      */

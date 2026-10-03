@@ -24,6 +24,9 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
         './resources/js/**/*.tsx',
+        // Les classes écrites dans des fichiers .ts (p. ex. les dégradés de matières de lib/portal.ts) doivent
+        // elles aussi être générées.
+        './resources/js/**/*.ts',
     ],
 
     theme: {

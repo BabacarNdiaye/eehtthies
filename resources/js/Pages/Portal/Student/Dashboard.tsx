@@ -1,8 +1,16 @@
+import Carousel from '@/Components/Portal/Carousel';
+import DayTimeline from '@/Components/Portal/DayTimeline';
+import NextClassCard from '@/Components/Portal/NextClassCard';
+import PortalHero from '@/Components/Portal/PortalHero';
+import SectionTitle from '@/Components/Portal/SectionTitle';
+import StatRing from '@/Components/Portal/StatRing';
+import SubjectTile from '@/Components/Portal/SubjectTile';
 import PortalLayout, { PortalNavItem } from '@/Layouts/PortalLayout';
-import Card from '@/Components/Admin/Card';
+import { FeedItem, formatAmount, NextClass, PortalEntry, SubjectSummary } from '@/lib/portal';
 import { ReportCard, Student } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Award, Calendar, ClipboardCheck, GraduationCap, MessageCircle, QrCode, Receipt } from 'lucide-react';
+import { CheckCircle2, Wallet } from 'lucide-react';
+import { useEffect } from 'react';
 
 export const studentNav: PortalNavItem[] = [
     { label: 'Tableau de bord', href: 'student.dashboard', active: (c) => c === 'student.dashboard' },
@@ -14,113 +22,146 @@ export const studentNav: PortalNavItem[] = [
     { label: 'Bibliothèque', href: 'student.library', active: (c) => c === 'student.library' },
 ];
 
-const quickActions = [
-    { label: 'Emploi\ndu temps', href: 'student.timetable', icon: Calendar },
-    { label: 'Notes', href: 'student.grades', icon: GraduationCap },
-    { label: 'Présences', href: 'student.attendance', icon: ClipboardCheck },
-    { label: 'Factures', href: 'student.invoices', icon: Receipt },
-    { label: 'EEHT\nConnect', href: 'connect.index', icon: MessageCircle },
-];
-
 interface Props {
-    student: Student & { formation?: { id: number; name: string }; academicYear?: { id: number; label: string } };
-    upcomingCount: number;
+    student: Student;
     latestReportCard: ReportCard | null;
     attendanceStats: Record<string, number>;
     qrCode: string;
+    nextClass: NextClass | null;
+    todayEntries: PortalEntry[];
+    subjects: SubjectSummary[];
+    overallAverage: number | null;
+    balanceDue: number;
+    announcements: FeedItem[];
 }
 
-export default function Dashboard({ student, upcomingCount, latestReportCard, attendanceStats, qrCode }: Props) {
+const kpiCard = 'flex flex-col items-center justify-center rounded-3xl bg-white p-4 text-center shadow-soft ring-1 ring-ink-100 transition-transform active:scale-[0.98]';
+
+/** Accueil de l'espace élève : prochain cours, à la une, matières, journée, chiffres clés et carte. */
+export default function Dashboard({
+    student,
+    latestReportCard,
+    attendanceStats,
+    qrCode,
+    nextClass,
+    todayEntries,
+    subjects,
+    overallAverage,
+    balanceDue,
+    announcements,
+}: Props) {
     const totalAttendance = Object.values(attendanceStats).reduce((a, b) => a + b, 0);
     const absences = (attendanceStats.absent ?? 0) + (attendanceStats.absence_justifiee ?? 0);
+    const average = overallAverage ?? (latestReportCard?.average != null ? Number(latestReportCard.average) : null);
+
+    // « Ma carte » (onglet central de la barre du bas) arrive ici avec ?card=1.
+    useEffect(() => {
+        if (new URLSearchParams(window.location.search).has('card')) {
+            document.getElementById('carte')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, []);
 
     return (
         <PortalLayout title="Espace Élève" nav={studentNav}>
             <Head title="Mon espace" />
 
-            <div className="relative -mx-4 -mt-8 overflow-hidden rounded-b-3xl bg-gradient-to-br from-ink-950 via-ink-900 to-[#6b1338] px-6 pb-14 pt-8 sm:-mx-6 sm:rounded-b-[2.5rem]">
-                <div className="pointer-events-none absolute -right-8 top-4 h-32 w-32 rounded-full bg-gold-400/10 blur-2xl" />
-                <p className="text-sm text-gold-300/80">Bienvenue</p>
-                <h1 className="mt-1 font-serif text-2xl font-bold text-white">
-                    {student.first_name} {student.last_name} 👋
-                </h1>
-                <p className="mt-1 text-sm text-white/60">
-                    {student.formation?.name} {student.school_class ? `— ${student.school_class.name}` : ''}{' '}
-                    {student.academic_year ? `· ${student.academic_year.label}` : ''}
-                </p>
-            </div>
+            <PortalHero
+                name={`${student.first_name} ${student.last_name}`}
+                lines={[student.formation?.name, [student.school_class?.name, student.academic_year?.label].filter(Boolean).join(' · ')]}
+                avatar={student.photo ? `/storage/${student.photo}` : null}
+                badge={student.matricule}
+            />
 
-            <div className="relative z-10 -mt-8 flex justify-center px-2">
-                <div className="w-full max-w-xs rounded-2xl bg-white p-5 text-center shadow-lg">
-                    <p className="flex items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-ink-400">
-                        <QrCode className="h-3.5 w-3.5" />
-                        Mon badge
-                    </p>
-                    <img
-                        src={`data:image/svg+xml;base64,${qrCode}`}
-                        alt="Mon QR code"
-                        className="mx-auto mt-3 h-40 w-40 rounded-lg border border-ink-100 p-2"
-                    />
-                    <p className="mt-3 text-sm font-semibold text-ink-800">{student.matricule}</p>
-                    <p className="mt-1 text-xs text-ink-400">À présenter à l'entrée de l'établissement pour le pointage</p>
-                </div>
-            </div>
+            <div className="space-y-8">
+                <NextClassCard next={nextClass} timetableHref={route('student.timetable')} />
 
-            <div className="relative mt-6 grid grid-cols-3 gap-2 sm:gap-3">
-                {quickActions.map((action) => (
-                    <Link
-                        key={action.href}
-                        href={route(action.href)}
-                        className="flex flex-col items-center gap-2 rounded-2xl bg-white p-2.5 text-center shadow-md transition hover:-translate-y-0.5 hover:shadow-lg sm:p-4"
-                    >
-                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-100 text-gold-700 sm:h-12 sm:w-12">
-                            <action.icon className="h-5 w-5" />
-                        </span>
-                        <span className="whitespace-pre-line text-[11px] font-medium leading-tight text-ink-700 sm:text-xs">
-                            {action.label}
-                        </span>
-                    </Link>
-                ))}
-            </div>
+                <section>
+                    <SectionTitle title="À la une" />
+                    <Carousel items={announcements} />
+                </section>
 
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <Card className="p-5">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-100 text-blue-700">
-                            <Calendar className="h-5 w-5" />
+                <section>
+                    <SectionTitle title="Mes matières" href={route('student.grades')} action="Mes notes" />
+                    {subjects.length === 0 ? (
+                        <p className="rounded-2xl bg-white px-4 py-6 text-center text-sm text-ink-400 ring-1 ring-ink-100">
+                            Vos matières apparaîtront dès que l'emploi du temps de votre classe sera publié.
+                        </p>
+                    ) : (
+                        <div className="grid grid-cols-3 gap-x-3 gap-y-6 sm:grid-cols-4 lg:grid-cols-6">
+                            {subjects.map((subject) => (
+                                <SubjectTile key={subject.id} name={subject.name} average={subject.average} caption={subject.teacher} href={route('student.grades')} />
+                            ))}
                         </div>
-                        <div>
-                            <p className="text-2xl font-bold text-ink-900">{upcomingCount}</p>
-                            <p className="text-sm text-ink-500">Cours cette semaine</p>
+                    )}
+                </section>
+
+                <section>
+                    <SectionTitle title="Aujourd'hui" href={route('student.timetable')} action="Agenda" />
+                    <DayTimeline entries={todayEntries} />
+                </section>
+
+                <section>
+                    <SectionTitle title="En un coup d'œil" />
+                    <div className="grid grid-cols-3 gap-3">
+                        <div className={kpiCard}>
+                            <StatRing value={average} label="Moyenne" />
+                        </div>
+                        <Link href={route('student.attendance')} className={kpiCard}>
+                            <span
+                                className={`flex h-[72px] w-[72px] items-center justify-center rounded-full text-2xl font-bold ${
+                                    absences > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
+                                }`}
+                            >
+                                {absences}
+                            </span>
+                            <span className="mt-1.5 text-[11px] font-medium leading-tight text-ink-500">
+                                Absence{absences > 1 ? 's' : ''}
+                                <br />
+                                sur {totalAttendance} pointage{totalAttendance > 1 ? 's' : ''}
+                            </span>
+                        </Link>
+                        <Link href={route('student.invoices')} className={kpiCard}>
+                            <span
+                                className={`flex h-[72px] w-[72px] items-center justify-center rounded-full ${
+                                    balanceDue > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
+                                }`}
+                            >
+                                {balanceDue > 0 ? <Wallet className="h-8 w-8" /> : <CheckCircle2 className="h-8 w-8" />}
+                            </span>
+                            <span className="mt-1.5 text-[11px] font-medium leading-tight text-ink-500">
+                                {balanceDue > 0 ? (
+                                    <>
+                                        À payer
+                                        <br />
+                                        <span className="text-xs font-bold text-red-600">{formatAmount(balanceDue)}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        Scolarité
+                                        <br />
+                                        <span className="text-xs font-bold text-emerald-600">À jour</span>
+                                    </>
+                                )}
+                            </span>
+                        </Link>
+                    </div>
+                </section>
+
+                <section id="carte" className="scroll-mt-20">
+                    <SectionTitle title="Ma carte" />
+                    <div className="flex items-center gap-4 rounded-3xl bg-white p-4 shadow-soft ring-1 ring-ink-100">
+                        <img
+                            src={`data:image/svg+xml;base64,${qrCode}`}
+                            alt="Mon code QR de pointage"
+                            className="h-28 w-28 shrink-0 rounded-2xl border border-ink-100 p-2"
+                        />
+                        <div className="min-w-0">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-ink-400">Badge d'entrée</p>
+                            <p className="font-serif text-lg font-bold text-ink-900">{student.matricule}</p>
+                            <p className="mt-1 text-xs text-ink-500">À présenter à l'entrée de l'établissement pour le pointage.</p>
                         </div>
                     </div>
-                </Card>
-                <Card className="p-5">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gold-100 text-gold-800">
-                            <Award className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-ink-900">
-                                {latestReportCard?.average != null ? Number(latestReportCard.average).toFixed(2) : '—'}
-                            </p>
-                            <p className="text-sm text-ink-500">Dernière moyenne ({latestReportCard?.term ?? '—'})</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-5">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-100 text-red-700">
-                            <ClipboardCheck className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-ink-900">
-                                {absences} / {totalAttendance}
-                            </p>
-                            <p className="text-sm text-ink-500">Absences enregistrées</p>
-                        </div>
-                    </div>
-                </Card>
+                </section>
             </div>
         </PortalLayout>
     );

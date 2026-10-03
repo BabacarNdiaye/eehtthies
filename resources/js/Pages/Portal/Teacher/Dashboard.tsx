@@ -1,8 +1,13 @@
+import Carousel from '@/Components/Portal/Carousel';
+import DayTimeline from '@/Components/Portal/DayTimeline';
+import NextClassCard from '@/Components/Portal/NextClassCard';
+import PortalHero from '@/Components/Portal/PortalHero';
+import SectionTitle from '@/Components/Portal/SectionTitle';
 import PortalLayout, { PortalNavItem } from '@/Layouts/PortalLayout';
-import Card from '@/Components/Admin/Card';
-import { Exam, TimetableEntry } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { Calendar, ClipboardList, Clock, MapPin, Users } from 'lucide-react';
+import { FeedItem, gradientFor, navIcon, NextClass, PortalEntry } from '@/lib/portal';
+import { Exam, PageProps } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { Users } from 'lucide-react';
 
 export const teacherNav: PortalNavItem[] = [
     { label: 'Tableau de bord', href: 'teacher.dashboard', active: (c) => c === 'teacher.dashboard' },
@@ -17,106 +22,124 @@ export const teacherNav: PortalNavItem[] = [
     { label: 'EEHT Connect', href: 'connect.index', active: (c) => c.startsWith('connect.') },
 ];
 
+// Raccourcis de l'accueil : les rubriques d'usage quotidien, en grille d'icônes.
+const shortcuts = [
+    { label: 'Devoirs', href: 'teacher.exams.index' },
+    { label: 'Cahier de texte', href: 'teacher.lesson-log.index' },
+    { label: 'Présences', href: 'teacher.attendance.index' },
+    { label: 'Congés', href: 'teacher.leave.index' },
+    { label: 'Compétences', href: 'teacher.skills.index' },
+    { label: 'Bibliothèque', href: 'teacher.library.index' },
+];
+
 interface Props {
     teacher: { first_name: string; last_name: string; subjects?: { id: number; name: string }[] };
     classes: { id: number; name: string; students_count: number }[];
-    upcomingExams: (Exam & { schoolClass?: { id: number; name: string }; subject?: { id: number; name: string } })[];
-    entriesToday: TimetableEntry[];
+    // Laravel sérialise les relations en snake_case (`school_class`), pas en camelCase.
+    upcomingExams: (Exam & { school_class?: { id: number; name: string } | null; subject?: { id: number; name: string } | null })[];
+    entriesToday: PortalEntry[];
+    nextClass: NextClass | null;
+    announcements: FeedItem[];
 }
 
-export default function Dashboard({ teacher, classes, upcomingExams, entriesToday }: Props) {
+/** Accueil de l'espace enseignant : prochain cours et appel, à la une, classes, raccourcis et journée. */
+export default function Dashboard({ teacher, classes, upcomingExams, entriesToday, nextClass, announcements }: Props) {
+    const { portalProfile } = usePage<PageProps>().props;
+
     return (
         <PortalLayout title="Espace Enseignant" nav={teacherNav}>
             <Head title="Mon espace" />
 
-            <div className="mb-8">
-                <h1 className="font-serif text-2xl font-bold text-ink-900">
-                    Bonjour {teacher.first_name} 👋
-                </h1>
-                <p className="mt-1 text-sm text-ink-500">
-                    {teacher.subjects?.map((s) => s.name).join(', ') || 'Aucune matière assignée'}
-                </p>
-            </div>
+            <PortalHero
+                name={`${teacher.first_name} ${teacher.last_name}`}
+                lines={[teacher.subjects?.map((subject) => subject.name).join(', ') || 'Aucune matière assignée']}
+                avatar={portalProfile?.photo}
+                badge={portalProfile?.matricule}
+            />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Card className="p-5">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
-                            <Users className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-ink-900">{classes.length}</p>
-                            <p className="text-sm text-ink-500">Classes encadrées</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-5">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gold-100 text-gold-800">
-                            <ClipboardList className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-ink-900">{upcomingExams.length}</p>
-                            <p className="text-sm text-ink-500">Épreuves à venir</p>
-                        </div>
-                    </div>
-                </Card>
-            </div>
+            <div className="space-y-8">
+                <NextClassCard next={nextClass} attendanceHref={route('teacher.attendance.index')} timetableHref={route('teacher.timetable')} />
 
-            <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <Card className="p-5">
-                    <h2 className="mb-3 flex items-center gap-2 font-serif text-lg font-semibold text-ink-900">
-                        <Clock className="h-5 w-5 text-gold-600" /> Aujourd'hui
-                    </h2>
-                    {entriesToday.length === 0 && <p className="text-sm text-ink-400">Aucun cours aujourd'hui.</p>}
-                    <ul className="space-y-2">
-                        {entriesToday.map((entry) => (
-                            <li key={entry.id} className="rounded-lg border border-ink-100 p-3">
-                                <p className="text-sm font-semibold text-ink-900">
-                                    {entry.subject?.name} — {entry.schoolClass?.name}
-                                </p>
-                                <div className="mt-1 flex flex-wrap gap-3 text-xs text-ink-500">
-                                    <span>
-                                        {entry.start_time.slice(0, 5)} - {entry.end_time.slice(0, 5)}
-                                    </span>
-                                    {entry.room && (
-                                        <span className="inline-flex items-center gap-1">
-                                            <MapPin className="h-3.5 w-3.5" /> {entry.room.name}
+                <section>
+                    <SectionTitle title="À la une" />
+                    <Carousel items={announcements} />
+                </section>
+
+                <section>
+                    <SectionTitle title="Mes classes" href={route('teacher.classes')} />
+                    {classes.length === 0 ? (
+                        <p className="rounded-2xl bg-white px-4 py-6 text-center text-sm text-ink-400 ring-1 ring-ink-100">
+                            Vos classes apparaîtront dès que votre emploi du temps sera publié.
+                        </p>
+                    ) : (
+                        <div className="grid grid-cols-3 gap-x-3 gap-y-6 sm:grid-cols-4 lg:grid-cols-6">
+                            {classes.map((schoolClass) => (
+                                <Link key={schoolClass.id} href={route('teacher.classes')} className="group flex flex-col items-center gap-2 rounded-3xl text-center outline-none focus-visible:ring-2 focus-visible:ring-gold-500">
+                                    <span
+                                        className={`relative flex aspect-square w-full max-w-[104px] items-center justify-center rounded-3xl bg-gradient-to-br ${gradientFor(schoolClass.name)} text-white shadow-md transition-transform duration-200 group-active:scale-95`}
+                                    >
+                                        <Users className="h-9 w-9" strokeWidth={1.9} />
+                                        <span className="absolute -right-1.5 -top-1.5 rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-ink-800 shadow">
+                                            {schoolClass.students_count}
                                         </span>
-                                    )}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </Card>
-
-                <Card className="p-5">
-                    <h2 className="mb-3 flex items-center gap-2 font-serif text-lg font-semibold text-ink-900">
-                        <Calendar className="h-5 w-5 text-gold-600" /> Prochaines épreuves
-                    </h2>
-                    {upcomingExams.length === 0 && <p className="text-sm text-ink-400">Aucune épreuve programmée.</p>}
-                    <ul className="space-y-2">
-                        {upcomingExams.map((exam) => (
-                            <li
-                                key={exam.id}
-                                className="flex items-center justify-between rounded-lg border border-ink-100 p-3"
-                            >
-                                <div>
-                                    <p className="text-sm font-semibold text-ink-900">{exam.title}</p>
-                                    <p className="text-xs text-ink-500">
-                                        {exam.schoolClass?.name} · {new Date(exam.exam_date).toLocaleDateString('fr-FR')}
-                                    </p>
-                                </div>
-                                <Link
-                                    href={route('teacher.exams.grades', exam.id)}
-                                    className="rounded-lg bg-ink-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-ink-800"
-                                >
-                                    Saisir les notes
+                                    </span>
+                                    <span className="line-clamp-2 text-xs font-semibold leading-tight text-ink-800">{schoolClass.name}</span>
                                 </Link>
-                            </li>
-                        ))}
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                <section>
+                    <SectionTitle title="Raccourcis" />
+                    <ul className="grid grid-cols-3 gap-x-3 gap-y-5 rounded-3xl bg-white p-4 shadow-soft ring-1 ring-ink-100 lg:grid-cols-6">
+                        {shortcuts.map((shortcut) => {
+                            const Icon = navIcon(shortcut.href);
+
+                            return (
+                                <li key={shortcut.href}>
+                                    <Link href={route(shortcut.href)} className="flex flex-col items-center gap-2 rounded-2xl text-center outline-none active:scale-95 focus-visible:ring-2 focus-visible:ring-gold-500">
+                                        <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-leaf-200 bg-leaf-50 text-leaf-800">
+                                            <Icon className="h-6 w-6" />
+                                        </span>
+                                        <span className="text-xs font-medium leading-tight text-ink-700">{shortcut.label}</span>
+                                    </Link>
+                                </li>
+                            );
+                        })}
                     </ul>
-                </Card>
+                </section>
+
+                <section>
+                    <SectionTitle title="Aujourd'hui" href={route('teacher.timetable')} action="Agenda" />
+                    <DayTimeline entries={entriesToday} showClass />
+                </section>
+
+                <section>
+                    <SectionTitle title="Prochaines épreuves" href={route('teacher.exams.index')} />
+                    {upcomingExams.length === 0 ? (
+                        <p className="rounded-2xl bg-white px-4 py-6 text-center text-sm text-ink-400 ring-1 ring-ink-100">Aucune épreuve programmée.</p>
+                    ) : (
+                        <ul className="space-y-2.5">
+                            {upcomingExams.map((exam) => (
+                                <li key={exam.id} className="flex items-center justify-between gap-3 rounded-2xl bg-white p-4 shadow-soft ring-1 ring-ink-100">
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold text-ink-900">{exam.title}</p>
+                                        <p className="text-xs text-ink-500">
+                                            {exam.school_class?.name} · {new Date(exam.exam_date).toLocaleDateString('fr-FR')}
+                                        </p>
+                                    </div>
+                                    <Link
+                                        href={route('teacher.exams.grades', exam.id)}
+                                        className="shrink-0 rounded-xl bg-ink-900 px-3.5 py-2 text-xs font-semibold text-white transition-colors active:bg-ink-800"
+                                    >
+                                        Saisir les notes
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
             </div>
         </PortalLayout>
     );

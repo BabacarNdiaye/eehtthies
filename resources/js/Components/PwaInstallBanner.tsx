@@ -77,7 +77,10 @@ export default function PwaInstallBanner() {
     };
 
     return (
-        <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-4">
+        <div
+            className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-4"
+            style={{ marginBottom: 'var(--portal-bar-h, 0px)' }}
+        >
             <div className="w-full max-w-md rounded-xl border border-ink-100 bg-white p-4 shadow-lg">
                 <div className="flex items-start gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-ink-900 text-white">

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -64,6 +65,59 @@ class HandleInertiaRequests extends Middleware
                 'about_photo' => Setting::get('about_photo'),
             ],
             'vapidPublicKey' => config('webpush.vapid.public_key'),
+            'portalProfile' => fn () => $this->portalProfile($user),
         ];
+    }
+
+    /**
+     * Profil affiché dans la feuille Menu et l'en-tête des espaces élève, enseignant et parent. Réservé à ces
+     * rôles : les pages d'administration n'ont rien de plus à interroger.
+     *
+     * @return array{kind: string, name: string, subtitle: ?string, photo: ?string, matricule: ?string}|null
+     */
+    private function portalProfile(?User $user): ?array
+    {
+        if (! $user) {
+            return null;
+        }
+
+        $roles = $user->getRoleNames();
+        $avatar = $user->avatar ? '/storage/'.$user->avatar : null;
+
+        if ($roles->contains('eleve') && $student = $user->student) {
+            $student->loadMissing('formation:id,name', 'schoolClass:id,name');
+
+            return [
+                'kind' => 'student',
+                'name' => $student->full_name,
+                'subtitle' => collect([$student->formation?->name, $student->schoolClass?->name])->filter()->implode(' — ') ?: null,
+                'photo' => $student->photo ? '/storage/'.$student->photo : $avatar,
+                'matricule' => $student->matricule,
+            ];
+        }
+
+        if ($roles->contains('enseignant') && $teacher = $user->teacher) {
+            return [
+                'kind' => 'teacher',
+                'name' => $teacher->full_name,
+                'subtitle' => $teacher->specialty ?: 'Enseignant',
+                'photo' => $teacher->photo ? '/storage/'.$teacher->photo : $avatar,
+                'matricule' => $teacher->matricule,
+            ];
+        }
+
+        if ($roles->contains('parent')) {
+            $children = $user->childStudents()->count();
+
+            return [
+                'kind' => 'parent',
+                'name' => $user->name,
+                'subtitle' => $children.' '.($children > 1 ? 'enfants' : 'enfant'),
+                'photo' => $avatar,
+                'matricule' => null,
+            ];
+        }
+
+        return null;
     }
 }

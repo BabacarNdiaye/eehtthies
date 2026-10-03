@@ -10,9 +10,13 @@ use App\Models\Payment;
 use App\Models\ReportCard;
 use App\Models\Student;
 use App\Models\TimetableEntry;
+use App\Services\PortalFeed;
 use App\Services\ReportCardCalculator;
+use App\Support\ClassSchedule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -27,17 +31,12 @@ class StudentPortalController extends Controller
         return $student;
     }
 
-    public function dashboard(Request $request): Response
+    public function dashboard(Request $request, ReportCardCalculator $calculator, PortalFeed $feed): Response
     {
         $student = $this->student($request)->load('formation:id,name', 'schoolClass:id,name', 'academicYear:id,label');
 
-        $upcoming = $student->school_class_id
-            ? TimetableEntry::where('school_class_id', $student->school_class_id)
-                ->with('subject:id,name', 'teacher:id,first_name,last_name', 'room:id,name')
-                ->orderBy('day_of_week')
-                ->orderBy('start_time')
-                ->get()
-            : collect();
+        $entries = $this->timetableEntries($student);
+        $summary = $calculator->summaryForStudent($student);
 
         $latestReportCard = $student->reportCards()->where('is_published', true)->latest('generated_at')->first();
 
@@ -51,11 +50,50 @@ class StudentPortalController extends Controller
 
         return Inertia::render('Portal/Student/Dashboard', [
             'student' => $student,
-            'upcomingCount' => $upcoming->count(),
             'latestReportCard' => $latestReportCard,
             'attendanceStats' => $attendanceStats,
             'qrCode' => $qrCode,
+            'nextClass' => ClassSchedule::next($entries, now()),
+            'todayEntries' => ClassSchedule::today($entries, now()),
+            'weekEntries' => $entries,
+            'subjects' => $this->subjectTiles($entries, $summary['subjects']),
+            'overallAverage' => $summary['overall'],
+            'balanceDue' => $student->balanceDue(),
+            'announcements' => $feed->forUser($request->user()),
         ]);
+    }
+
+    /**
+     * Tuiles « Mes matières » : les matières de l'emploi du temps de la classe (avec leurs enseignants), plus
+     * celles qui ont déjà une note publiée, chacune avec sa moyenne sur 20 quand elle existe.
+     *
+     * @param  Collection<int, TimetableEntry>  $entries
+     * @param  array<int, array{subject_id: int, subject: string, moy20: ?float}>  $summaryRows
+     * @return list<array{id: int, name: string, teacher: ?string, average: ?float}>
+     */
+    private function subjectTiles(Collection $entries, array $summaryRows): array
+    {
+        $averages = collect($summaryRows)->pluck('moy20', 'subject_id');
+
+        $tiles = $entries
+            ->filter(fn (TimetableEntry $entry) => $entry->subject)
+            ->groupBy('subject_id')
+            ->map(fn (Collection $group, $subjectId) => [
+                'id' => (int) $subjectId,
+                'name' => $group->first()->subject->name,
+                'teacher' => $group
+                    ->map(fn (TimetableEntry $entry) => $entry->teacher ? "{$entry->teacher->first_name} {$entry->teacher->last_name}" : null)
+                    ->filter()->unique()->implode(', ') ?: null,
+                'average' => $averages->get($subjectId),
+            ]);
+
+        foreach ($summaryRows as $row) {
+            if (! $tiles->has($row['subject_id'])) {
+                $tiles->put($row['subject_id'], ['id' => (int) $row['subject_id'], 'name' => $row['subject'], 'teacher' => null, 'average' => $row['moy20']]);
+            }
+        }
+
+        return $tiles->sortBy(fn (array $tile) => Str::lower(Str::ascii($tile['name'])))->values()->all();
     }
 
     private function timetableEntries(Student $student)

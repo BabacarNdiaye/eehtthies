@@ -9,7 +9,9 @@ use App\Models\Payment;
 use App\Models\ReportCard;
 use App\Models\Student;
 use App\Models\TimetableEntry;
+use App\Services\PortalFeed;
 use App\Services\ReportCardCalculator;
+use App\Support\ClassSchedule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,12 +20,31 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ParentPortalController extends Controller
 {
-    public function dashboard(Request $request): Response
+    public function dashboard(Request $request, ReportCardCalculator $calculator, PortalFeed $feed): Response
     {
         $children = $request->user()->childStudents()->with('formation:id,name', 'schoolClass:id,name')->get();
 
+        // Résumé de chaque enfant calculé d'un coup : l'écran passe d'un enfant à l'autre sans recharger.
+        $children->each(function (Student $child) use ($calculator) {
+            $entries = $child->school_class_id
+                ? TimetableEntry::where('school_class_id', $child->school_class_id)
+                    ->with('subject:id,name', 'teacher:id,first_name,last_name', 'room:id,name')
+                    ->orderBy('day_of_week')
+                    ->orderBy('start_time')
+                    ->get()
+                : collect();
+
+            $child->setAttribute('summary', [
+                'average' => $calculator->summaryForStudent($child)['overall'],
+                'absences' => $child->attendances()->whereIn('status', ['absent', 'absence_justifiee'])->count(),
+                'balance_due' => $child->balanceDue(),
+                'next_class' => ClassSchedule::next($entries, now()),
+            ]);
+        });
+
         return Inertia::render('Portal/Parent/Dashboard', [
             'children' => $children,
+            'announcements' => $feed->forUser($request->user()),
         ]);
     }
 

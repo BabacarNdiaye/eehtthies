@@ -40,6 +40,15 @@ export interface Flash {
     error?: string | null;
 }
 
+/** Profil affiché dans la feuille Menu et l'en-tête des espaces élève, enseignant et parent (null ailleurs). */
+export interface PortalProfile {
+    kind: 'student' | 'teacher' | 'parent';
+    name: string;
+    subtitle: string | null;
+    photo: string | null;
+    matricule: string | null;
+}
+
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
@@ -51,6 +60,7 @@ export type PageProps<
     flash: Flash;
     siteSettings: SiteSettings;
     vapidPublicKey?: string;
+    portalProfile?: PortalProfile | null;
 };
 
 export interface PaginationLink {
