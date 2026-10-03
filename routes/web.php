@@ -102,7 +102,7 @@ Route::get('/partenaires', [PageController::class, 'partners'])->name('pages.par
 Route::get('/temoignages', [PageController::class, 'testimonials'])->name('pages.testimonials');
 Route::get('/faq', [PageController::class, 'faq'])->name('pages.faq');
 Route::get('/contact', [PageController::class, 'contact'])->name('pages.contact');
-Route::post('/contact', [PageController::class, 'storeContact'])->name('pages.contact.store');
+Route::post('/contact', [PageController::class, 'storeContact'])->middleware('throttle:5,1')->name('pages.contact.store');
 
 Route::get('/mentions-legales', [PageController::class, 'legalNotice'])->name('pages.legal-notice');
 Route::get('/politique-de-confidentialite', [PageController::class, 'privacyPolicy'])->name('pages.privacy-policy');
@@ -117,10 +117,10 @@ Route::get('/evenements', [EventController::class, 'index'])->name('events.index
 Route::get('/galerie', [GalleryController::class, 'index'])->name('gallery.index');
 
 Route::get('/candidature', [CandidatureController::class, 'create'])->name('candidature.create');
-Route::post('/candidature', [CandidatureController::class, 'store'])->name('candidature.store');
+Route::post('/candidature', [CandidatureController::class, 'store'])->middleware('throttle:5,10')->name('candidature.store');
 Route::get('/candidature/confirmation/{reference}', [CandidatureController::class, 'confirmation'])->name('candidature.confirmation');
 Route::get('/suivi-candidature', [CandidatureController::class, 'trackForm'])->name('candidature.track.form');
-Route::post('/suivi-candidature', [CandidatureController::class, 'track'])->name('candidature.track');
+Route::post('/suivi-candidature', [CandidatureController::class, 'track'])->middleware('throttle:10,1')->name('candidature.track');
 
 Route::get('/bulletins/verifier/{token}', ReportCardVerificationController::class)->name('bulletins.verify');
 Route::get('/diplomes/verifier/{diplomaNumber}', DiplomaVerificationController::class)->name('diplomas.verify');
@@ -186,35 +186,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
     Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
 
-    // Quick public kiosk: no auth (temporary, insecure) — useful for testing on phone when login isn't possible
-    Route::get('/borne/pointage', [AttendanceController::class, 'kioskPublic'])->name('borne.pointage');
-
     Route::middleware(['verified', 'staff'])->group(function () {
+        Route::get('/borne/pointage', [AttendanceController::class, 'kioskPublic'])->name('borne.pointage');
         // original admin route still registered under /admin/borne/pointage if needed
         Route::get('/admin/borne/pointage', [AttendanceController::class, 'kiosk'])->name('admin.borne.pointage');
         // dedicated entry point for scanning students' ID card badges (gate mode)
         Route::get('/admin/borne/pointage/entree', [AttendanceController::class, 'kioskGate'])->name('admin.borne.pointage.gate');
     });
-
-    Route::get('/test-push', function (Request $request) {
-        $user = $request->user();
-        $count = $user->pushSubscriptions()->count();
-
-        if ($count === 0) {
-            return response("Aucun abonnement push enregistré pour {$user->name}. Le navigateur n'a jamais confirmé l'activation des notifications pour ce compte.", 200)
-                ->header('Content-Type', 'text/plain; charset=UTF-8');
-        }
-
-        try {
-            $user->notify(new \App\Notifications\PushAlert('Test', 'Ceci est une notification de test.', '/'));
-
-            return response("Notification envoyée sans erreur à {$count} abonnement(s) pour {$user->name}. Si rien ne s'affiche sur l'appareil, le problème est côté navigateur/appareil (permission bloquée, ou abonnement expiré).", 200)
-                ->header('Content-Type', 'text/plain; charset=UTF-8');
-        } catch (\Throwable $e) {
-            return response("ERREUR lors de l'envoi : ".get_class($e).': '.$e->getMessage()."\n\n".$e->getTraceAsString(), 200)
-                ->header('Content-Type', 'text/plain; charset=UTF-8');
-        }
-    })->name('test-push');
 });
 
 /*
