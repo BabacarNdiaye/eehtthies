@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Formation;
+use App\Support\Exportable;
 use App\Support\ImageOptimizer;
+use App\Support\ReadsCsv;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -12,6 +14,63 @@ use Inertia\Response;
 
 class FormationController extends Controller
 {
+    use Exportable, ReadsCsv;
+
+    public function importTemplate()
+    {
+        $columns = ['name', 'code', 'diploma', 'level', 'duration', 'registration_fee', 'tuition_fee', 'capacity', 'description'];
+
+        return $this->csvResponse('modele-import-formations.csv', array_map(fn ($c) => ['key' => $c, 'label' => $c], $columns), [
+            ['name' => 'Cuisine professionnelle', 'code' => 'CUI', 'diploma' => 'CAP', 'level' => 'Niveau 3', 'duration' => '2 ans', 'registration_fee' => '25000', 'tuition_fee' => '150000', 'capacity' => '30', 'description' => ''],
+        ]);
+    }
+
+    public function importCsv(Request $request)
+    {
+        $request->validate(['file' => ['required', 'file', 'mimes:csv,txt']]);
+
+        $rows = $this->readCsvRows($request->file('file'));
+
+        if ($rows === null) {
+            return back()->with('error', 'Fichier CSV vide ou illisible.');
+        }
+
+        $created = 0;
+        $skipped = 0;
+
+        foreach ($rows as $row) {
+            $name = $row['name'] ?? '';
+            $code = $row['code'] ?? '';
+
+            if ($name === '' || $code === '' || Formation::where('code', $code)->exists()) {
+                $skipped++;
+
+                continue;
+            }
+
+            $slug = Str::slug($name);
+            if (Formation::where('slug', $slug)->exists()) {
+                $slug = Str::slug("{$name} {$code}");
+            }
+
+            Formation::create([
+                'name' => $name,
+                'code' => $code,
+                'slug' => $slug,
+                'diploma' => ($row['diploma'] ?? '') ?: null,
+                'level' => ($row['level'] ?? '') ?: null,
+                'duration' => ($row['duration'] ?? '') ?: null,
+                'registration_fee' => is_numeric($row['registration_fee'] ?? null) ? $row['registration_fee'] : 0,
+                'tuition_fee' => is_numeric($row['tuition_fee'] ?? null) ? $row['tuition_fee'] : 0,
+                'capacity' => ctype_digit($row['capacity'] ?? '') && ($row['capacity'] ?? '') !== '' ? (int) $row['capacity'] : null,
+                'description' => ($row['description'] ?? '') ?: null,
+            ]);
+            $created++;
+        }
+
+        return back()->with('success', "{$created} formation(s) importée(s). {$skipped} ligne(s) ignorée(s).");
+    }
+
     public function index(): Response
     {
         return Inertia::render('Admin/Formation/Index', [

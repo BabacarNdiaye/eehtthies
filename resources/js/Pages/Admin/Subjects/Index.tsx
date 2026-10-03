@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import CsvImport from '@/Components/Admin/CsvImport';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Select } from '@/Components/Admin/Field';
 import { Subject } from '@/types';
@@ -70,7 +71,14 @@ export default function Index({
             <PageHeader
                 title="Matières"
                 subtitle="Gérez les matières enseignées et leurs coefficients."
-            />
+            >
+                <CsvImport
+                    title="Importer des matières"
+                    columns="name, code, formation (code ou nom de la formation), coefficient (name obligatoire)"
+                    postRoute={route('admin.subjects.import')}
+                    templateRoute={route('admin.subjects.import.template')}
+                />
+            </PageHeader>
 
             <Card className="mb-6 p-6">
                 <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">Ajouter une matière</h2>

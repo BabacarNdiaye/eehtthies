@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import CsvImport from '@/Components/Admin/CsvImport';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Formation } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
@@ -23,7 +24,14 @@ export default function Index({ formations }: { formations: Formation[] }) {
                 title="Formations"
                 subtitle="Gérez l'offre de formation de l'école."
                 action={{ label: 'Nouvelle formation', href: route('admin.formations.create') }}
-            />
+            >
+                <CsvImport
+                    title="Importer des formations"
+                    columns="name, code, diploma, level, duration, registration_fee, tuition_fee, capacity, description (name et code obligatoires)"
+                    postRoute={route('admin.formations.import')}
+                    templateRoute={route('admin.formations.import.template')}
+                />
+            </PageHeader>
 
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">

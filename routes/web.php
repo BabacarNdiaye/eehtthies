@@ -210,6 +210,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::get('/dashboard', DashboardController::class);
 
+    Route::get('formations/import/template', [AdminFormationController::class, 'importTemplate'])->name('formations.import.template')->middleware('permission:ajouter_formations');
+    Route::post('formations/import', [AdminFormationController::class, 'importCsv'])->name('formations.import')->middleware('permission:ajouter_formations');
     PermissionRouting::gate(Route::resource('formations', AdminFormationController::class)->except('show'), 'formations');
 
     // Référentiel de compétences : le définir est une extension du contenu
@@ -369,6 +371,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     Route::post('class-promotion', [ClassPromotionController::class, 'store'])->name('class-promotion.store')->middleware('permission:modifier_eleves');
 
     Route::get('subjects', [SubjectController::class, 'index'])->name('subjects.index')->middleware('permission:voir_matieres');
+    Route::get('subjects/import/template', [SubjectController::class, 'importTemplate'])->name('subjects.import.template')->middleware('permission:ajouter_matieres');
+    Route::post('subjects/import', [SubjectController::class, 'importCsv'])->name('subjects.import')->middleware('permission:ajouter_matieres');
     Route::post('subjects', [SubjectController::class, 'store'])->name('subjects.store')->middleware('permission:ajouter_matieres');
     Route::patch('subjects/{subject}', [SubjectController::class, 'update'])->name('subjects.update')->middleware('permission:modifier_matieres');
     Route::delete('subjects/{subject}', [SubjectController::class, 'destroy'])->name('subjects.destroy')->middleware('permission:supprimer_matieres');
