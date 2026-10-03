@@ -27,9 +27,9 @@ export default function Form({ formation }: { formation?: Formation }) {
         objectives: formation?.objectives ?? '',
         career_prospects: formation?.career_prospects ?? '',
         capacity: formation?.capacity ?? '',
-        // Eloquent serializes the `date` cast as a full ISO datetime string;
-        // a native <input type="date"> needs exactly "YYYY-MM-DD" or it
-        // silently renders empty when editing an existing formation.
+        // Eloquent sérialise le cast `date` en chaîne datetime ISO complète ; un champ <input type='date'>
+        // natif exige exactement « AAAA-MM-JJ », sinon il s'affiche silencieusement vide lors de la
+        // modification d'une formation existante.
         next_intake_date: formation?.next_intake_date?.slice(0, 10) ?? '',
         is_active: formation?.is_active ?? true,
         order: formation?.order ?? 0,
@@ -45,7 +45,7 @@ export default function Form({ formation }: { formation?: Formation }) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isEdit) {
-            // POST + _method spoof: PHP does not parse multipart bodies on PUT/PATCH requests.
+            // POST + simulation de _method : PHP n'analyse pas les corps multipart des requêtes PUT/PATCH.
             transform((data) => ({ ...data, _method: 'put' }));
             post(route('admin.formations.update', formation!.id), { forceFormData: true });
         } else {

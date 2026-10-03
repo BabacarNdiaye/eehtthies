@@ -38,7 +38,7 @@ export default function Contact() {
 
             <section className="py-20 sm:py-24">
                 <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-4 sm:px-6 lg:grid-cols-5 lg:px-8">
-                    {/* Left column: info card */}
+                    {/* Colonne de gauche : carte d'informations */}
                     <Reveal className="lg:col-span-2">
                         <div className="rounded-2xl bg-ink-900 p-8 text-white shadow-soft">
                             <h2 className="font-serif text-2xl font-bold">
@@ -113,7 +113,7 @@ export default function Contact() {
                             </ul>
                         </div>
 
-                        {/* Static map-style placeholder */}
+                        {/* Emplacement statique façon carte */}
                         <div className="mt-6 flex h-52 items-center justify-center rounded-2xl bg-gradient-to-br from-ink-100 via-ink-50 to-white shadow-soft ring-1 ring-ink-100">
                             <div className="text-center">
                                 <MapPin className="mx-auto h-8 w-8 text-gold-500" />
@@ -124,7 +124,7 @@ export default function Contact() {
                         </div>
                     </Reveal>
 
-                    {/* Right column: form */}
+                    {/* Colonne de droite : formulaire */}
                     <Reveal delay={100} className="lg:col-span-3">
                         <div className="rounded-2xl border border-ink-100 bg-white p-8 shadow-soft sm:p-10">
                             {recentlySuccessful ? (

@@ -7,16 +7,16 @@ use App\Models\TimetableEntry;
 use Illuminate\Support\Carbon;
 
 /**
- * Single point of truth for turning a raw attendance event (a QR scan, or a
- * teacher's manual save) into an Attendance row, and for classifying
- * present-vs-retard by comparing the event time to the class's scheduled
- * TimetableEntry::start_time. TimetableController::assertNoConflict()
- * guarantees no two entries for the same school_class_id ever overlap, so
- * "the period in session right now for this class" is always unambiguous.
+ * Point de vérité unique pour transformer un événement de présence brut (un scan QR ou l'enregistrement
+ * manuel d'un enseignant) en ligne Attendance, et pour classer présent ou en retard en comparant l'heure de
+ * l'événement à l'heure de début prévue du TimetableEntry de la classe.
+ * TimetableController::assertNoConflict() garantit que deux entrées d'un même school_class_id ne se
+ * chevauchent jamais, donc « la période en cours en ce moment pour cette classe » est toujours sans
+ * ambiguïté.
  */
 class AttendanceCheckInResolver
 {
-    /** The TimetableEntry actively in session for this class at $at (default now). */
+    /** Le TimetableEntry actuellement en cours pour cette classe à $at (par défaut maintenant). */
     public function activePeriod(int $schoolClassId, ?Carbon $at = null): ?TimetableEntry
     {
         $at ??= now();
@@ -30,8 +30,8 @@ class AttendanceCheckInResolver
     }
 
     /**
-     * The scheduled slot a (class, subject, date) triple corresponds to — used
-     * by the manual/bulk flow, which has no live "now" to match against.
+     * Le créneau prévu correspondant à un triplet (classe, matière, date) — utilisé par le flux manuel ou en
+     * lot, qui n'a pas de « maintenant » réel à comparer.
      */
     public function scheduledPeriod(int $schoolClassId, ?int $subjectId, string $date): ?TimetableEntry
     {
@@ -45,7 +45,7 @@ class AttendanceCheckInResolver
             ->first();
     }
 
-    /** ['status' => present|retard, 'late_minutes' => int] for arriving at $at during $entry. */
+    /** ['status' => present|retard, 'late_minutes' => int] pour une arrivée à $at pendant $entry. */
     public function classify(TimetableEntry $entry, Carbon $at): array
     {
         $graceMinutes = (int) config('eeht.late_grace_minutes', 5);
@@ -57,7 +57,7 @@ class AttendanceCheckInResolver
             : ['status' => 'present', 'late_minutes' => 0];
     }
 
-    /** Single write path for a QR/badge scan (kiosk classroom mode or entry gate). */
+    /** Chemin d'écriture unique pour un scan de QR ou de badge (borne en salle de classe ou portique). */
     public function recordScan(int $studentId, int $schoolClassId, string $date, ?int $recordedBy): Attendance
     {
         $now = now();
@@ -91,12 +91,12 @@ class AttendanceCheckInResolver
     }
 
     /**
-     * Single write path for a manual/bulk attendance save (admin or teacher
-     * portal). Status is always the human-chosen value — a bulk save has no
-     * reliable per-student arrival timestamp, so lateness is never inferred
-     * here (see AttendanceController::store() for why). The matching
-     * TimetableEntry is still linked when one exists, so the ledger can
-     * group by session even for manually-entered rows.
+     * Chemin d'écriture unique pour un enregistrement manuel ou en lot des présences (administration ou
+     * portail enseignant). Le statut est toujours la valeur choisie par l'humain — un enregistrement en lot
+     * n'a pas d'horodatage d'arrivée fiable par élève, donc le retard n'y est jamais déduit (voir
+     * AttendanceController::store() pour la raison). Le TimetableEntry correspondant est tout de même lié
+     * quand il existe, afin que le registre puisse regrouper par séance même pour des lignes saisies à la
+     * main.
      */
     public function recordAttendance(
         int $studentId,

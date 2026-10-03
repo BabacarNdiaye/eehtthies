@@ -1,9 +1,8 @@
-// EEHT de Thiès — service worker for installable PWA support.
-// Deliberately minimal: network-first for navigations (so content is always
-// fresh when online), with a small offline fallback page when there is no
-// connection at all. We do NOT precache hashed Vite build assets here since
-// their filenames change on every deploy and a stale precache list would
-// break the app after an update.
+// EEHT de Thiès — service worker pour la prise en charge de l'installation en PWA. Volontairement minimal :
+// réseau d'abord pour les navigations (le contenu est donc toujours frais en ligne), avec une petite page de
+// secours hors ligne quand il n'y a aucune connexion. On ne met PAS en pré-cache les ressources Vite à nom
+// haché, car leurs noms changent à chaque déploiement et une liste de pré-cache périmée casserait
+// l'application après une mise à jour.
 
 const CACHE_NAME = 'eeht-shell-v1';
 const OFFLINE_URL = '/offline.html';
@@ -34,9 +33,9 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// Push notifications — the payload is built server-side by the WebPush
-// notification channel (title/body/icon/data, plus tag/actions/vibrate for
-// EEHT Connect calls so the call rings on the lock screen).
+// Notifications push — la charge utile est construite côté serveur par le canal de notification WebPush
+// (titre, corps, icône, données, plus tag, actions et vibration pour les appels EEHT Connect afin que l'appel
+// sonne sur l'écran verrouillé).
 self.addEventListener('push', (event) => {
     if (!event.data) return;
 
@@ -60,7 +59,7 @@ self.addEventListener('push', (event) => {
     );
 });
 
-// Open (or reuse) an app window on the given URL.
+// Ouvre (ou réutilise) une fenêtre de l'application sur l'URL donnée.
 function openApp(url) {
     return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
         for (const client of clients) {

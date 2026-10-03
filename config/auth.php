@@ -6,12 +6,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Authentication Defaults
+    | Valeurs par défaut de l'authentification
     |--------------------------------------------------------------------------
     |
-    | This option defines the default authentication "guard" and password
-    | reset "broker" for your application. You may change these values
-    | as required, but they're a perfect start for most applications.
+    | Cette option définit le « garde » d'authentification et le « broker » de réinitialisation de mot de
+    | passe par défaut de votre application. Vous pouvez modifier ces valeurs au besoin, mais elles
+    | constituent un excellent point de départ pour la plupart des applications.
     |
     */
 
@@ -22,18 +22,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Authentication Guards
+    | Gardes d'authentification
     |--------------------------------------------------------------------------
     |
-    | Next, you may define every authentication guard for your application.
-    | Of course, a great default configuration has been defined for you
-    | which utilizes session storage plus the Eloquent user provider.
+    | Vous pouvez ensuite définir chaque garde d'authentification de votre application. Bien sûr, une
+    | excellente configuration par défaut a été définie pour vous, utilisant le stockage en session et le
+    | fournisseur d'utilisateurs Eloquent.
     |
-    | All authentication guards have a user provider, which defines how the
-    | users are actually retrieved out of your database or other storage
-    | system used by the application. Typically, Eloquent is utilized.
+    | Tous les gardes d'authentification ont un fournisseur d'utilisateurs, qui définit comment les
+    | utilisateurs sont réellement récupérés dans votre base de données ou tout autre système de stockage
+    | utilisé par l'application. En général, Eloquent est utilisé.
     |
-    | Supported: "session"
+    | Pris en charge : « session »
     |
     */
 
@@ -46,18 +46,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | User Providers
+    | Fournisseurs d'utilisateurs
     |--------------------------------------------------------------------------
     |
-    | All authentication guards have a user provider, which defines how the
-    | users are actually retrieved out of your database or other storage
-    | system used by the application. Typically, Eloquent is utilized.
+    | Tous les gardes d'authentification ont un fournisseur d'utilisateurs, qui définit comment les
+    | utilisateurs sont réellement récupérés dans votre base de données ou tout autre système de stockage
+    | utilisé par l'application. En général, Eloquent est utilisé.
     |
-    | If you have multiple user tables or models you may configure multiple
-    | providers to represent the model / table. These providers may then
-    | be assigned to any extra authentication guards you have defined.
+    | Si vous avez plusieurs tables ou modèles d'utilisateurs, vous pouvez configurer plusieurs fournisseurs
+    | pour représenter le modèle ou la table. Ces fournisseurs peuvent ensuite être affectés à tous les gardes
+    | d'authentification supplémentaires que vous avez définis.
     |
-    | Supported: "database", "eloquent"
+    | Pris en charge : « database », « eloquent »
     |
     */
 
@@ -75,20 +75,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Resetting Passwords
+    | Réinitialisation des mots de passe
     |--------------------------------------------------------------------------
     |
-    | These configuration options specify the behavior of Laravel's password
-    | reset functionality, including the table utilized for token storage
-    | and the user provider that is invoked to actually retrieve users.
+    | Ces options de configuration précisent le comportement de la réinitialisation des mots de passe de
+    | Laravel, y compris la table utilisée pour stocker les jetons et le fournisseur d'utilisateurs invoqué
+    | pour récupérer réellement les utilisateurs.
     |
-    | The expiry time is the number of minutes that each reset token will be
-    | considered valid. This security feature keeps tokens short-lived so
-    | they have less time to be guessed. You may change this as needed.
+    | Le délai d'expiration est le nombre de minutes pendant lesquelles chaque jeton de réinitialisation est
+    | considéré comme valide. Cette mesure de sécurité garde des jetons de courte durée, pour qu'ils aient
+    | moins de temps pour être devinés. Vous pouvez le modifier au besoin.
     |
-    | The throttle setting is the number of seconds a user must wait before
-    | generating more password reset tokens. This prevents the user from
-    | quickly generating a very large amount of password reset tokens.
+    | Le paramètre de limitation est le nombre de secondes qu'un utilisateur doit attendre avant de générer
+    | d'autres jetons de réinitialisation. Cela l'empêche de générer rapidement un très grand nombre de jetons
+    | de réinitialisation.
     |
     */
 
@@ -103,12 +103,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Password Confirmation Timeout
+    | Délai de confirmation du mot de passe
     |--------------------------------------------------------------------------
     |
-    | Here you may define the number of seconds before a password confirmation
-    | window expires and users are asked to re-enter their password via the
-    | confirmation screen. By default, the timeout lasts for three hours.
+    | Vous pouvez ici définir le nombre de secondes avant l'expiration d'une fenêtre de confirmation de mot de
+    | passe, après quoi les utilisateurs doivent ressaisir leur mot de passe via l'écran de confirmation. Par
+    | défaut, le délai est de trois heures.
     |
     */
 

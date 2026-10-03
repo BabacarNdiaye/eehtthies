@@ -109,7 +109,7 @@ class TeacherAttendanceScopeTest extends TestCase
             'status' => 'actif',
         ]);
 
-        // This teacher has NO TimetableEntry at all for this class/subject.
+        // Cet enseignant n'a AUCUN TimetableEntry pour cette classe et cette matière.
         $user = User::factory()->create();
         $user->assignRole('enseignant');
         Teacher::create([

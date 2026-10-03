@@ -7,20 +7,19 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Exécute les migrations.
      */
     public function up(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            // 1-12, only meaningful when type = 'mensualite'. Lets a monthly
-            // tuition invoice be tagged to a specific calendar month so it can
-            // be tracked/generated per-month instead of as one lump sum.
+            // 1 à 12, n'a de sens que si type = 'mensualite'. Permet de rattacher une facture de mensualité à
+            // un mois civil précis, pour la suivre ou la générer mois par mois plutôt qu'en une seule somme.
             $table->unsignedTinyInteger('period_month')->nullable()->after('type');
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Annule les migrations.
      */
     public function down(): void
     {

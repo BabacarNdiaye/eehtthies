@@ -14,7 +14,7 @@
             background-color: #5e1232;
         }
 
-        /* Left decorative column: green bar + patterned strip, full page height */
+        /* Colonne décorative de gauche : barre verte + bande à motif, sur toute la hauteur de la page */
         .side-bar {
             position: absolute;
             left: 9mm; top: 0; bottom: 0;
@@ -31,7 +31,7 @@
             background-size: 11mm 11mm;
         }
 
-        /* White content card, bordered in green, sitting right of the decorative column */
+        /* Carte de contenu blanche, bordée de vert, à droite de la colonne décorative */
         .card {
             position: absolute;
             left: 52mm; right: 10mm; top: 10mm; bottom: 10mm;

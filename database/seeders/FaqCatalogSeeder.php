@@ -8,11 +8,10 @@ use Illuminate\Database\Seeder;
 class FaqCatalogSeeder extends Seeder
 {
     /**
-     * Adds FAQ entries drawn only from facts already established elsewhere
-     * in the system (admission conditions, diploma recognition, the
-     * candidature form and tracking page) — not from figures nobody has
-     * confirmed (pass rates, material costs, boarding...). Idempotent via
-     * firstOrCreate on the question text, so re-running never duplicates.
+     * Ajoute des entrées de FAQ tirées uniquement de faits déjà établis ailleurs dans le système (conditions
+     * d'admission, reconnaissance des diplômes, formulaire de candidature et page de suivi), et non de
+     * chiffres que personne n'a confirmés (taux de réussite, coût du matériel, internat…). Idempotent grâce à
+     * firstOrCreate sur le texte de la question : relancer le seeder ne crée jamais de doublons.
      */
     public function run(): void
     {

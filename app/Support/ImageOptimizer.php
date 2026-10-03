@@ -7,21 +7,21 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
- * Resizes and re-encodes uploaded images before they hit disk, so pages
- * built from admin-uploaded photos don't ship multi-megabyte originals to
- * every visitor. GD-only (Imagick isn't available on production — see the
- * QR code fix in the deploy history) and dependency-free, since adding a
- * new Composer package would mean syncing a new vendor/ subtree over FTP
- * with no SSH access to regenerate the autoloader on this host.
+ * Redimensionne et ré-encode les images téléversées avant leur écriture sur disque, pour que les pages
+ * construites à partir de photos téléversées par l'administration n'envoient pas à chaque visiteur des
+ * originaux de plusieurs mégaoctets. Uniquement GD (Imagick n'est pas disponible en production — voir le
+ * correctif du code QR dans l'historique de déploiement) et sans dépendance, car ajouter un nouveau paquet
+ * Composer reviendrait à synchroniser un nouveau sous-arbre vendor/ par FTP, sans accès SSH pour régénérer
+ * l'autochargeur sur cet hébergement.
  */
 class ImageOptimizer
 {
     /**
-     * Resizes (if larger than $maxDimension on its longest side) and stores
-     * an uploaded image. Photographic content is converted to JPEG for the
-     * best compression; PNGs that actually use transparency are kept as
-     * PNG so nothing visually breaks. Falls back to storing the upload
-     * unprocessed if GD can't read it or compression didn't save space.
+     * Redimensionne (si l'image dépasse $maxDimension sur son plus grand côté) et enregistre une image
+     * téléversée. Le contenu photographique est converti en JPEG pour une compression optimale ; les PNG qui
+     * utilisent réellement la transparence restent des PNG pour que rien ne se dégrade visuellement. Se rabat
+     * sur l'enregistrement du fichier sans traitement si GD ne peut pas le lire ou si la compression n'a rien
+     * économisé.
      */
     public static function store(
         UploadedFile $file,
@@ -95,7 +95,7 @@ class ImageOptimizer
         return $filename;
     }
 
-    /** Samples a grid of pixels for any non-fully-opaque alpha — cheap enough to run on every upload. */
+    /** Échantillonne une grille de pixels à la recherche d'un canal alpha non totalement opaque — assez léger pour s'exécuter à chaque téléversement. */
     private static function hasTransparency($image, int $width, int $height): bool
     {
         $stepX = max(1, (int) floor($width / 32));

@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::table('attendances', function (Blueprint $table) {
             $table->foreignId('timetable_entry_id')->nullable()->after('subject_id')->constrained()->nullOnDelete();
-            // dateTime, not timestamp: avoids MySQL's implicit ON UPDATE CURRENT_TIMESTAMP
-            // behavior and stays a plain, TZ-naive value like the existing `date` column.
+            // dateTime et non timestamp : évite le comportement implicite ON UPDATE CURRENT_TIMESTAMP de
+            // MySQL et reste une valeur simple, sans fuseau horaire, comme la colonne `date` existante.
             $table->dateTime('checked_in_at')->nullable()->after('status');
             $table->index(['timetable_entry_id', 'date'], 'attendances_timetable_entry_date_index');
         });

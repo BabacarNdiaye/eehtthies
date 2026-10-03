@@ -117,7 +117,7 @@ class PracticalSessionController extends Controller
     {
         abort_unless($item->practical_session_id === $practicalSession->id, 404);
 
-        // Restore the stock quantity that was consumed for this item.
+        // Restitue la quantité de stock qui avait été consommée pour cet article.
         $product = $item->product;
         $product->movements()->create([
             'type' => 'entree',

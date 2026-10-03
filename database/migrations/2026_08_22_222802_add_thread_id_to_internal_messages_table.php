@@ -7,20 +7,20 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Exécute les migrations.
      */
     public function up(): void
     {
         Schema::table('internal_messages', function (Blueprint $table) {
-            // Groups a message with its replies. Equals the root message's own
-            // id (backfilled on create) — not a strict FK, since it can point
-            // to a row that didn't exist yet at insert time.
+            // Regroupe un message et ses réponses. Égal à l'id du message racine (renseigné à la création) —
+            // ce n'est pas une vraie clé étrangère, car il peut pointer vers une ligne qui n'existait pas
+            // encore au moment de l'insertion.
             $table->unsignedBigInteger('thread_id')->nullable()->after('recipient_id')->index();
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Annule les migrations.
      */
     public function down(): void
     {

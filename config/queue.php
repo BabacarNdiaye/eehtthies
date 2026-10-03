@@ -4,12 +4,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Queue Connection Name
+    | Nom de la connexion de file d'attente par défaut
     |--------------------------------------------------------------------------
     |
-    | Laravel's queue supports a variety of backends via a single, unified
-    | API, giving you convenient access to each backend using identical
-    | syntax for each. The default queue connection is defined below.
+    | La file d'attente de Laravel prend en charge divers backends via une API unique et unifiée, ce qui vous
+    | donne un accès pratique à chacun avec une syntaxe identique. La connexion de file d'attente par défaut
+    | est définie ci-dessous.
     |
     */
 
@@ -17,15 +17,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Queue Connections
+    | Connexions de file d'attente
     |--------------------------------------------------------------------------
     |
-    | Here you may configure the connection options for every queue backend
-    | used by your application. An example configuration is provided for
-    | each backend supported by Laravel. You're also free to add more.
+    | Vous pouvez ici configurer les options de connexion de chaque backend de file d'attente utilisé par
+    | votre application. Un exemple de configuration est fourni pour chaque backend pris en charge par
+    | Laravel. Vous êtes aussi libre d'en ajouter d'autres.
     |
-    | Drivers: "sync", "database", "beanstalkd", "sqs", "redis",
-    |          "deferred", "background", "failover", "null"
+    | Pilotes : « sync », « database », « beanstalkd », « sqs », « redis », « deferred », « background », «
+    | failover », « null »
     |
     */
 
@@ -93,12 +93,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Job Batching
+    | Traitement par lots des jobs
     |--------------------------------------------------------------------------
     |
-    | The following options configure the database and table that store job
-    | batching information. These options can be updated to any database
-    | connection and table which has been defined by your application.
+    | Les options suivantes configurent la base de données et la table qui stockent les informations de
+    | traitement par lots des jobs. Elles peuvent être modifiées pour n'importe quelle connexion de base de
+    | données et table définie par votre application.
     |
     */
 
@@ -109,14 +109,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Failed Queue Jobs
+    | Jobs de file d'attente échoués
     |--------------------------------------------------------------------------
     |
-    | These options configure the behavior of failed queue job logging so you
-    | can control how and where failed jobs are stored. Laravel ships with
-    | support for storing failed jobs in a simple file or in a database.
+    | Ces options configurent le comportement de la journalisation des jobs de file d'attente échoués, pour
+    | que vous puissiez contrôler comment et où ils sont stockés. Laravel prend en charge le stockage des jobs
+    | échoués dans un simple fichier ou dans une base de données.
     |
-    | Supported drivers: "database-uuids", "dynamodb", "file", "null"
+    | Pilotes pris en charge : « database-uuids », « dynamodb », « file », « null »
     |
     */
 

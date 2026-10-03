@@ -1,9 +1,9 @@
 import { PropsWithChildren, useEffect, useRef, useState } from 'react';
 
 /**
- * Fades + slides its children into place the first time they scroll into
- * view. Falls back to fully visible immediately if IntersectionObserver
- * isn't available, so nothing ever gets stuck hidden.
+ * Fait apparaître ses enfants en fondu et en glissement la première fois qu'ils entrent dans la zone visible.
+ * Se rabat sur un affichage complet immédiat si IntersectionObserver n'est pas disponible, pour que rien ne
+ * reste jamais caché.
  */
 export default function Reveal({
     children,

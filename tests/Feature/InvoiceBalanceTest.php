@@ -9,9 +9,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * The invoice balance/status accessors drive the "impayée / partielle /
- * payée" badges parents and staff rely on across the tuition-tracking pages
- * — getting the arithmetic wrong here misreports who actually owes money.
+ * Les accesseurs de solde et de statut des factures alimentent les badges « impayée / partielle / payée » sur
+ * lesquels s'appuient parents et personnel dans les pages de suivi de la scolarité — une erreur de calcul ici
+ * fausse l'information sur qui doit réellement de l'argent.
  */
 class InvoiceBalanceTest extends TestCase
 {
@@ -79,8 +79,8 @@ class InvoiceBalanceTest extends TestCase
         $invoice = $this->makeInvoice(50000);
         $invoice->payments()->create(['amount' => 60000, 'method' => 'especes', 'paid_at' => now()]);
 
-        // Balance can go negative (credit in favour of the student), but it must never
-        // still read as "impayée"/"partielle" once fully covered.
+        // Le solde peut devenir négatif (crédit en faveur de l'élève), mais il ne doit jamais encore afficher
+        // « impayée » ou « partielle » une fois la facture entièrement couverte.
         $this->assertEquals('payee', $invoice->fresh()->status);
     }
 }

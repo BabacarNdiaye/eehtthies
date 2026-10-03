@@ -36,7 +36,7 @@ export default function Form({ event }: { event?: EventItem }) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isEdit) {
-            // POST + _method spoof: PHP does not parse multipart bodies on PUT/PATCH requests.
+            // POST + simulation de _method : PHP n'analyse pas les corps multipart des requêtes PUT/PATCH.
             transform((data) => ({ ...data, _method: 'put' }));
             post(route('admin.events.update', event!.id), { forceFormData: true });
         } else {

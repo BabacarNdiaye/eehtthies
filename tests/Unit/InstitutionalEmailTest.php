@@ -58,7 +58,7 @@ class InstitutionalEmailTest extends TestCase
             'last_name' => 'Fall',
         ]);
 
-        // The teacher's generated address must skip the student's taken one.
+        // L'adresse générée pour l'enseignant doit éviter celle déjà prise par l'élève.
         $email = InstitutionalEmail::generate('Modou Fall');
 
         $this->assertEquals('modou.fall2@eeht-thies.sn', $email);

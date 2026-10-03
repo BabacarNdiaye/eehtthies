@@ -34,9 +34,9 @@ class HomeController extends Controller
                 'years_experience' => Setting::get('years_experience', '15'),
                 'students_trained' => Setting::get('students_trained', '2000'),
                 'success_rate' => Setting::get('success_rate', '90'),
-                // Not admin-editable — always the real count of published
-                // partners, so this can never drift from the partners
-                // actually shown on the Partners page again.
+                // Non modifiable par l'administration — toujours le nombre réel de partenaires publiés, pour
+                // que cela ne puisse plus jamais diverger des partenaires réellement affichés sur la page
+                // Partenaires.
                 'partners_count' => (string) $partners->count(),
             ],
         ]);

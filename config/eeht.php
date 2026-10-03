@@ -3,47 +3,47 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Institutional e-mail domain
+    | Domaine des e-mails institutionnels
     |--------------------------------------------------------------------------
     |
-    | Used by App\Support\InstitutionalEmail to auto-generate prenom.nom@...
-    | addresses for students, teachers, guardians and staff who don't already
-    | have one, so portal access can always be created.
+    | Utilisé par App\Support\InstitutionalEmail pour générer automatiquement des adresses prenom.nom@... pour
+    | les élèves, enseignants, tuteurs et membres du personnel qui n'en ont pas encore, afin que l'accès au
+    | portail puisse toujours être créé.
     |
     */
     'institutional_email_domain' => 'eeht-thies.sn',
 
     /*
     |--------------------------------------------------------------------------
-    | Default password
+    | Mot de passe par défaut
     |--------------------------------------------------------------------------
     |
-    | Assigned when creating portal access for a student, teacher or parent.
-    | Actors are expected to change it from their own space (see the "Mot de
-    | passe" link in each portal), which is why it doesn't need to be random.
+    | Attribué lors de la création de l'accès au portail d'un élève, d'un enseignant ou d'un parent. Les
+    | acteurs sont censés le modifier depuis leur propre espace (voir le lien « Mot de passe » de chaque
+    | portail), ce qui explique qu'il n'ait pas besoin d'être aléatoire.
     |
     */
     'default_password' => 'eeht2026',
 
     /*
     |--------------------------------------------------------------------------
-    | Late grace period (minutes)
+    | Délai de grâce avant retard (minutes)
     |--------------------------------------------------------------------------
     |
-    | A student QR-scanned within this many minutes after their class's
-    | scheduled start_time still counts as "present"; beyond it, the scan is
-    | auto-classified "retard". See App\Services\AttendanceCheckInResolver.
+    | Un élève scanné par QR dans ce nombre de minutes après l'heure de début (start_time) prévue de sa classe
+    | compte encore comme « présent » ; au-delà, le scan est classé automatiquement « retard ». Voir
+    | App\Services\AttendanceCheckInResolver.
     |
     */
     'late_grace_minutes' => 5,
 
     /*
     |--------------------------------------------------------------------------
-    | Academic terms
+    | Périodes académiques
     |--------------------------------------------------------------------------
     |
-    | The list of terms/periods used across exams, grades and report cards.
-    | Kept centralised here so it can be adjusted without touching code.
+    | La liste des périodes utilisées pour les examens, les notes et les bulletins. Centralisée ici pour
+    | pouvoir être ajustée sans toucher au code.
     |
     */
     'terms' => [
@@ -53,12 +53,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Permission modules & actions
+    | Modules et actions de permissions
     |--------------------------------------------------------------------------
     |
-    | Every permission in the system is named "{action}_{module}" (e.g.
-    | "voir_eleves"). This catalogue is the single source of truth used both
-    | by the roles/permissions seeder and by the role management UI.
+    | Chaque permission du système est nommée « {action}_{module} » (p. ex. « voir_eleves »). Ce catalogue est
+    | la source de vérité unique utilisée à la fois par le seeder des rôles et permissions et par l'interface
+    | de gestion des rôles.
     |
     */
     'permission_modules' => [
@@ -105,31 +105,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Protected roles
+    | Rôles protégés
     |--------------------------------------------------------------------------
     |
-    | These roles cannot be renamed or deleted through the role management UI,
-    | to avoid an administrator accidentally locking themselves (or everyone
-    | else) out of the back-office.
+    | Ces rôles ne peuvent être ni renommés ni supprimés via l'interface de gestion des rôles, pour éviter
+    | qu'un administrateur ne se verrouille accidentellement (ou ne verrouille tout le monde) hors du
+    | back-office.
     |
     */
     'protected_roles' => ['super-admin'],
 
     /*
     |--------------------------------------------------------------------------
-    | Bulletin (report card) — Senegalese grading conventions
+    | Bulletin — conventions de notation sénégalaises
     |--------------------------------------------------------------------------
     |
-    | Classic Senegalese secondary-school report cards split each subject's
-    | grade into a continuous-assessment note ("Devoir") and an end-of-term
-    | exam note ("Composition"), then average the two for MOY/20. Exam types
-    | map onto those two categories below.
+    | Les bulletins classiques du secondaire sénégalais divisent la note de chaque matière en une note de
+    | contrôle continu (« Devoir ») et une note d'examen de fin de période (« Composition »), puis font la
+    | moyenne des deux pour la MOY/20. Les types d'examen sont rattachés à ces deux catégories ci-dessous.
     |
     */
     'exam_category_devoir' => ['devoir', 'interrogation', 'controle'],
     'exam_category_composition' => ['examen', 'examen_theorique', 'examen_pratique'],
 
-    // Per-subject appreciation, keyed by the minimum MOY/20 threshold (descending).
+    // Appréciation par matière, indexée sur le seuil minimal de MOY/20 (décroissant).
     'appreciation_scale' => [
         18 => 'Excellent',
         16 => 'Très Bien',
@@ -140,8 +139,8 @@ return [
         0 => 'Très Faible',
     ],
 
-    // Overall-average thresholds auto-suggesting a conseil de classe mention.
-    // "blame" is never auto-suggested — it reflects a conduct decision, not a grade.
+    // Seuils de moyenne générale suggérant automatiquement une mention du conseil de classe. Le « blâme »
+    // n'est jamais suggéré automatiquement — il reflète une décision de conduite, pas une note.
     'mention_scale' => [
         16 => 'felicitations',
         14 => 'encouragement',

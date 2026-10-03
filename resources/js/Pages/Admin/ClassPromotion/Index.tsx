@@ -54,7 +54,7 @@ function defaultAction(row: StudentRow, sourceClass: SourceClass | null): { acti
         return { action: 'stay', targetClassId: sourceClass?.id ?? '' };
     }
 
-    // undetermined (no rules configured) — fall back to the old decision-based heuristic.
+    // indéterminé (aucune règle configurée) — on se rabat sur l'ancienne heuristique fondée sur la décision.
     if (row.decision === 'admis' && sourceClass?.next_class) {
         return { action: 'promote', targetClassId: sourceClass.next_class.id };
     }

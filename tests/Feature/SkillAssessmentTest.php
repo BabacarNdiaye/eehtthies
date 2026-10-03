@@ -95,7 +95,7 @@ class SkillAssessmentTest extends TestCase
         $this->seed(RolesAndPermissionsSeeder::class);
         [$formation] = $this->makeClassWithStudent('B');
         $user = User::factory()->create();
-        $user->assignRole('caissier'); // no formations permission
+        $user->assignRole('caissier'); // pas de permission formations
 
         $response = $this->actingAs($user)->post(route('admin.skills.store'), [
             'formation_id' => $formation->id,

@@ -20,7 +20,7 @@ function dismiss() {
     try {
         localStorage.setItem(DISMISSED_KEY, '1');
     } catch {
-        // ignore — banner will just show again next visit, harmless
+        // on ignore — la bannière s'affichera simplement à la prochaine visite, sans conséquence
     }
 }
 

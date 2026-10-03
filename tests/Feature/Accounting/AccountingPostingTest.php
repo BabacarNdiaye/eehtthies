@@ -13,11 +13,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * The whole point of the SYSCOHADA accounting module is that every operational
- * transaction (tuition invoice, payment, expense) is mirrored as a balanced
- * double-entry journal entry automatically. If this silently breaks, the
- * balance sheet and income statement quietly go wrong without anyone noticing
- * until an accountant reconciles by hand — so these are worth pinning down.
+ * Tout l'intérêt du module comptable SYSCOHADA est que chaque transaction opérationnelle (facture de
+ * scolarité, paiement, dépense) soit reflétée automatiquement par une écriture de journal équilibrée en
+ * partie double. Si cela casse silencieusement, le bilan et le compte de résultat deviennent discrètement
+ * faux sans que personne ne s'en aperçoive avant qu'un comptable ne rapproche les chiffres à la main — ces
+ * tests méritent donc d'être verrouillés.
  */
 class AccountingPostingTest extends TestCase
 {

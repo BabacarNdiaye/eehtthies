@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <title>Cartes d'étudiant</title>
     @php
-        // Fixed brand palette for official documents (matches diploma/attestation
-        // templates) — deliberately independent of the website's configurable
-        // theme_neutral_color, so printed cards stay consistent even if the
-        // site theme changes.
+        // Palette de marque fixe pour les documents officiels (identique aux gabarits
+        // de diplôme et d'attestation) — volontairement indépendante de la
+        // theme_neutral_color configurable du site web, pour que les cartes imprimées
+        // restent cohérentes même si le thème du site change.
         $ink = '#50022b';
         $gold = '#c8942a';
         $accent = '#8bc93f';

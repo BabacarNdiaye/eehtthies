@@ -16,8 +16,8 @@ use Inertia\Response;
 
 class ClassPromotionController extends Controller
 {
-    // TEMPORARY guard — remove once the formation_levels/student_progressions
-    // migrations have run on this environment (progression-engine deploy, 2026-09-28).
+    // Garde-fou TEMPORAIRE — à retirer une fois les migrations formation_levels/student_progressions
+    // exécutées sur cet environnement (déploiement du moteur de progression, 2026-09-28).
     private function engineMigrated(): bool
     {
         return Schema::hasTable('formation_levels')

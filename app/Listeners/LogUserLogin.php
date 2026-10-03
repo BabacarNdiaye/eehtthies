@@ -7,10 +7,9 @@ use Illuminate\Auth\Events\Login;
 use Throwable;
 
 /**
- * Powers the "Trafic" statistics tab — records one row per real login (not
- * every request). Never lets a failure here break an actual login: this is
- * secondary analytics, not something a user's ability to sign in should
- * depend on.
+ * Alimente l'onglet de statistiques « Trafic » — enregistre une ligne par connexion réelle (et non par
+ * requête). Ne laisse jamais un échec ici casser une vraie connexion : il s'agit d'une analyse secondaire,
+ * dont la capacité d'un utilisateur à se connecter ne doit pas dépendre.
  */
 class LogUserLogin
 {

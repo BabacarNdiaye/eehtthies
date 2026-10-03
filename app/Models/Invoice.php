@@ -41,7 +41,7 @@ class Invoice extends Model
         'autre' => 'Autre',
     ];
 
-    /** Default school-year month sequence (Sept → June) used for monthly tuition generation. */
+    /** Séquence de mois par défaut de l'année scolaire (sept. → juin) utilisée pour générer les mensualités. */
     public const SCHOOL_MONTHS = [9, 10, 11, 12, 1, 2, 3, 4, 5, 6];
 
     public const MONTH_LABELS = [

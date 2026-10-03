@@ -15,27 +15,26 @@ return [
 
     'backup' => [
         /*
-         * The name of this application. You can use this name to monitor
-         * the backups.
+         * Le nom de cette application. Vous pouvez l'utiliser pour surveiller les sauvegardes.
          */
         'name' => env('APP_NAME', 'laravel-backup'),
 
         'source' => [
             'files' => [
                 /*
-                 * The list of directories and files that will be included in the backup.
+                 * La liste des répertoires et fichiers inclus dans la sauvegarde.
                  */
                 'include' => [
-                    // Only the uploaded media (logos, photos, documents, galleries) — the
-                    // application code itself is recoverable from source control/redeploy,
-                    // and the database is dumped separately below.
+                    // Uniquement les médias téléversés (logos, photos, documents, galeries) — le code de
+                    // l'application se récupère depuis le contrôle de version ou un redéploiement, et la base
+                    // de données est exportée séparément plus bas.
                     storage_path('app/public'),
                 ],
 
                 /*
-                 * These directories and files will be excluded from the backup.
+                 * Ces répertoires et fichiers seront exclus de la sauvegarde.
                  *
-                 * Directories used by the backup process will automatically be excluded.
+                 * Les répertoires utilisés par le processus de sauvegarde sont automatiquement exclus.
                  */
                 'exclude' => [
                     base_path('vendor'),
@@ -44,30 +43,30 @@ return [
                 ],
 
                 /*
-                 * Determines if symlinks should be followed.
+                 * Détermine si les liens symboliques doivent être suivis.
                  */
                 'follow_links' => false,
 
                 /*
-                 * Determines if it should avoid unreadable folders.
+                 * Détermine s'il faut éviter les dossiers illisibles.
                  */
                 'ignore_unreadable_directories' => false,
 
                 /*
-                 * This path is used to make directories in resulting zip-file relative
-                 * Set to `null` to include complete absolute path
-                 * Example: base_path()
+                 * Ce chemin sert à rendre relatifs les répertoires du fichier zip obtenu
+                 * Mettre `null` pour inclure le chemin absolu complet
+                 * Exemple : base_path()
                  */
                 'relative_path' => storage_path('app/public'),
             ],
 
             /*
-             * The names of the connections to the databases that should be backed up
-             * MySQL, PostgreSQL, SQLite and Mongo databases are supported.
+             * Les noms des connexions aux bases de données à sauvegarder
+             * Les bases MySQL, PostgreSQL, SQLite et Mongo sont prises en charge.
              *
-             * The content of the database dump may be customized for each connection
-             * by adding a 'dump' key to the connection settings in config/database.php.
-             * E.g.
+             * Le contenu de l'export de la base peut être personnalisé pour chaque connexion
+             * en ajoutant une clé 'dump' aux paramètres de la connexion dans config/database.php.
+             * Ex.
              * 'mysql' => [
              *       ...
              *      'dump' => [
@@ -78,10 +77,10 @@ return [
              *       ],
              * ],
              *
-             * If you are using only InnoDB tables on a MySQL server, you can
-             * also supply the useSingleTransaction option to avoid table locking.
+             * Si vous n'utilisez que des tables InnoDB sur un serveur MySQL, vous pouvez
+             * aussi fournir l'option useSingleTransaction pour éviter le verrouillage des tables.
              *
-             * E.g.
+             * Ex.
              * 'mysql' => [
              *       ...
              *      'dump' => [
@@ -89,7 +88,8 @@ return [
              *       ],
              * ],
              *
-             * For a complete list of available customization options, see https://github.com/spatie/db-dumper
+             * Pour la liste complète des options de personnalisation disponibles, voir
+             * https://github.com/spatie/db-dumper
              */
             'databases' => [
                 env('DB_CONNECTION', 'mysql'),
@@ -97,129 +97,132 @@ return [
         ],
 
         /*
-         * The database dump can be compressed to decrease disk space usage.
+         * La sauvegarde de la base peut être compressée pour réduire l'espace disque utilisé.
          *
-         * Out of the box Laravel-backup supplies
-         * Spatie\DbDumper\Compressors\GzipCompressor::class.
+         * Laravel-backup fournit d'office Spatie\DbDumper\Compressors\GzipCompressor::class.
          *
-         * You can also create custom compressor. More info on that here:
+         * Vous pouvez aussi créer un compresseur personnalisé. Plus d'informations ici :
          * https://github.com/spatie/db-dumper#using-compression
          *
-         * If you do not want any compressor at all, set it to null.
+         * Si vous ne voulez aucun compresseur, mettez null.
          */
         'database_dump_compressor' => null,
 
         /*
-         * If specified, the database dumped file name will contain a timestamp (e.g.: 'Y-m-d-H-i-s').
+         * Si précisé, le nom du fichier d'export de la base contiendra un horodatage (p. ex. :
+         * 'Y-m-d-H-i-s').
          */
         'database_dump_file_timestamp_format' => null,
 
         /*
-         * The base of the dump filename, either 'database' or 'connection'
+         * La base du nom de fichier d'export : « database » ou « connection »
          *
-         * If 'database' (default), the dumped filename will contain the database name.
-         * If 'connection', the dumped filename will contain the connection name.
+         * Si « database » (par défaut), le nom du fichier contiendra le nom de la base. Si « connection », il
+         * contiendra le nom de la connexion.
          */
         'database_dump_filename_base' => 'database',
 
         /*
-         * The file extension used for the database dump files.
+         * L'extension de fichier utilisée pour les fichiers d'export de la base.
          *
-         * If not specified, the file extension will be .archive for MongoDB and .sql for all other databases
-         * The file extension should be specified without a leading .
+         * Si elle n'est pas précisée, l'extension sera .archive pour MongoDB et .sql pour toutes les autres
+         * bases
+         * L'extension doit être indiquée sans point initial.
          */
         'database_dump_file_extension' => '',
 
         'destination' => [
             /*
-             * The compression algorithm to be used for creating the zip archive.
+             * L'algorithme de compression à utiliser pour créer l'archive zip.
              *
-             * If backing up only database, you may choose gzip compression for db dump and no compression at zip.
+             * Si vous ne sauvegardez que la base, vous pouvez choisir la compression gzip pour l'export et
+             * aucune compression pour le zip.
              *
-             * Some common algorithms are listed below:
-             * ZipArchive::CM_STORE (no compression at all; set 0 as compression level)
+             * Quelques algorithmes courants sont listés ci-dessous :
+             * ZipArchive::CM_STORE (aucune compression ; mettre 0 comme niveau de compression)
              * ZipArchive::CM_DEFAULT
              * ZipArchive::CM_DEFLATE
              * ZipArchive::CM_BZIP2
              * ZipArchive::CM_XZ
              *
-             * For more check https://www.php.net/manual/zip.constants.php and confirm it's supported by your system.
+             * Pour en savoir plus, voir https://www.php.net/manual/zip.constants.php et vérifier qu'il est
+             * pris en charge par votre système.
              */
             'compression_method' => ZipArchive::CM_DEFAULT,
 
             /*
-             * The compression level corresponding to the used algorithm; an integer between 0 and 9.
+             * Le niveau de compression correspondant à l'algorithme utilisé ; un entier entre 0 et 9.
              *
-             * Check supported levels for the chosen algorithm, usually 1 means the fastest and weakest compression,
-             * while 9 the slowest and strongest one.
+             * Vérifiez les niveaux pris en charge par l'algorithme choisi ; en général 1 est la compression
+             * la plus rapide et la plus faible, et 9 la plus lente et la plus forte.
              *
-             * Setting of 0 for some algorithms may switch to the strongest compression.
+             * Avec 0, certains algorithmes peuvent passer à la compression la plus forte.
              */
             'compression_level' => 9,
 
             /*
-             * The filename prefix used for the backup zip file.
+             * Le préfixe de nom de fichier utilisé pour le zip de sauvegarde.
              */
             'filename_prefix' => '',
 
             /*
-             * The disk names on which the backups will be stored.
+             * Les noms des disques sur lesquels les sauvegardes seront stockées.
              */
             'disks' => [
                 'local',
             ],
 
             /*
-             * Determines whether to allow backups to continue when some targets fail instead of failing completely.
+             * Détermine s'il faut permettre aux sauvegardes de continuer lorsque certaines cibles échouent,
+             * au lieu d'échouer complètement.
              */
             'continue_on_failure' => false,
         ],
 
         /*
-         * The directory where the temporary files will be stored.
+         * Le répertoire où seront stockés les fichiers temporaires.
          */
         'temporary_directory' => storage_path('app/backup-temp'),
 
         /*
-         * The password to be used for archive encryption.
-         * Set to `null` to disable encryption.
+         * Le mot de passe utilisé pour chiffrer l'archive. Mettre `null` pour désactiver le chiffrement.
          */
         'password' => env('BACKUP_ARCHIVE_PASSWORD'),
 
         /*
-         * The encryption algorithm to be used for archive encryption.
-         * Set to 'none' to disable encryption.
+         * L'algorithme de chiffrement utilisé pour l'archive. Mettre 'none' pour désactiver le chiffrement.
          *
-         * Supported: 'none', 'default', 'aes128', 'aes192', 'aes256'
+         * Pris en charge : 'none', 'default', 'aes128', 'aes192', 'aes256'
          *
-         * When set to 'default', we'll use AES-256 if available on your system.
+         * Avec 'default', AES-256 est utilisé s'il est disponible sur votre système.
          */
         'encryption' => 'default',
 
         /*
-         * After creating the zip, verify it can be opened and contains files.
-         * Recommended for critical backups but adds a small overhead.
+         * Après la création du zip, vérifie qu'il peut être ouvert et qu'il contient des fichiers. Recommandé
+         * pour les sauvegardes critiques, mais ajoute un léger surcoût.
          */
         'verify_backup' => false,
 
         /*
-         * The number of attempts, in case the backup command encounters an exception
+         * Le nombre de tentatives, au cas où la commande de sauvegarde rencontre une exception
          */
         'tries' => 1,
 
         /*
-         * The number of seconds to wait before attempting a new backup if the previous try failed
-         * Set to `0` for none
+         * Le nombre de secondes d'attente avant de retenter une sauvegarde si la tentative précédente a
+         * échoué
+         * Mettre `0` pour aucune attente
          */
         'retry_delay' => 0,
     ],
 
     /*
-     * You can get notified when specific events occur. Out of the box you can use 'mail' and 'slack'.
-     * For Slack you need to install laravel/slack-notification-channel.
+     * Vous pouvez être averti lorsque certains événements se produisent. D'office, vous pouvez utiliser
+     * 'mail' et 'slack'. Pour Slack, il faut installer laravel/slack-notification-channel.
      *
-     * You can also use your own notification classes, just make sure the class is named after one of
-     * the `Spatie\Backup\Notifications\Notifications` classes.
+     * Vous pouvez aussi utiliser vos propres classes de notification, à condition que la classe porte le nom
+     * de l'une des classes `Spatie\Backup\Notifications\Notifications`.
      */
     'notifications' => [
         'notifications' => [
@@ -232,8 +235,8 @@ return [
         ],
 
         /*
-         * Here you can specify the notifiable to which the notifications should be sent. The default
-         * notifiable will use the variables specified in this config file.
+         * Vous pouvez ici préciser l'entité notifiable à laquelle envoyer les notifications. L'entité
+         * notifiable par défaut utilisera les variables définies dans ce fichier de configuration.
          */
         'notifiable' => Notifiable::class,
 
@@ -250,7 +253,7 @@ return [
             'webhook_url' => '',
 
             /*
-             * If this is set to null the default channel of the webhook will be used.
+             * Si cette valeur est null, le canal par défaut du webhook sera utilisé.
              */
             'channel' => null,
 
@@ -263,19 +266,19 @@ return [
             'webhook_url' => '',
 
             /*
-             * If this is an empty string, the name field on the webhook will be used.
+             * Si c'est une chaîne vide, le champ de nom du webhook sera utilisé.
              */
             'username' => '',
 
             /*
-             * If this is an empty string, the avatar on the webhook will be used.
+             * Si c'est une chaîne vide, l'avatar du webhook sera utilisé.
              */
             'avatar_url' => '',
         ],
 
         /*
-         * A generic webhook channel that POSTs JSON to a URL.
-         * Useful for Mattermost, Microsoft Teams, or custom integrations.
+         * Un canal webhook générique qui envoie du JSON en POST vers une URL. Utile pour Mattermost,
+         * Microsoft Teams ou des intégrations personnalisées.
          */
         'webhook' => [
             'url' => '',
@@ -283,18 +286,17 @@ return [
     ],
 
     /*
-     * The log channel used for backup activity messages.
+     * Le canal de journal utilisé pour les messages d'activité des sauvegardes.
      *
-     * Set to a channel name defined in config/logging.php to use that channel.
-     * Set to false to disable backup logging entirely.
-     * Set to null to use the default log channel.
+     * Mettre le nom d'un canal défini dans config/logging.php pour utiliser ce canal. Mettre false pour
+     * désactiver entièrement la journalisation des sauvegardes. Mettre null pour utiliser le canal de journal
+     * par défaut.
      */
     'log_channel' => null,
 
     /*
-     * Here you can specify which backups should be monitored.
-     * If a backup does not meet the specified requirements the
-     * UnHealthyBackupWasFound event will be fired.
+     * Vous pouvez ici préciser quelles sauvegardes surveiller. Si une sauvegarde ne respecte pas les
+     * exigences indiquées, l'événement UnHealthyBackupWasFound est déclenché.
      */
     'monitor_backups' => [
         [
@@ -320,64 +322,63 @@ return [
 
     'cleanup' => [
         /*
-         * The strategy that will be used to cleanup old backups. The default strategy
-         * will keep all backups for a certain amount of days. After that period only
-         * a daily backup will be kept. After that period only weekly backups will
-         * be kept and so on.
+         * La stratégie utilisée pour nettoyer les anciennes sauvegardes. La stratégie par défaut conserve
+         * toutes les sauvegardes pendant un certain nombre de jours. Passé ce délai, seule une sauvegarde par
+         * jour est conservée. Passé ce nouveau délai, seules des sauvegardes hebdomadaires sont conservées,
+         * et ainsi de suite.
          *
-         * No matter how you configure it the default strategy will never
-         * delete the newest backup.
+         * Quelle que soit la configuration, la stratégie par défaut ne supprime jamais la sauvegarde la plus
+         * récente.
          */
         'strategy' => DefaultStrategy::class,
 
         'default_strategy' => [
             /*
-             * The number of days for which backups must be kept.
+             * Le nombre de jours pendant lesquels les sauvegardes doivent être conservées.
              */
             'keep_all_backups_for_days' => 7,
 
             /*
-             * After the "keep_all_backups_for_days" period is over, the most recent backup
-             * of that day will be kept. Older backups within the same day will be removed.
-             * If you create backups only once a day, no backups will be removed yet.
+             * Une fois la période « keep_all_backups_for_days » écoulée, la sauvegarde la plus récente de la
+             * journée est conservée. Les sauvegardes plus anciennes du même jour sont supprimées. Si vous ne
+             * créez qu'une sauvegarde par jour, aucune sauvegarde n'est encore supprimée.
              */
             'keep_daily_backups_for_days' => 16,
 
             /*
-             * After the "keep_daily_backups_for_days" period is over, the most recent backup
-             * of that week will be kept. Older backups within the same week will be removed.
-             * If you create backups only once a week, no backups will be removed yet.
+             * Une fois la période « keep_daily_backups_for_days » écoulée, la sauvegarde la plus récente de
+             * la semaine est conservée. Les sauvegardes plus anciennes de la même semaine sont supprimées. Si
+             * vous ne créez qu'une sauvegarde par semaine, aucune sauvegarde n'est encore supprimée.
              */
             'keep_weekly_backups_for_weeks' => 8,
 
             /*
-             * After the "keep_weekly_backups_for_weeks" period is over, the most recent backup
-             * of that month will be kept. Older backups within the same month will be removed.
+             * Une fois la période « keep_weekly_backups_for_weeks » écoulée, la sauvegarde la plus récente du
+             * mois est conservée. Les sauvegardes plus anciennes du même mois sont supprimées.
              */
             'keep_monthly_backups_for_months' => 4,
 
             /*
-             * After the "keep_monthly_backups_for_months" period is over, the most recent backup
-             * of that year will be kept. Older backups within the same year will be removed.
+             * Une fois la période « keep_monthly_backups_for_months » écoulée, la sauvegarde la plus récente
+             * de l'année est conservée. Les sauvegardes plus anciennes de la même année sont supprimées.
              */
             'keep_yearly_backups_for_years' => 2,
 
             /*
-             * After cleaning up the backups remove the oldest backup until
-             * this amount of megabytes has been reached.
-             * Set null for unlimited size.
+             * Après le nettoyage des sauvegardes, supprime la plus ancienne jusqu'à atteindre ce nombre de
+             * mégaoctets. Mettre null pour une taille illimitée.
              */
             'delete_oldest_backups_when_using_more_megabytes_than' => 5000,
         ],
 
         /*
-         * The number of attempts, in case the cleanup command encounters an exception
+         * Le nombre de tentatives, au cas où la commande de nettoyage rencontre une exception
          */
         'tries' => 1,
 
         /*
-         * The number of seconds to wait before attempting a new cleanup if the previous try failed
-         * Set to `0` for none
+         * Le nombre de secondes d'attente avant de retenter un nettoyage si la tentative précédente a échoué
+         * Mettre `0` pour aucune attente
          */
         'retry_delay' => 0,
     ],

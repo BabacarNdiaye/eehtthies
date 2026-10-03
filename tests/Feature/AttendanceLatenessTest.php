@@ -61,7 +61,7 @@ class AttendanceLatenessTest extends TestCase
         $this->seed(RolesAndPermissionsSeeder::class);
         [$schoolClass, $subject, $student] = $this->makeClassAndStudent();
 
-        $now = Carbon::parse('2026-09-28 08:02:00'); // a Monday
+        $now = Carbon::parse('2026-09-28 08:02:00'); // un lundi
         Carbon::setTestNow($now);
 
         $entry = TimetableEntry::create([
@@ -103,7 +103,7 @@ class AttendanceLatenessTest extends TestCase
         $studentUser->assignRole('eleve');
         $student->update(['user_id' => $studentUser->id]);
 
-        $now = Carbon::parse('2026-09-28 08:12:00'); // 12 minutes late, grace is 5
+        $now = Carbon::parse('2026-09-28 08:12:00'); // 12 minutes de retard, le délai de grâce est de 5
         Carbon::setTestNow($now);
 
         $entry = TimetableEntry::create([
@@ -141,7 +141,7 @@ class AttendanceLatenessTest extends TestCase
     {
         $this->seed(RolesAndPermissionsSeeder::class);
         [$schoolClass, , $student] = $this->makeClassAndStudent();
-        // Deliberately no TimetableEntry created for this class.
+        // Volontairement, aucun TimetableEntry n'est créé pour cette classe.
 
         $user = User::factory()->create();
         $user->assignRole('super-admin');

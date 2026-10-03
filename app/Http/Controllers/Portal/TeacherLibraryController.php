@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** The library is a single shared space: every teacher and student sees the same list. */
+/** La bibliothèque est un espace partagé unique : chaque enseignant et chaque élève voit la même liste. */
 class TeacherLibraryController extends Controller
 {
     public function index(): Response
@@ -52,7 +52,7 @@ class TeacherLibraryController extends Controller
         return back()->with('success', 'Ressource ajoutée.');
     }
 
-    /** Teachers may only remove resources they uploaded themselves — admins moderate the rest. */
+    /** Les enseignants ne peuvent retirer que les ressources qu'ils ont eux-mêmes téléversées — l'administration modère le reste. */
     public function destroy(Request $request, LibraryResource $libraryResource)
     {
         abort_unless($libraryResource->uploaded_by === $request->user()->id, 403);

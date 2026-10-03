@@ -9,12 +9,11 @@ use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
- * Regression tests for a real bug: creating a custom role from Administration
- * > Rôles & permissions and assigning it to a staff member used to lock that
- * person out of the entire back-office (EnsureUserIsStaff only recognised a
- * fixed list of built-in role names). Fixed by switching to a deny-list
- * (only eleve/parent are portal-only); these tests pin that behaviour down
- * and confirm the granular permissions actually gate each admin route.
+ * Tests de non-régression pour un vrai bug : créer un rôle personnalisé depuis Administration > Rôles &
+ * permissions et l'attribuer à un membre du personnel excluait cette personne de tout le back-office
+ * (EnsureUserIsStaff ne reconnaissait qu'une liste fixe de noms de rôles intégrés). Corrigé en passant à une
+ * liste de refus (seuls eleve/parent sont limités au portail) ; ces tests verrouillent ce comportement et
+ * confirment que les permissions fines contrôlent bien chaque route d'administration.
  */
 class CustomRoleAccessTest extends TestCase
 {

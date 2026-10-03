@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->enum('type', ['entree', 'sortie', 'ajustement']);
-            $table->decimal('quantity', 12, 2); // always stored positive; sign is implied by type
+            $table->decimal('quantity', 12, 2); // toujours stockée en positif ; le signe découle du type
             $table->decimal('unit_cost', 12, 2)->nullable(); // relevant for entrées
             $table->string('reference')->nullable(); // bon d'entrée/sortie
             $table->string('reason')->nullable();

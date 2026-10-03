@@ -2,8 +2,8 @@ import { usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 
 /**
- * Renders the school's uploaded logo when one has been set in Admin ▸ Paramètres,
- * falling back to the styled monogram badge used throughout the app otherwise.
+ * Affiche le logo téléversé de l'école lorsqu'il a été défini dans Admin ▸ Paramètres, sinon se rabat sur le
+ * badge monogramme stylisé utilisé partout dans l'application.
  */
 export default function SiteLogo({
     size = 40,

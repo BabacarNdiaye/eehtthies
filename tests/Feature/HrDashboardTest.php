@@ -37,7 +37,7 @@ class HrDashboardTest extends TestCase
         $response->assertInertia(fn ($page) => $page
             ->component('Admin/Hr/Index')
             ->where('summary.teachers', 1)
-            ->has('directory', 3) // staffUser + the new admin user + the teacher
+            ->has('directory', 3) // staffUser + le nouvel utilisateur admin + l'enseignant
         );
     }
 

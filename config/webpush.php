@@ -5,8 +5,8 @@ use NotificationChannels\WebPush\PushSubscription;
 return [
 
     /**
-     * These are the keys for authentication (VAPID).
-     * These keys must be safely stored and should not change.
+     * Ce sont les clés d'authentification (VAPID). Ces clés doivent être stockées en sécurité et ne doivent
+     * pas changer.
      */
     'vapid' => [
         'subject' => env('VAPID_SUBJECT'),
@@ -16,30 +16,30 @@ return [
     ],
 
     /**
-     * This is model that will be used to for push subscriptions.
+     * C'est le modèle utilisé pour les abonnements push.
      */
     'model' => PushSubscription::class,
 
     /**
-     * This is the name of the table that will be created by the migration and
-     * used by the PushSubscription model shipped with this package.
+     * C'est le nom de la table créée par la migration et utilisée par le modèle PushSubscription fourni avec
+     * ce paquet.
      */
     'table_name' => env('WEBPUSH_DB_TABLE', 'push_subscriptions'),
 
     /**
-     * This is the database connection that will be used by the migration and
-     * the PushSubscription model shipped with this package.
+     * C'est la connexion à la base de données utilisée par la migration et par le modèle PushSubscription
+     * fourni avec ce paquet.
      */
     'database_connection' => env('WEBPUSH_DB_CONNECTION', env('DB_CONNECTION', 'mysql')),
 
     /**
-     * The HTTP client options used to deliver push notifications.
+     * Les options du client HTTP utilisées pour délivrer les notifications push.
      */
     'client_options' => [],
 
     /**
-     * The automatic padding in bytes used by Minishlink\WebPush.
-     * Set to false to support Firefox Android with v1 endpoint.
+     * Le remplissage automatique en octets utilisé par Minishlink\WebPush. Mettre false pour prendre en
+     * charge Firefox Android avec l'endpoint v1.
      */
     'automatic_padding' => env('WEBPUSH_AUTOMATIC_PADDING', true),
 

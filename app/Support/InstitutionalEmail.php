@@ -8,9 +8,9 @@ use App\Models\User;
 use Illuminate\Support\Str;
 
 /**
- * Generates unique institutional e-mail addresses (prenom.nom@domaine) for
- * students, teachers, guardians and staff who don't already have one, so
- * that portal access can always be created without a manual data fix.
+ * Génère des adresses e-mail institutionnelles uniques (prenom.nom@domaine) pour les élèves, enseignants,
+ * tuteurs et membres du personnel qui n'en ont pas encore, afin de pouvoir toujours créer l'accès au portail
+ * sans correction manuelle des données.
  */
 class InstitutionalEmail
 {

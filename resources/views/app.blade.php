@@ -7,7 +7,7 @@
         <title inertia>{{ config('app.name', 'EEHT de Thiès') }}</title>
         <meta name="description" content="Elite École Hôtelière et Touristique de Thiès - Formations professionnalisantes en hôtellerie, restauration et tourisme.">
 
-        {{-- PWA: installable on Android (manifest) and iOS (apple-* meta tags) --}}
+        {{-- PWA : installable sur Android (manifest) et iOS (balises meta apple-*) --}}
         <link rel="manifest" href="{{ route('pwa.manifest') }}">
         <meta name="theme-color" content="{{ \App\Models\Setting::get('theme_neutral_color') ?: '#50022b' }}">
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
@@ -18,12 +18,12 @@
         <meta name="apple-mobile-web-app-title" content="{{ \App\Models\Setting::get('site_short_name') ?: 'EEHT' }}">
         <meta name="mobile-web-app-capable" content="yes">
 
-        <!-- Fonts -->
+        <!-- Polices -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-        {{-- Site theme colors, configurable from Admin > Paramètres --}}
+        {{-- Couleurs du thème du site, configurables depuis Admin > Paramètres --}}
         <style>{!! \App\Support\ThemePalette::cssVariables() !!}</style>
 
         <!-- Scripts -->

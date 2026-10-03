@@ -52,7 +52,7 @@ class ReportCardDeleteTest extends TestCase
     {
         $this->seed(RolesAndPermissionsSeeder::class);
         $user = User::factory()->create();
-        $user->assignRole('caissier'); // no bulletins permission
+        $user->assignRole('caissier'); // pas de permission bulletins
         $reportCard = $this->makeReportCard();
 
         $response = $this->actingAs($user)->delete(route('admin.report-cards.destroy', $reportCard));

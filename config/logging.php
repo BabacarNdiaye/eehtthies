@@ -9,12 +9,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Log Channel
+    | Canal de journal par défaut
     |--------------------------------------------------------------------------
     |
-    | This option defines the default log channel that is utilized to write
-    | messages to your logs. The value provided here should match one of
-    | the channels present in the list of "channels" configured below.
+    | Cette option définit le canal de journal par défaut utilisé pour écrire les messages dans vos journaux.
+    | La valeur fournie ici doit correspondre à l'un des canaux de la liste « channels » configurée plus bas.
     |
     */
 
@@ -22,12 +21,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Deprecations Log Channel
+    | Canal de journal des dépréciations
     |--------------------------------------------------------------------------
     |
-    | This option controls the log channel that should be used to log warnings
-    | regarding deprecated PHP and library features. This allows you to get
-    | your application ready for upcoming major versions of dependencies.
+    | Cette option contrôle le canal de journal utilisé pour consigner les avertissements concernant les
+    | fonctionnalités dépréciées de PHP et des bibliothèques. Cela vous permet de préparer votre application
+    | aux prochaines versions majeures de ses dépendances.
     |
     */
 
@@ -38,15 +37,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Log Channels
+    | Canaux de journal
     |--------------------------------------------------------------------------
     |
-    | Here you may configure the log channels for your application. Laravel
-    | utilizes the Monolog PHP logging library, which includes a variety
-    | of powerful log handlers and formatters that you're free to use.
+    | Vous pouvez ici configurer les canaux de journal de votre application. Laravel utilise la bibliothèque
+    | de journalisation PHP Monolog, qui inclut une variété de gestionnaires et de formateurs puissants que
+    | vous êtes libre d'utiliser.
     |
-    | Available drivers: "single", "daily", "monthly", "slack", "syslog",
-    |                    "errorlog", "monolog", "custom", "stack"
+    | Pilotes disponibles : « single », « daily », « monthly », « slack », « syslog », « errorlog », « monolog
+    | », « custom », « stack »
     |
     */
 

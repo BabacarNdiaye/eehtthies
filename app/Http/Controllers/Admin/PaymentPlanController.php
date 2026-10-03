@@ -68,8 +68,8 @@ class PaymentPlanController extends Controller
         $firstDueDate = Carbon::parse($data['first_due_date']);
 
         for ($i = 1; $i <= $count; $i++) {
-            // Even split, with any rounding remainder folded into the last tranche
-            // so the sum of all tranches always equals the total exactly.
+            // Répartition égale, le reste d'arrondi étant reporté sur la dernière tranche pour que la somme
+            // de toutes les tranches soit toujours exactement égale au total.
             $amount = $i === $count ? round($total - $baseShare * ($count - 1), 2) : $baseShare;
 
             Invoice::create([
@@ -109,9 +109,9 @@ class PaymentPlanController extends Controller
 
         abort_if($hasPayments, 422, 'Impossible de supprimer : au moins une tranche a déjà reçu un paiement.');
 
-        // Delete each Invoice model individually (not a mass ->delete() on the
-        // relation query) so Invoice::deleted() fires and AccountingPoster::void()
-        // cleans up the auto-posted journal entry for every tranche.
+        // Supprime chaque modèle Invoice individuellement (et non par un ->delete() de masse sur la requête
+        // de la relation) pour que Invoice::deleted() se déclenche et que AccountingPoster::void() nettoie
+        // l'écriture comptable générée automatiquement pour chaque tranche.
         $paymentPlan->invoices->each->delete();
         $paymentPlan->delete();
 

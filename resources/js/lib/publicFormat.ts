@@ -1,5 +1,5 @@
 /**
- * Small formatting helpers shared across the public-facing pages.
+ * Petits utilitaires de formatage partagés par les pages publiques.
  */
 
 export function formatFcfa(value: string | number | null | undefined): string {

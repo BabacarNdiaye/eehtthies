@@ -31,8 +31,8 @@ type Celebration = {
 
 type CameraOption = { id: string; label: string };
 
-// A short, pleasant two/three-note chime synthesised on the fly (Web Audio API) —
-// no audio asset to ship/host, works offline, and needs no per-student recording.
+// Un court carillon agréable de deux ou trois notes, synthétisé à la volée (API Web Audio) — aucun fichier
+// audio à livrer ni héberger, fonctionne hors ligne, et ne nécessite aucun enregistrement par élève.
 function playChime(kind: 'success' | 'error' | 'late') {
     try {
         const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -54,12 +54,13 @@ function playChime(kind: 'success' | 'error' | 'late') {
         });
         setTimeout(() => ctx.close().catch(() => undefined), 900);
     } catch {
-        // Non-critical — a silent kiosk still works, never block the scan flow on this.
+        // Non critique — une borne silencieuse fonctionne toujours, ne jamais bloquer le flux de scan pour
+        // cela.
     }
 }
 
-// Speaks a short French welcome message via the browser's built-in text-to-speech,
-// so no audio file needs to be recorded/hosted per phrase.
+// Prononce un court message d'accueil en français via la synthèse vocale intégrée au navigateur, pour
+// qu'aucun fichier audio n'ait à être enregistré ni hébergé pour chaque phrase.
 function speak(text: string) {
     try {
         if (!('speechSynthesis' in window)) return;
@@ -72,7 +73,7 @@ function speak(text: string) {
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
     } catch {
-        // Non-critical.
+        // Non critique.
     }
 }
 
@@ -111,8 +112,8 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
         return () => clearInterval(interval);
     }, []);
 
-    // Chrome loads voices asynchronously; touching the list once up front means the
-    // first `speak()` call after a scan is more likely to already have a French voice.
+    // Chrome charge les voix de façon asynchrone ; consulter la liste une fois en amont rend plus probable
+    // qu'une voix française soit déjà disponible au premier appel de `speak()` après un scan.
     useEffect(() => {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.getVoices();
@@ -132,10 +133,11 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
                 return generated;
             }
         } catch {
-            // fall through to same-origin fallback below
+            // on passe au repli sur la même origine ci-dessous
         }
 
-        // If a kiosk token is present in the URL, use the public scan endpoint and include token in body
+        // Si un jeton de borne est présent dans l'URL, on utilise le point d'entrée public de scan et on
+        // inclut le jeton dans le corps
         const params = new URLSearchParams(window.location.search);
         const kioskToken = params.get('token');
         if (kioskToken) {
@@ -188,10 +190,10 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
         };
     };
 
-    // html5-qrcode's Html5Qrcode.pause() injects its own plain "Scanner paused" banner
-    // (unstyled, no id/class to hook) — we show our own paused state via the bottom
-    // bar's icon instead, so hide the library's one. Called synchronously right after
-    // pause(), before the browser paints, so it never actually flashes on screen.
+    // Html5Qrcode.pause() de html5-qrcode injecte sa propre bannière brute « Scanner paused » (sans style,
+    // sans id ni classe à cibler) — on affiche à la place notre propre état de pause via l'icône de la barre
+    // du bas, donc on masque celle de la bibliothèque. Appelé de façon synchrone juste après pause(), avant
+    // que le navigateur ne dessine, si bien qu'elle ne clignote jamais réellement à l'écran.
     const suppressNativePausedBanner = () => {
         document.getElementById('qr-reader')?.querySelectorAll<HTMLDivElement>(':scope > div').forEach((el) => {
             if (el.style.position === 'absolute' && el.style.width === '100%' && el.style.top === '0px') {
@@ -200,9 +202,9 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
         });
     };
 
-    // After a successful scan, pause for a few seconds (same duration as the welcome
-    // overlay) so the same badge held in front of the camera doesn't re-trigger a
-    // flurry of scans/sounds while the student is still walking past.
+    // Après un scan réussi, on met en pause quelques secondes (même durée que l'écran d'accueil) pour que le
+    // même badge tenu devant la caméra ne redéclenche pas une rafale de scans et de sons pendant que l'élève
+    // passe encore.
     const triggerPostScanCooldown = () => {
         setPaused(true);
         html5QrcodeRef.current?.pause(true);
@@ -285,9 +287,9 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
 
             const schoolClassId = payload.schoolClassId || student.school_class_id || 0;
 
-            // Plain axios, not Inertia's router.post: this endpoint returns raw JSON
-            // (shared with the gate-mode scan), and Inertia's client throws if a
-            // request it issued doesn't come back as a valid Inertia response.
+            // axios simple, et non router.post d'Inertia : ce point d'entrée renvoie du JSON brut (partagé
+            // avec le scan du mode portique), et le client d'Inertia lève une erreur si une requête qu'il a
+            // émise ne revient pas sous forme de réponse Inertia valide.
             window.axios
                 .post(scanRoute, {
                     student_id: student.id,
@@ -345,14 +347,14 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
         }
     };
 
-    // Kept fresh every render (no effect needed — mutating a ref during render is
-    // safe as long as nothing reads it back during that same render) so the stable
-    // callback below always calls into the current mode/props/state.
+    // Mis à jour à chaque rendu (aucun effet nécessaire — modifier une ref pendant le rendu est sûr tant que
+    // rien ne la relit pendant ce même rendu) pour que le callback stable ci-dessous appelle toujours le
+    // mode, les props et l'état courants.
     handleScanRef.current = mode === 'gate' ? handleGateScan : handleClassroomScan;
 
-    // Stable function identity passed to Html5Qrcode.start(): the camera never needs
-    // restarting when mode/date/students change, it just forwards to whatever
-    // handleScanRef currently points to.
+    // Identité de fonction stable passée à Html5Qrcode.start() : la caméra n'a jamais besoin de redémarrer
+    // quand le mode, la date ou les élèves changent, elle transmet simplement à ce que handleScanRef désigne
+    // à cet instant.
     const stableSuccessCallback = useRef((text: string) => handleScanRef.current(text)).current;
 
     const startCamera = async (preferredCameraId?: string) => {
@@ -363,10 +365,10 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
             if (!html5QrcodeRef.current) {
                 html5QrcodeRef.current = new Html5Qrcode('qr-reader', {
                     verbose: false,
-                    // Native browser/OS barcode detection (where supported) is far
-                    // faster than the pure-JS decoder fallback, and restricting to
-                    // QR codes only (instead of scanning for every barcode format)
-                    // means less work per frame — both reduce time-to-detect.
+                    // La détection native de codes-barres du navigateur ou du système (lorsqu'elle est
+                    // disponible) est bien plus rapide que le décodeur JS pur de secours, et se limiter aux
+                    // codes QR (au lieu de chercher tous les formats de codes-barres) réduit le travail par
+                    // image — les deux réduisent le temps de détection.
                     useBarCodeDetectorIfSupported: true,
                     formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
                 });
@@ -408,7 +410,7 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
         try {
             await html5QrcodeRef.current.stop();
         } catch {
-            // May already be stopped/paused — safe to ignore and try starting anyway.
+            // Peut être déjà arrêtée ou en pause — on peut l'ignorer et tenter quand même de démarrer.
         }
         setCameraIndex(nextIndex);
         await startCamera(cameras[nextIndex].id);
@@ -439,9 +441,9 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
             });
         }
 
-        // Dev-only hook so a scan can be triggered deterministically without a real
-        // camera/QR (Vite strips this in production builds — import.meta.env.DEV is
-        // statically false there, so the whole branch is dead-code-eliminated).
+        // Crochet réservé au développement pour déclencher un scan de façon déterministe sans vraie caméra ni
+        // QR (Vite le retire des builds de production — import.meta.env.DEV y vaut statiquement false, donc
+        // toute la branche est éliminée comme code mort).
         if (import.meta.env.DEV) {
             (window as unknown as { __kioskTestScan?: (text: string) => void }).__kioskTestScan = (text) => handleScanRef.current(text);
         }
@@ -511,7 +513,7 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
             `}</style>
 
             <div className="fixed inset-0 flex flex-col bg-[radial-gradient(ellipse_at_top,#16233a_0%,#0b1728_45%,#05090f_100%)]">
-                {/* Branded header: school logo, name and a live clock */}
+                {/* En-tête de marque : logo de l'école, nom et horloge en direct */}
                 <header className="relative z-10 flex items-center justify-between border-b border-gold-500/20 bg-ink-900/80 px-6 py-4 shadow-[0_4px_24px_rgba(0,0,0,0.4)] backdrop-blur">
                     <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gold-500/60 to-transparent" />
                     <div className="flex items-center gap-3">
@@ -536,11 +538,11 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
                     </div>
                 </header>
 
-                {/* Camera area fills the remaining space */}
+                {/* La zone caméra occupe l'espace restant */}
                 <div className="relative flex-1 overflow-hidden bg-[radial-gradient(circle_at_center,#111d30_0%,#05090f_75%)] ring-1 ring-inset ring-white/5">
                     <div id="qr-reader" className="h-full w-full [&_video]:mx-auto [&_video]:h-full [&_video]:object-cover" />
 
-                    {/* Cinematic vignette so the header/footer text stays legible over any camera feed */}
+                    {/* Vignette cinématographique pour que le texte de l'en-tête et du pied de page reste lisible sur n'importe quel flux caméra */}
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/60" />
 
                     <div className="pointer-events-none absolute inset-x-0 top-4 flex flex-col items-center gap-2">
@@ -557,8 +559,9 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
                         )}
                     </div>
 
-                    {/* Pre-scan state: a branded splash + a single elegant call-to-action,
-                        instead of the scanning library's own default (invisible-on-dark)
+                    {/*  État avant scan : un écran d'accueil de marque + un seul bouton d'appel à l'action
+                         * élégant, au lieu du bouton d'autorisation par défaut de la bibliothèque de scan
+                         * (invisible sur fond sombre).
                         permission button. */}
                     {cameraStatus !== 'running' && (
                         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-6 px-6 text-center">
@@ -622,7 +625,9 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
                         </div>
                     )}
 
-                    {/* Custom control bar (camera switch / pause-resume), replacing html5-qrcode's
+                    {/*  Barre de contrôle personnalisée (changement de caméra / pause-reprise), qui
+                         * remplace le tableau de bord en texte brut de html5-qrcode pour rester lisible et à
+                         * l'image de la marque.
                         own plain-text dashboard so it stays legible and on-brand. */}
                     {cameraStatus === 'running' && (
                         <div className="kiosk-bar pointer-events-auto absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-ink-950/80 p-2 shadow-2xl backdrop-blur">
@@ -647,7 +652,7 @@ export default function Kiosk({ students, date, mode = 'classroom' }: Props) {
                         </div>
                     )}
 
-                    {/* Full-screen "welcome" celebration shown for a few seconds after a successful scan */}
+                    {/* Célébration « bienvenue » plein écran affichée quelques secondes après un scan réussi */}
                     {celebration && (
                         <div className="kiosk-backdrop pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-ink-950/75 backdrop-blur-md">
                             <div

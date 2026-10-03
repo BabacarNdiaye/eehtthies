@@ -26,7 +26,7 @@ class ImageOptimizerTest extends TestCase
         return $path;
     }
 
-    /** A noisy pattern, not a flat fill — flat colors compress trivially well as PNG and would never benefit from JPEG re-encoding, unlike the real (photographic) uploads this class exists for. */
+    /** Un motif bruité, pas un aplat — les couleurs unies se compressent trivialement bien en PNG et ne bénéficieraient jamais d'un ré-encodage JPEG, contrairement aux vrais téléversements (photographiques) pour lesquels cette classe existe. */
     private function makeOpaquePng(int $width, int $height, string $path): string
     {
         $image = imagecreatetruecolor($width, $height);

@@ -211,7 +211,7 @@ export function ContactsSection({ onMessage, onNewGroup, canCreateGroups }: { on
 
 export function ProfileSection({ me, links }: { me: Profile; links: ConnectLinks }) {
     const rows = [
-        { icon: Mail, label: 'Email', value: me.email },
+        { icon: Mail, label: 'E-mail', value: me.email },
         { icon: Smartphone, label: 'Téléphone', value: me.phone },
         { icon: GraduationCap, label: 'Formation', value: me.formation },
         { icon: Briefcase, label: 'Poste', value: me.position },

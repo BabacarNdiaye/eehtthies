@@ -8,16 +8,14 @@ use Illuminate\Database\Seeder;
 class FormationsCatalogSeeder extends Seeder
 {
     /**
-     * Aligns the training catalogue with the official EEHT programme dossier:
-     * CAP Restauration, BEP Restauration, BEP Réceptionniste, BT Restauration,
-     * BTS Tourisme, DTS Tourisme, DTS Restauration, Tourisme Durable,
-     * Technique de Guidage, Formation courte en Restauration, Agent de
-     * Caisse, Chef de Rang, Certificats de Spécialité (Pâtisserie, Cuisine,
-     * Restauration), Barista.
+     * Aligne le catalogue de formations sur le dossier officiel du programme de l'EEHT : CAP Restauration,
+     * BEP Restauration, BEP Réceptionniste, BT Restauration, BTS Tourisme, DTS Tourisme, DTS Restauration,
+     * Tourisme Durable, Technique de Guidage, Formation courte en Restauration, Agent de Caisse, Chef de
+     * Rang, Certificats de Spécialité (Pâtisserie, Cuisine, Restauration), Barista.
      */
     public function run(): void
     {
-        // Placeholder formations with no linked students/classes/subjects — safe to retire.
+        // Formations fictives sans élève, classe ni matière liée — on peut les retirer sans risque.
         Formation::whereIn('code', ['CAP-CUIS', 'CAP-REST', 'DTS-MH'])->delete();
 
         $catalog = [

@@ -19,9 +19,9 @@ class MailController extends Controller
     public function index(): Response
     {
         return Inertia::render('Admin/Mail/Index', [
-            // The messaging module always addresses actors by their professional
-            // (institutional) e-mail, never their personal one — it's the address
-            // tied to their portal login, so this is what actually reaches them.
+            // Le module de messagerie s'adresse toujours aux acteurs par leur e-mail professionnel
+            // (institutionnel), jamais par leur e-mail personnel — c'est l'adresse liée à leur connexion au
+            // portail, donc celle qui les atteint réellement.
             'students' => Student::whereNotNull('professional_email')->where('professional_email', '!=', '')
                 ->with('schoolClass:id,name')
                 ->orderBy('last_name')
@@ -50,8 +50,8 @@ class MailController extends Controller
             $user = User::where('email', $recipient['email'])->first();
 
             if ($user) {
-                // Has a portal account (élève/enseignant/parent) — deliver in their
-                // private EEHT Connect conversation (with a push notification).
+                // Possède un compte portail (élève/enseignant/parent) — livré dans sa conversation privée
+                // EEHT Connect (avec une notification push).
                 $messenger->send(
                     $messenger->directConversation($request->user(), $user),
                     $request->user(),
@@ -60,9 +60,9 @@ class MailController extends Controller
                 );
                 $internalCount++;
             } else {
-                // No portal account (e.g. a parent/partner e-mail typed manually) —
-                // fall back to a real e-mail. GenericMessage implements ShouldQueue,
-                // so this is dispatched to the queue rather than sent synchronously.
+                // Pas de compte portail (p. ex. un e-mail de parent ou de partenaire saisi à la main) — on se
+                // rabat sur un e-mail réel. GenericMessage implémente ShouldQueue : l'envoi est donc placé
+                // dans la file plutôt qu'effectué de manière synchrone.
                 Mail::to($recipient['email'])->send(
                     new GenericMessage($data['subject'], $data['body'], $recipient['name'] ?? null)
                 );

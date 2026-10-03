@@ -43,7 +43,7 @@ export default function Marketing({ monthly, bySource, byFormation, totalCandida
     return (
         <AdminLayout>
             <Head title="Statistiques marketing" />
-            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & Business Intelligence</h1>
+            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & pilotage</h1>
             <p className="mb-4 text-sm text-ink-500">Indicateurs marketing : candidatures, sources et conversion.</p>
             <Tabs />
 

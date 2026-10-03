@@ -87,7 +87,7 @@ class RoleController extends Controller
         ]);
 
         if ($isProtected) {
-            // Protected roles keep their name and always retain every permission.
+            // Les rôles protégés conservent leur nom et gardent toujours toutes les permissions.
             $role->syncPermissions(Permission::all());
 
             return back()->with('success', 'Ce rôle système conserve toutes les permissions.');

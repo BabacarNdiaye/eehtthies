@@ -77,7 +77,7 @@ class TrainingAttestationTest extends TestCase
     {
         $this->seed(RolesAndPermissionsSeeder::class);
         $user = User::factory()->create();
-        $user->assignRole('caissier'); // no eleves permission
+        $user->assignRole('caissier'); // pas de permission eleves
         $student = $this->makeStudent('actif');
 
         $response = $this->actingAs($user)->get(route('admin.students.attestation', $student));

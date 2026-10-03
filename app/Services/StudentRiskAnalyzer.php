@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 class StudentRiskAnalyzer
 {
     /**
-     * Returns the scored list of at-risk active students (absences, grades, overdue invoices).
+     * Retourne la liste notée des élèves actifs à risque (absences, notes, factures en retard).
      */
     public function analyze(): Collection
     {

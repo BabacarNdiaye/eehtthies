@@ -12,7 +12,7 @@ class CompressFormationImages extends Command
 {
     protected $signature = 'app:compress-formation-images';
 
-    protected $description = 'One-time: resizes + re-encodes already-uploaded formation images (several were 1.4-2MB PNGs) via ImageOptimizer, to cut page weight on the public formations pages.';
+    protected $description = 'Ponctuelle : redimensionne et ré-encode les images de formation déjà téléversées (plusieurs étaient des PNG de 1,4 à 2 Mo) via ImageOptimizer, pour alléger les pages publiques des formations.';
 
     public function handle(): int
     {
@@ -25,22 +25,22 @@ class CompressFormationImages extends Command
             $absolutePath = Storage::disk('public')->path($oldPath);
 
             if (! is_file($absolutePath)) {
-                $this->warn("Missing file for {$formation->code}: {$oldPath}");
+                $this->warn("Fichier manquant pour {$formation->code} : {$oldPath}");
 
                 continue;
             }
 
             $originalSize = filesize($absolutePath);
 
-            // Wrap the on-disk file as an UploadedFile so it can go through
-            // the exact same optimizer used for new uploads.
+            // Enveloppe le fichier présent sur disque dans un UploadedFile pour qu'il passe par exactement le
+            // même optimiseur que les nouveaux téléversements.
             $uploaded = new UploadedFile($absolutePath, basename($absolutePath), null, null, true);
             $newPath = ImageOptimizer::store($uploaded, 'formations');
             $newSize = Storage::disk('public')->size($newPath);
 
             if ($newSize >= $originalSize) {
                 Storage::disk('public')->delete($newPath);
-                $this->line("Skipped {$formation->code} (already optimal): ".round($originalSize / 1024).'KB');
+                $this->line("Image de {$formation->code} ignorée (déjà optimale) : ".round($originalSize / 1024).' Ko');
 
                 continue;
             }
@@ -50,10 +50,10 @@ class CompressFormationImages extends Command
 
             $savedBytes += $originalSize - $newSize;
             $touched++;
-            $this->info("{$formation->code}: ".round($originalSize / 1024).'KB -> '.round($newSize / 1024).'KB');
+            $this->info("{$formation->code}: ".round($originalSize / 1024).' Ko -> '.round($newSize / 1024).' Ko');
         }
 
-        $this->info("Compressed {$touched} image(s), saved ".round($savedBytes / 1024 / 1024, 2).' MB total.');
+        $this->info("{$touched} image(s) compressée(s), ".round($savedBytes / 1024 / 1024, 2).' Mo économisés au total.');
 
         return self::SUCCESS;
     }

@@ -64,7 +64,7 @@ export default function AtRisk({ students, summary }: Props) {
     return (
         <AdminLayout>
             <Head title="Élèves à risque" />
-            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & Business Intelligence</h1>
+            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & pilotage</h1>
             <p className="mb-4 text-sm text-ink-500">
                 Détection automatique des élèves cumulant absences non justifiées, moyenne faible et/ou factures impayées en retard.
             </p>

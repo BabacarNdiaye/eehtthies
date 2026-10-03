@@ -17,7 +17,7 @@ use Inertia\Response;
 class NewPasswordController extends Controller
 {
     /**
-     * Display the password reset view.
+     * Affiche la vue de réinitialisation du mot de passe.
      */
     public function create(Request $request): Response
     {
@@ -28,7 +28,7 @@ class NewPasswordController extends Controller
     }
 
     /**
-     * Handle an incoming new password request.
+     * Traite une demande de nouveau mot de passe entrante.
      *
      * @throws ValidationException
      */
@@ -40,9 +40,9 @@ class NewPasswordController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
+        // On tente ici de réinitialiser le mot de passe de l'utilisateur. En cas de succès, on met à jour le
+        // mot de passe sur le modèle d'utilisateur réel et on l'enregistre en base. Sinon, on analyse
+        // l'erreur et on renvoie la réponse.
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
@@ -55,9 +55,9 @@ class NewPasswordController extends Controller
             }
         );
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
+        // Si le mot de passe a bien été réinitialisé, on redirige l'utilisateur vers la vue authentifiée
+        // d'accueil de l'application. En cas d'erreur, on le renvoie à la page d'origine avec son message
+        // d'erreur.
         if ($status == Password::PASSWORD_RESET) {
             return redirect()->route('login')->with('status', __($status));
         }

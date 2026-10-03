@@ -24,9 +24,9 @@ class SchoolClass extends Model
     }
 
     /**
-     * Resolve the class this student should move into next, preferring the
-     * formation-level-based lookup (survives year over year without manual
-     * re-wiring) and falling back to the manually configured `next_class_id`.
+     * Détermine la classe dans laquelle cet élève doit passer ensuite : on privilégie la recherche par niveau
+     * de formation (qui survit d'une année à l'autre sans reconfiguration manuelle) et on se rabat sur
+     * `next_class_id` configuré manuellement.
      */
     public function nextClassAuto(): ?self
     {

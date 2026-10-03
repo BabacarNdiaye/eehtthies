@@ -10,14 +10,14 @@ class RetireCqpUmbrellaFormation extends Command
 {
     protected $signature = 'app:retire-cqp-umbrella-formation';
 
-    protected $description = "One-time: the CQP formation was a single catch-all fiche covering 6 different specialties (caisse, barista, pâtisserie, cuisine, service, guidage), which made its diploma PDF's specialty wording wrong for most graduates. Each specialty now has its own accurate fiche, so this deactivates CQP (hides it from the public site) without deleting it — any student already linked to it keeps their record intact.";
+    protected $description = 'Ponctuelle : la formation CQP était une fiche fourre-tout unique couvrant 6 spécialités différentes (caisse, barista, pâtisserie, cuisine, service, guidage), ce qui rendait fausse la formulation de spécialité du PDF de diplôme pour la plupart des diplômés. Chaque spécialité a désormais sa propre fiche exacte ; cette commande désactive donc le CQP (le masque du site public) sans le supprimer — tout élève déjà lié conserve son dossier intact.';
 
     public function handle(): int
     {
         $cqp = Formation::where('code', 'CQP')->first();
 
         if (! $cqp) {
-            $this->info('No CQP formation found — nothing to do.');
+            $this->info('Aucune formation CQP trouvée — rien à faire.');
 
             return self::SUCCESS;
         }
@@ -25,14 +25,14 @@ class RetireCqpUmbrellaFormation extends Command
         $studentCount = Student::where('formation_id', $cqp->id)->count();
 
         if (! $cqp->is_active) {
-            $this->info("CQP already inactive ({$studentCount} linked student(s)) — nothing to do.");
+            $this->info("CQP déjà inactif ({$studentCount} élève(s) lié(s)) — rien à faire.");
 
             return self::SUCCESS;
         }
 
         $cqp->update(['is_active' => false]);
 
-        $this->info("CQP deactivated (hidden from public site, record kept). Linked students: {$studentCount}.");
+        $this->info("CQP désactivé (masqué du site public, fiche conservée). Élèves liés : {$studentCount}.");
 
         return self::SUCCESS;
     }

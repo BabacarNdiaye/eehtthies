@@ -16,9 +16,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Pins down the scoring rules behind the "Élèves à risque" dashboard and the
- * weekly digest e-mail — getting these thresholds wrong either hides a
- * struggling student or spams staff with false positives.
+ * Verrouille les règles de calcul du score derrière le tableau de bord « Élèves à risque » et l'e-mail de
+ * synthèse hebdomadaire — de mauvais seuils cachent un élève en difficulté ou inondent le personnel de faux
+ * positifs.
  */
 class StudentRiskAnalyzerTest extends TestCase
 {
@@ -140,7 +140,7 @@ class StudentRiskAnalyzerTest extends TestCase
         $result = app(StudentRiskAnalyzer::class)->analyze()->firstWhere('id', $student->id);
 
         $this->assertSame(6.0, $result['average']);
-        $this->assertSame('moyen', $result['level']); // 2 points from average <8 alone
+        $this->assertSame('moyen', $result['level']); // 2 points rien que pour la moyenne <8
     }
 
     public function test_an_average_of_exactly_10_is_not_flagged_as_low(): void
@@ -157,7 +157,7 @@ class StudentRiskAnalyzerTest extends TestCase
     public function test_grades_are_normalized_to_20_regardless_of_the_exam_max_score(): void
     {
         $student = $this->makeStudent();
-        $exam = $this->makePublishedExam(10); // scored out of 10, not 20
+        $exam = $this->makePublishedExam(10); // noté sur 10, pas sur 20
         Grade::create(['exam_id' => $exam->id, 'student_id' => $student->id, 'score' => 3, 'is_absent' => false]); // 3/10 == 6/20
 
         $result = app(StudentRiskAnalyzer::class)->analyze()->firstWhere('id', $student->id);
@@ -237,7 +237,7 @@ class StudentRiskAnalyzerTest extends TestCase
 
         $result = app(StudentRiskAnalyzer::class)->analyze()->firstWhere('id', $student->id);
 
-        // 2 (absences) + 2 (average <8) + 2 (overdue >100k) = 6
+        // 2 (absences) + 2 (moyenne <8) + 2 (impayés >100k) = 6
         $this->assertSame(6, $result['score']);
         $this->assertSame('eleve', $result['level']);
         $this->assertCount(3, $result['reasons']);

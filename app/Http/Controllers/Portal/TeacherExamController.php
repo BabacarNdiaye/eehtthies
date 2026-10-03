@@ -15,10 +15,10 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Lets a teacher schedule their own "devoir"-category assessments (devoir,
- * interrogation, controle) for the classes/subjects they actually teach —
- * a lighter, self-service version of Admin\ExamController scoped to their
- * own timetable and restricted to what they created.
+ * Permet à un enseignant de programmer ses propres évaluations de catégorie « devoir » (devoir,
+ * interrogation, contrôle) pour les classes et matières qu'il enseigne réellement — une version plus légère,
+ * en libre-service, de Admin\ExamController, limitée à l'emploi du temps de l'enseignant et aux évaluations
+ * qu'il a créées.
  */
 class TeacherExamController extends Controller
 {
@@ -30,7 +30,7 @@ class TeacherExamController extends Controller
         return $teacher;
     }
 
-    /** Distinct (class, subject) pairs this teacher actually teaches, from the timetable. */
+    /** Paires (classe, matière) distinctes que cet enseignant enseigne réellement, d'après l'emploi du temps. */
     private function classSubjectPairs(Teacher $teacher): Collection
     {
         return TimetableEntry::where('teacher_id', $teacher->id)

@@ -84,8 +84,8 @@ class User extends Authenticatable
     }
 
     /**
-     * Administrative staff: everyone except users whose only roles belong to
-     * the dedicated Élèves/Enseignants modules (teachers, students, parents).
+     * Personnel administratif : tous les utilisateurs sauf ceux dont les seuls rôles relèvent des modules
+     * dédiés Élèves/Enseignants (enseignants, élèves, parents).
      */
     public function scopeAdminStaff($query)
     {
@@ -96,7 +96,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the attributes that should be cast.
+     * Retourne les attributs à convertir.
      *
      * @return array<string, string>
      */

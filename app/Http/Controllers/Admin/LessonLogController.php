@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** Read-only oversight of the cahier de texte teachers fill from their own portal. */
+/** Supervision en lecture seule du cahier de texte que les enseignants remplissent depuis leur propre portail. */
 class LessonLogController extends Controller
 {
     use Exportable;
@@ -25,7 +25,8 @@ class LessonLogController extends Controller
 
         return LessonLog::when($schoolClassId, fn ($q) => $q->where('school_class_id', $schoolClassId))
             ->when($teacherId, fn ($q) => $q->where('teacher_id', $teacherId))
-            // whereDate, not whereBetween on the raw column — see AttendanceController::registerQuery().
+            // whereDate et non whereBetween sur la colonne brute — voir
+            // AttendanceController::registerQuery().
             ->whereDate('date', '>=', $from)
             ->whereDate('date', '<=', $to)
             ->with(['teacher:id,first_name,last_name', 'schoolClass:id,name', 'subject:id,name'])

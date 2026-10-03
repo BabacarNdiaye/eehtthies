@@ -21,7 +21,7 @@ class RolesAndPermissionsSeeder extends Seeder
         }
 
         $roles = [
-            'super-admin' => $modules, // gets everything below via all permissions
+            'super-admin' => $modules, // reçoit tout ce qui suit via l'ensemble des permissions
             'direction' => $modules,
             'administration' => [
                 'formations', 'candidatures', 'eleves', 'enseignants', 'classes', 'matieres', 'communication',

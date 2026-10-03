@@ -49,9 +49,9 @@ class HrController extends Controller
             'editUrl' => route('admin.teachers.edit', $t->id),
         ]))->sortBy('name')->values();
 
-        // Fixed-salary teachers now carry their own monthly_salary directly on
-        // Teacher (no longer requiring a linked User account) — hourly-paid
-        // teachers aren't included here since their pay varies month to month.
+        // Les enseignants à salaire fixe portent désormais leur propre monthly_salary directement sur Teacher
+        // (sans compte User lié requis) — les enseignants payés à l'heure ne sont pas inclus ici, car leur
+        // rémunération varie d'un mois à l'autre.
         $monthlyPayroll = (float) $adminStaff->sum('monthly_salary')
             + (float) $teachers->where('payment_type', 'fixe')->sum('monthly_salary');
         $today = Carbon::today();

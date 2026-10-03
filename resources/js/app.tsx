@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client';
 import ConnectLauncher from './Components/ConnectLauncher';
 import PwaInstallBanner from './Components/PwaInstallBanner';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'EEHT de Thiès';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -36,7 +36,8 @@ createInertiaApp({
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch(() => {
-            // Installable/offline support is a progressive enhancement; ignore failures.
+            // La prise en charge de l'installation et du mode hors ligne est une amélioration progressive ;
+            // on ignore les échecs.
         });
     });
 }

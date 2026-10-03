@@ -13,5 +13,5 @@ export const MONTH_LABELS: Record<number, string> = {
     12: 'Décembre',
 };
 
-/** Default school-year month sequence (Sept → June), mirrors Invoice::SCHOOL_MONTHS in PHP. */
+/** Séquence de mois par défaut de l'année scolaire (sept. → juin), reflète Invoice::SCHOOL_MONTHS en PHP. */
 export const SCHOOL_MONTHS = [9, 10, 11, 12, 1, 2, 3, 4, 5, 6];

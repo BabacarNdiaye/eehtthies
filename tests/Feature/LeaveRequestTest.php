@@ -75,7 +75,7 @@ class LeaveRequestTest extends TestCase
         $requester = User::factory()->create();
         $requester->assignRole('caissier');
         $approver = User::factory()->create();
-        $approver->assignRole('administration'); // has modifier_utilisateurs
+        $approver->assignRole('administration'); // possède modifier_utilisateurs
         $leave = LeaveRequest::create(['user_id' => $requester->id, 'type' => 'conge_paye', 'start_date' => '2026-10-01', 'end_date' => '2026-10-02']);
 
         $response = $this->actingAs($approver)->patch(route('admin.leave.status', $leave), ['status' => 'approuve']);

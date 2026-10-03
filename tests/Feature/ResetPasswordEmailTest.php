@@ -10,16 +10,16 @@ use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 /**
- * The stock Laravel password-reset e-mail uses the framework's generic,
- * unbranded template. This app overrides User::sendPasswordResetNotification()
- * to send our own branded Mailable (mail.layout) instead — this pins that
- * override down so it can't silently regress back to the default template.
+ * L'e-mail standard de réinitialisation de mot de passe de Laravel utilise le gabarit générique du framework,
+ * sans la marque. Cette application surcharge User::sendPasswordResetNotification() pour envoyer à la place
+ * notre propre Mailable à la marque de l'école (mail.layout) — ce test verrouille cette surcharge pour
+ * qu'elle ne régresse pas silencieusement vers le gabarit par défaut.
  *
- * Note: notifications whose toMail() returns a Mailable bypass the `Mail`
- * facade (MailChannel calls $mailable->send() on an injected Mailer contract
- * directly), so Mail::fake()/Mail::assertSent() never sees them — confirmed
- * by testing both ways before settling on this. Notification::fake() is the
- * correct tool here regardless of what channel/mechanism is used internally.
+ * Remarque : les notifications dont toMail() renvoie un Mailable contournent la façade `Mail` (MailChannel
+ * appelle directement $mailable->send() sur un contrat Mailer injecté), donc Mail::fake() et
+ * Mail::assertSent() ne les voient jamais — confirmé en testant dans les deux sens avant de retenir cette
+ * solution. Notification::fake() est ici le bon outil, quel que soit le canal ou le mécanisme utilisé en
+ * interne.
  */
 class ResetPasswordEmailTest extends TestCase
 {

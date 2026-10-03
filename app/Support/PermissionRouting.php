@@ -5,11 +5,10 @@ namespace App\Support;
 use Illuminate\Routing\PendingResourceRegistration;
 
 /**
- * Wires the standard voir/ajouter/modifier/supprimer permission checks onto a
- * resource route registration, so "Rôles & permissions" is actually enforced
- * instead of being decorative. Referencing a method the resource doesn't
- * register (e.g. an excepted action) is harmless — Laravel simply stores the
- * unused entry.
+ * Branche les contrôles de permission standard voir/ajouter/modifier/supprimer sur l'enregistrement d'une
+ * route de ressource, afin que « Rôles & permissions » soit réellement appliqué au lieu d'être décoratif.
+ * Référencer une méthode que la ressource n'enregistre pas (p. ex. une action exclue) est sans conséquence —
+ * Laravel se contente de conserver l'entrée inutilisée.
  */
 class PermissionRouting
 {

@@ -89,7 +89,7 @@ use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
-| Public site
+| Site public
 |--------------------------------------------------------------------------
 */
 
@@ -131,7 +131,7 @@ Route::get('/anciens-eleves', [AlumniController::class, 'index'])->name('communi
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated user profile (Breeze)
+| Profil de l'utilisateur authentifié (Breeze)
 |--------------------------------------------------------------------------
 */
 
@@ -161,9 +161,9 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Public kiosk endpoints (token-protected, not gated behind a login session so an
-// unattended entry-gate tablet can stay on this page indefinitely) — open with
-// /borne/pointage/open?token=YOUR_TOKEN&mode=gate
+// Points d'entrée publics de la borne (protégés par jeton, non soumis à une session de connexion pour qu'une
+// tablette de portique sans surveillance puisse rester indéfiniment sur cette page) — ouvrir avec
+// /borne/pointage/open?token=VOTRE_JETON&mode=gate
 Route::get('/borne/pointage/open', [AttendanceController::class, 'kioskOpen'])->name('borne.pointage.open');
 Route::post('/borne/pointage/scan/open', [AttendanceController::class, 'qrScanOpen'])->name('borne.pointage.scan.open');
 
@@ -193,16 +193,16 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware(['verified', 'staff'])->group(function () {
         Route::get('/borne/pointage', [AttendanceController::class, 'kioskPublic'])->name('borne.pointage');
-        // original admin route still registered under /admin/borne/pointage if needed
+        // l'ancienne route d'administration reste enregistrée sous /admin/borne/pointage si besoin
         Route::get('/admin/borne/pointage', [AttendanceController::class, 'kiosk'])->name('admin.borne.pointage');
-        // dedicated entry point for scanning students' ID card badges (gate mode)
+        // point d'entrée dédié au scan des badges des cartes d'élève (mode portique)
         Route::get('/admin/borne/pointage/entree', [AttendanceController::class, 'kioskGate'])->name('admin.borne.pointage.gate');
     });
 });
 
 /*
 |--------------------------------------------------------------------------
-| Back-office / admin platform
+| Back-office / plateforme d'administration
 |--------------------------------------------------------------------------
 */
 
@@ -306,8 +306,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
         ->name('users.export.pdf')
         ->middleware('permission:exporter_utilisateurs');
 
-    // Self-service (own requests) — open to any staff member, like admin.dashboard;
-    // approve/reject is gated inside the controller (modifier_utilisateurs).
+    // Libre-service (ses propres demandes) — ouvert à tout membre du personnel, comme admin.dashboard ;
+    // l'approbation ou le refus est contrôlé dans le contrôleur (modifier_utilisateurs).
     Route::get('conges', [LeaveController::class, 'index'])->name('leave.index');
     Route::post('conges', [LeaveController::class, 'store'])->name('leave.store');
     Route::post('conges/{leaveRequest}/annuler', [LeaveController::class, 'cancel'])->name('leave.cancel');
@@ -402,12 +402,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     Route::get('attendance/report', [AttendanceController::class, 'report'])->name('attendance.report')->middleware('permission:voir_presences');
     Route::get('pointage/report', [AttendanceController::class, 'report'])->name('pointage.report')->middleware('permission:voir_presences');
 
-    // Cahier d'absence — chronological register (as opposed to the aggregate counts of report()).
+    // Cahier d'absence — registre chronologique (par opposition aux totaux agrégés de report()).
     Route::get('pointage/registre', [AttendanceController::class, 'register'])->name('pointage.register')->middleware('permission:voir_presences');
     Route::get('attendance/register', [AttendanceController::class, 'register'])->name('attendance.register')->middleware('permission:voir_presences');
     Route::get('pointage/registre/pdf', [AttendanceController::class, 'registerPdf'])->name('pointage.register.pdf')->middleware('permission:exporter_presences');
 
-    // Cahier de texte — admin oversight of what teachers logged from their own portal.
+    // Cahier de texte — supervision par l'administration de ce que les enseignants ont saisi depuis leur
+    // propre portail.
     Route::get('cahier-de-texte', [LessonLogController::class, 'index'])->name('lesson-logs.index')->middleware('permission:voir_emploi_du_temps');
     Route::get('cahier-de-texte/pdf', [LessonLogController::class, 'pdf'])->name('lesson-logs.pdf')->middleware('permission:exporter_emploi_du_temps');
 
@@ -501,7 +502,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
         'insertion',
     );
 
-    // Statistiques & Business Intelligence
+    // Statistiques & pilotage
     Route::middleware('permission:voir_statistiques')->group(function () {
         Route::get('statistics/academic', [StatisticsController::class, 'academic'])->name('statistics.academic');
         Route::get('statistics/financial', [StatisticsController::class, 'financial'])->name('statistics.financial');

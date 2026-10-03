@@ -11,14 +11,14 @@ use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Auto-posts operational transactions (tuition invoices, payments, expenses)
- * to the double-entry accounting ledger, so the chart of accounts / grand
- * livre / bilan / compte de résultat always reflect the real activity of the
- * school without requiring the accountant to re-enter every transaction.
+ * Reporte automatiquement les transactions opérationnelles (factures de scolarité, paiements, dépenses) dans
+ * le grand livre comptable en partie double, afin que le plan comptable, le grand livre, le bilan et le
+ * compte de résultat reflètent toujours l'activité réelle de l'école sans que le comptable ait à ressaisir
+ * chaque transaction.
  *
- * Entries created here are flagged is_auto=true and are traced back to their
- * source record via the entryable morph relation. To correct one, edit or
- * delete the source Invoice/Payment/Expense — the linked entry follows.
+ * Les écritures créées ici sont marquées is_auto=true et rattachées à leur enregistrement source par la
+ * relation morph entryable. Pour en corriger une, modifiez ou supprimez la Invoice, le Payment ou la Expense
+ * source — l'écriture liée suit.
  */
 class AccountingPoster
 {
@@ -100,7 +100,7 @@ class AccountingPoster
             ->each(fn (JournalEntry $entry) => $entry->delete());
     }
 
-    /** Create the auto-posted entry for a source record, or update its lines if one already exists (idempotent). */
+    /** Crée l'écriture générée automatiquement pour un enregistrement source, ou met à jour ses lignes si elle existe déjà (idempotent). */
     private static function upsertEntry($entryable, ?Journal $journal, string $date, string $description, array $lines): void
     {
         if (! $journal) {

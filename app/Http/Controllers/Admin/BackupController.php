@@ -21,7 +21,7 @@ class BackupController extends Controller
             ->all();
     }
 
-    /** Find the Backup object matching a given disk + relative path, or abort. */
+    /** Retrouve l'objet Backup correspondant à un disque et un chemin relatif donnés, ou interrompt la requête. */
     private function findBackup(string $disk, string $path)
     {
         $destination = collect($this->destinations())->firstWhere(fn ($d) => $d->diskName() === $disk);

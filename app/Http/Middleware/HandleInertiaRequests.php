@@ -9,14 +9,14 @@ use Inertia\Middleware;
 class HandleInertiaRequests extends Middleware
 {
     /**
-     * The root template that is loaded on the first page visit.
+     * Le gabarit racine chargé lors de la première visite d'une page.
      *
      * @var string
      */
     protected $rootView = 'app';
 
     /**
-     * Determine the current asset version.
+     * Détermine la version courante des ressources.
      */
     public function version(Request $request): ?string
     {
@@ -24,7 +24,7 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * Define the props that are shared by default.
+     * Définit les props partagées par défaut.
      *
      * @return array<string, mixed>
      */

@@ -6,9 +6,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Shared CSV/PDF export helpers for admin list & report controllers.
- * $columns: [['key' => 'name', 'label' => 'Nom', 'align' => 'right'?]]
- * $rows: [['name' => 'Awa Diop', ...], ...]
+ * Utilitaires partagés d'export CSV/PDF pour les contrôleurs de listes et de rapports d'administration.
+ * $columns : [['key' => 'name', 'label' => 'Nom', 'align' => 'right'?]]
+ * $rows : [['name' => 'Awa Diop', ...], ...]
  */
 trait Exportable
 {
@@ -16,7 +16,7 @@ trait Exportable
     {
         return response()->streamDownload(function () use ($columns, $rows) {
             $handle = fopen('php://output', 'w');
-            fwrite($handle, "\xEF\xBB\xBF"); // UTF-8 BOM so Excel renders accents correctly
+            fwrite($handle, "\xEF\xBB\xBF"); // BOM UTF-8 pour qu'Excel affiche correctement les accents
             fputcsv($handle, array_map(fn ($c) => $c['label'], $columns), escape: '\\');
 
             foreach ($rows as $row) {

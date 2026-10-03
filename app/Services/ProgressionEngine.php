@@ -10,10 +10,9 @@ use App\Models\SkillAssessment;
 use App\Models\Student;
 
 /**
- * Suggests an end-of-level progression decision for a student, driven
- * entirely by the formation's own configured `FormationLevel` rules — no
- * hardcoded thresholds. See ReportCardCalculator::decisionFor() for the
- * (deliberately untouched, separate) per-term bulletin decision.
+ * Suggère une décision de progression de fin de niveau pour un élève, entièrement pilotée par les règles
+ * `FormationLevel` propres à la formation — aucun seuil codé en dur. Voir ReportCardCalculator::decisionFor()
+ * pour la décision par période du bulletin (volontairement inchangée et distincte).
  */
 class ProgressionEngine
 {
@@ -119,7 +118,7 @@ class ProgressionEngine
         ];
     }
 
-    /** Mean of the two terms' overall averages, same convention as ReportCardController::generate()'s annual_average. */
+    /** Moyenne des moyennes générales des deux périodes, même convention que l'annual_average de ReportCardController::generate(). */
     private function annualAverage(Student $student, SchoolClass $class): ?float
     {
         $averages = ReportCard::where('student_id', $student->id)
@@ -138,7 +137,7 @@ class ProgressionEngine
             ->sum('unjustified_absence_count');
     }
 
-    /** Mean of the two terms' moy20 for one subject, via ReportCardCalculator's coefficient-weighted computation. */
+    /** Moyenne des moy20 des deux périodes pour une matière, via le calcul pondéré par coefficient de ReportCardCalculator. */
     private function subjectAnnualAverage(Student $student, SchoolClass $class, int $subjectId): ?float
     {
         $calculator = app(ReportCardCalculator::class);

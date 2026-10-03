@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** Lets a teacher rate the students of their own classes on the skills of that class's formation. */
+/** Permet à un enseignant d'évaluer les élèves de ses propres classes sur les compétences de la formation de cette classe. */
 class TeacherSkillController extends Controller
 {
     private function teacher(Request $request): Teacher

@@ -37,9 +37,9 @@ class Announcement extends Model
     }
 
     /**
-     * Resolve the actual recipient user ids for this announcement's audience,
-     * computed fresh each time rather than stored, so it always reflects who
-     * is currently active/enrolled/staffed.
+     * Détermine les identifiants des utilisateurs réellement destinataires de cette annonce selon son
+     * audience. Le calcul est refait à chaque appel plutôt que stocké, afin de refléter toujours qui est
+     * actuellement actif, inscrit ou en poste.
      */
     public function recipientUserIds(): Collection
     {

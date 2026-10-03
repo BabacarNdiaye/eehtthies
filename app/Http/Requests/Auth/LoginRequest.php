@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 class LoginRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Détermine si l'utilisateur est autorisé à effectuer cette requête.
      */
     public function authorize(): bool
     {
@@ -21,7 +21,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Retourne les règles de validation applicables à la requête.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
@@ -34,7 +34,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
+     * Tente d'authentifier la requête à partir de ses identifiants.
      *
      * @throws ValidationException
      */
@@ -42,9 +42,9 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // Always "remember" the session (long-lived remember_token cookie) so a user
-        // stays signed in until they explicitly log out — closing the browser or a
-        // brief network drop should never force a re-login.
+        // Toujours « se souvenir » de la session (cookie remember_token de longue durée) pour qu'un
+        // utilisateur reste connecté jusqu'à sa déconnexion explicite — fermer le navigateur ou une brève
+        // coupure réseau ne doit jamais forcer une nouvelle connexion.
         if (! Auth::attempt($this->only('email', 'password'), remember: true)) {
             RateLimiter::hit($this->throttleKey());
 
@@ -57,7 +57,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Ensure the login request is not rate limited.
+     * Vérifie que la requête de connexion n'est pas limitée en débit.
      *
      * @throws ValidationException
      */
@@ -80,7 +80,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the rate limiting throttle key for the request.
+     * Retourne la clé de limitation de débit de la requête.
      */
     public function throttleKey(): string
     {

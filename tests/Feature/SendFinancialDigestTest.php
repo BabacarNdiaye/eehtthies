@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Mail\FinancialDigest;
 use App\Models\Expense;
 use App\Models\Invoice;
-use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -45,9 +44,9 @@ class SendFinancialDigestTest extends TestCase
         $student = Student::create(['matricule' => 'TEST-'.uniqid(), 'first_name' => 'Awa', 'last_name' => 'Test', 'status' => 'actif']);
         $invoice = Invoice::create(['student_id' => $student->id, 'type' => 'mensualite', 'label' => 'Mensualité', 'amount' => 50000, 'discount' => 0]);
 
-        // Payment in last month — should count
+        // Paiement du mois dernier — doit compter
         $invoice->payments()->create(['amount' => 30000, 'method' => 'especes', 'paid_at' => now()->subMonthNoOverflow()]);
-        // Payment two months ago — should NOT count in this month's figure
+        // Paiement d'il y a deux mois — ne doit PAS compter dans le chiffre de ce mois
         $invoice->payments()->create(['amount' => 99999, 'method' => 'especes', 'paid_at' => now()->subMonthNoOverflow()->subMonthNoOverflow()]);
 
         Expense::create(['label' => 'Fournitures', 'category' => 'autre', 'amount' => 10000, 'expense_date' => now()->subMonthNoOverflow()]);
@@ -62,7 +61,7 @@ class SendFinancialDigestTest extends TestCase
     public function test_skips_sending_when_there_are_no_staff_recipients(): void
     {
         Mail::fake();
-        // no staffRecipient() call — nobody has voir_statistiques
+        // aucun appel à staffRecipient() — personne n'a voir_statistiques
 
         Artisan::call('app:send-financial-digest');
 
@@ -82,6 +81,6 @@ class SendFinancialDigestTest extends TestCase
 
         Artisan::call('app:send-financial-digest');
 
-        Mail::assertSent(FinancialDigest::class, 1); // only the real staff member, not the student
+        Mail::assertSent(FinancialDigest::class, 1); // uniquement le vrai membre du personnel, pas l'élève
     }
 }

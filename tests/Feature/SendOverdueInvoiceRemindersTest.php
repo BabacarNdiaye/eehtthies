@@ -12,13 +12,12 @@ use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
- * Regression coverage for two real bugs caught before this command ever
- * reached production: Carbon::diffInDays() returns a *negative* count when
- * the reference date is in the past relative to the date being compared
- * against (so the naive call always missed every overdue invoice), and even
- * with `absolute: true` it returns a float, which silently fails a strict
- * in_array() milestone check against an array of ints. Both are pinned down
- * here so neither can quietly regress.
+ * Couverture de non-régression pour deux vrais bugs repérés avant que cette commande n'atteigne la production
+ * : Carbon::diffInDays() renvoie un nombre *négatif* lorsque la date de référence est dans le passé par
+ * rapport à la date comparée (donc l'appel naïf manquait toutes les factures en retard), et même avec
+ * `absolute: true` il renvoie un flottant, ce qui fait échouer silencieusement un contrôle strict in_array()
+ * des seuils sur un tableau d'entiers. Les deux sont verrouillés ici pour qu'aucun ne puisse régresser
+ * discrètement.
  */
 class SendOverdueInvoiceRemindersTest extends TestCase
 {
@@ -75,7 +74,7 @@ class SendOverdueInvoiceRemindersTest extends TestCase
     {
         Mail::fake();
         $student = $this->makeStudentWithParentEmail();
-        $this->makeOverdueInvoice($student, 4); // 4 is not in [3,7,15,30,60]
+        $this->makeOverdueInvoice($student, 4); // 4 n'est pas dans [3,7,15,30,60]
 
         Artisan::call('app:send-overdue-invoice-reminders');
 
@@ -113,7 +112,7 @@ class SendOverdueInvoiceRemindersTest extends TestCase
         Mail::fake();
         $student = $this->makeStudentWithParentEmail();
         $this->makeOverdueInvoice($student, 7, 10000);
-        $this->makeOverdueInvoice($student, 20, 15000); // not a milestone itself, but still included once the other triggers
+        $this->makeOverdueInvoice($student, 20, 15000); // pas un seuil en soi, mais tout de même inclus dès que les autres déclenchent
 
         Artisan::call('app:send-overdue-invoice-reminders');
 

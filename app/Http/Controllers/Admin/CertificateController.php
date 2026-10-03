@@ -9,9 +9,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * A single, discoverable place to browse and download the diplomas
- * (Student::diplomaPdf) and internship attestations
- * (Internship::attestationPdf) already generated elsewhere in the app.
+ * Un lieu unique et facile à trouver pour parcourir et télécharger les diplômes (Student::diplomaPdf) et
+ * attestations de stage (Internship::attestationPdf) déjà générés ailleurs dans l'application.
  */
 class CertificateController extends Controller
 {

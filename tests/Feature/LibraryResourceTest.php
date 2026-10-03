@@ -101,7 +101,7 @@ class LibraryResourceTest extends TestCase
     {
         $this->seed(RolesAndPermissionsSeeder::class);
         $user = User::factory()->create();
-        $user->assignRole('caissier'); // no formations permission
+        $user->assignRole('caissier'); // pas de permission formations
 
         $response = $this->actingAs($user)->post(route('admin.library.store'), [
             'title' => 'Interdit',

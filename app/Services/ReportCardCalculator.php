@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
 class ReportCardCalculator
 {
     /**
-     * Senegalese-scale appreciation for a single subject's MOY/20.
+     * Appréciation à l'échelle sénégalaise pour la MOY/20 d'une matière.
      */
     public function appreciationFor(?float $moy20): ?string
     {
@@ -32,8 +32,8 @@ class ReportCardCalculator
     }
 
     /**
-     * Conseil de classe mention auto-suggested from the overall average.
-     * "blame" is never auto-suggested — it reflects conduct, not grades.
+     * Mention du conseil de classe suggérée automatiquement à partir de la moyenne générale. Le « blâme »
+     * n'est jamais suggéré automatiquement — il reflète la conduite, pas les notes.
      */
     public function mentionFor(?float $average): ?string
     {
@@ -60,7 +60,8 @@ class ReportCardCalculator
     }
 
     /**
-     * Weighted (by exam coefficient) average of a set of exams' grades for one student, normalised to /20.
+     * Moyenne pondérée (par coefficient d'examen) des notes d'un ensemble d'examens pour un élève, ramenée
+     * sur 20.
      */
     private function categoryAverage(Collection $exams, Collection $gradesByExamId): ?float
     {
@@ -82,8 +83,8 @@ class ReportCardCalculator
     }
 
     /**
-     * Subject-by-subject rows (Devoir / Composition / Moy20 / Coef / MoyX / appreciation)
-     * for one student, given the class's exams (grouped by subject) and the relevant grades.
+     * Lignes matière par matière (Devoir / Composition / Moy20 / Coef / MoyX / appréciation) pour un élève, à
+     * partir des examens de la classe (groupés par matière) et des notes concernées.
      *
      * @return array<int, array{subject_id:int, subject:string, coefficient:float, devoir:?float, composition:?float, moy20:?float, moyx:?float, appreciation:?string}>
      */
@@ -157,7 +158,8 @@ class ReportCardCalculator
     }
 
     /**
-     * Full detail for one student's bulletin: subject rows (with class rank per subject) + overall average.
+     * Détail complet du bulletin d'un élève : lignes par matière (avec le rang dans la classe pour chaque
+     * matière) + moyenne générale.
      *
      * @return array{subjects: array, overall: float|null}
      */
@@ -165,15 +167,13 @@ class ReportCardCalculator
     {
         [$examsBySubject, $allGrades] = $this->classExamsAndGrades($schoolClassId, $academicYearId, $term);
 
-        // Classmates for ranking are derived from who actually has a grade for
-        // these exams — not from the class's *current* live roster (which would
-        // silently exclude the target student, and any classmate, once they've
-        // since been promoted/transferred to another school_class_id, or their
-        // status is no longer "actif"). Grades and exams are a historical
-        // record tied to school_class_id at creation time and never move —
-        // using the live roster here was the cause of a real bug where a
-        // promoted student's previous-year bulletin re-rendered with every
-        // subject blank.
+        // Les camarades servant au classement sont déduits de ceux qui ont réellement une note pour ces
+        // examens — et non de l'effectif *actuel* de la classe (qui exclurait silencieusement l'élève ciblé,
+        // et tout camarade, dès qu'il a été promu ou transféré vers un autre school_class_id, ou que son
+        // statut n'est plus « actif »). Les notes et examens sont un historique lié au school_class_id au
+        // moment de la création et ne bougent jamais — utiliser l'effectif actuel ici était la cause d'un
+        // vrai bug où le bulletin de l'année précédente d'un élève promu s'affichait avec toutes les matières
+        // vides.
         $classmateIds = $allGrades->pluck('student_id')->unique()->values();
         if (! $classmateIds->contains($student->id)) {
             $classmateIds->push($student->id);
@@ -214,8 +214,8 @@ class ReportCardCalculator
     }
 
     /**
-     * Backward-compatible alias used by callers that only need the subject
-     * averages (not the full devoir/composition/rank breakdown).
+     * Alias rétrocompatible pour les appelants qui n'ont besoin que des moyennes par matière (et non de tout
+     * le détail devoir/composition/rang).
      */
     public function computeForStudent(Student $student, int $schoolClassId, int $academicYearId, string $term): array
     {
@@ -223,8 +223,8 @@ class ReportCardCalculator
     }
 
     /**
-     * Attendance counts (retard / absence / unjustified absence) for a student
-     * within the approximate date window of the given term.
+     * Totaux de présence (retards / absences / absences injustifiées) d'un élève sur la fenêtre de dates
+     * approximative de la période donnée.
      */
     public function attendanceStatsForTerm(Student $student, AcademicYear $academicYear, string $term): array
     {
@@ -278,8 +278,8 @@ class ReportCardCalculator
     }
 
     /**
-     * Compute averages (+ class rank + class average) for every active student
-     * in a class/term, used to generate a full batch of report cards at once.
+     * Calcule les moyennes (+ rang dans la classe + moyenne de la classe) de chaque élève actif d'une classe
+     * pour une période, afin de générer d'un coup un lot complet de bulletins.
      *
      * @return array<int, array{student: Student, average: float|null, rank: int|null, class_size: int, class_average: float|null}>
      */

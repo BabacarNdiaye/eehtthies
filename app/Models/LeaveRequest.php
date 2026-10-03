@@ -46,8 +46,8 @@ class LeaveRequest extends Model
                 return;
             }
 
-            // Teachers are portal-only (can't reach /admin/*) — deep-link
-            // to whichever space this user actually has access to.
+            // Les enseignants n'ont accès qu'au portail (ils ne peuvent pas atteindre /admin/*) — on les
+            // redirige vers l'espace auquel cet utilisateur a réellement accès.
             $url = $leave->user?->hasRole('enseignant') ? '/espace-enseignant/conges' : '/admin/conges';
             $verb = $leave->status === 'approuve' ? 'approuvée' : 'refusée';
 

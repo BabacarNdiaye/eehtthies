@@ -110,8 +110,8 @@ class PedagogySeeder extends Seeder
             );
         }
 
-        // For each subject, seed the classic Senegalese bulletin structure:
-        // 2 "devoir" evaluations + 1 "composition" (end-of-term exam), per term.
+        // Pour chaque matière, crée la structure classique du bulletin sénégalais : 2 évaluations « devoir »
+        // + 1 « composition » (examen de fin de période), par période.
         $subjectModels = [$cuisine, $service, $gestion, $anglais];
 
         foreach (config('eeht.terms') as $termIndex => $term) {
@@ -151,8 +151,8 @@ class PedagogySeeder extends Seeder
             }
         }
 
-        // A few attendance records spread across the year so bulletins show
-        // realistic retard/absence figures instead of always zero.
+        // Quelques enregistrements de présence répartis sur l'année pour que les bulletins affichent des
+        // chiffres de retards et d'absences réalistes plutôt que toujours zéro.
         foreach ($createdStudents as $i => $student) {
             $offset = 30 + ($i * 15);
             Attendance::firstOrCreate(

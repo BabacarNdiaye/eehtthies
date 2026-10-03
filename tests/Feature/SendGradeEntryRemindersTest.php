@@ -60,7 +60,7 @@ class SendGradeEntryRemindersTest extends TestCase
         Mail::fake();
         $exam = $this->makeExam(3);
         $this->makeTeacherWithEmail($exam);
-        // only 1 of 2 students graded
+        // un seul élève sur 2 noté
 
         $students = Student::all();
         Grade::create(['exam_id' => $exam->id, 'student_id' => $students[0]->id, 'score' => 12]);
@@ -73,7 +73,7 @@ class SendGradeEntryRemindersTest extends TestCase
     public function test_does_not_remind_on_a_non_milestone_day(): void
     {
         Mail::fake();
-        $exam = $this->makeExam(4); // not in [3, 7]
+        $exam = $this->makeExam(4); // pas dans [3, 7]
         $this->makeTeacherWithEmail($exam);
 
         Artisan::call('app:send-grade-entry-reminders');
@@ -111,7 +111,7 @@ class SendGradeEntryRemindersTest extends TestCase
     public function test_skips_silently_when_there_is_no_contact_at_all(): void
     {
         Mail::fake();
-        $this->makeExam(3); // no invigilator, no creator
+        $this->makeExam(3); // ni surveillant, ni créateur
 
         Artisan::call('app:send-grade-entry-reminders');
 

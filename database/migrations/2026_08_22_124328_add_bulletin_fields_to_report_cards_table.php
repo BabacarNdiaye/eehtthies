@@ -8,8 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Replace the rigid enum with a plain string so new decision values
-        // (e.g. "exclu") can be added later without a DB-level migration.
+        // Remplace l'enum rigide par une simple chaîne afin de pouvoir ajouter plus tard de nouvelles valeurs
+        // de décision (p. ex. « exclu ») sans migration de la base.
         Schema::table('report_cards', function (Blueprint $table) {
             $table->dropColumn('decision');
         });

@@ -6,19 +6,18 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 /**
- * One-off migration helper: dumps every real content table from the local
- * SQLite dev database into a single MySQL-compatible .sql file (INSERT
- * statements only — no CREATE TABLE), so it can be imported via phpMyAdmin
- * into a freshly-migrated production database. Framework/transient tables
- * (sessions, cache, queued jobs, migrations bookkeeping) are skipped on
- * purpose; the activity log is also skipped so production starts its audit
- * trail fresh rather than inheriting local testing noise.
+ * Utilitaire de migration ponctuel : exporte chaque table de contenu réel de la base de développement SQLite
+ * locale vers un seul fichier .sql compatible MySQL (instructions INSERT uniquement — pas de CREATE TABLE),
+ * pour l'importer via phpMyAdmin dans une base de production fraîchement migrée. Les tables du framework ou
+ * transitoires (sessions, cache, jobs en file, suivi des migrations) sont volontairement ignorées ; le
+ * journal d'activité l'est aussi, pour que la production démarre un journal d'audit neuf plutôt que d'hériter
+ * du bruit des tests locaux.
  */
 class ExportDataForProduction extends Command
 {
     protected $signature = 'app:export-data-for-production {--output=production-data.sql}';
 
-    protected $description = 'Export all real data as MySQL-compatible INSERT statements, for moving from local SQLite to a production database.';
+    protected $description = "Exporte toutes les données réelles sous forme d'instructions INSERT compatibles MySQL, pour passer de la base SQLite locale à une base de production.";
 
     private const EXCLUDED_TABLES = [
         'migrations', 'sessions', 'cache', 'cache_locks', 'jobs', 'job_batches',
@@ -66,11 +65,11 @@ class ExportDataForProduction extends Command
                             return $value;
                         }
 
-                        // Escape explicitly for MySQL's default (non-ANSI) string literal
-                        // rules, rather than relying on the source SQLite connection's
-                        // quoting — SQLite only doubles quotes, but MySQL also treats a
-                        // bare backslash as an escape character, which would corrupt any
-                        // free-text field that happens to contain one.
+                        // Échappement explicite selon les règles par défaut de MySQL pour les littéraux de
+                        // chaîne (non ANSI), plutôt que de s'appuyer sur le quotage de la connexion SQLite
+                        // source — SQLite ne fait que doubler les guillemets, alors que MySQL traite aussi
+                        // une barre oblique inverse seule comme un caractère d'échappement, ce qui
+                        // corromprait tout champ de texte libre en contenant une.
                         $escaped = str_replace(['\\', "'", "\0"], ['\\\\', "\\'", '\\0'], (string) $value);
 
                         return "'{$escaped}'";

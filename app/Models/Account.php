@@ -24,7 +24,7 @@ class Account extends Model
         return $this->hasMany(JournalEntryLine::class);
     }
 
-    /** Debit-side balance for actif/charge accounts, credit-side for passif/produit. */
+    /** Solde côté débit pour les comptes d'actif et de charge, côté crédit pour ceux de passif et de produit. */
     public function balanceBetween(?string $from = null, ?string $to = null): float
     {
         $query = $this->lines()->whereHas('journalEntry', function ($q) use ($from, $to) {

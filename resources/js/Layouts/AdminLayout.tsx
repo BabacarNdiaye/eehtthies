@@ -78,7 +78,7 @@ interface NavItem {
     href: string;
     icon: typeof LayoutDashboard;
     active: (current: string) => boolean;
-    /** The "voir_x" permission required to see this item. Omit to show it to every staff role. */
+    /** La permission « voir_x » nécessaire pour voir cet élément. À omettre pour l'afficher à tous les rôles du personnel. */
     permission?: string;
 }
 
@@ -190,9 +190,8 @@ const navGroups: NavGroup[] = [
                 label: 'Pointage des élèves',
                 href: 'admin.pointage.index',
                 icon: ClipboardCheck,
-                // Excludes .register: that has its own nav item below and must not
-                // also light up "Pointage des élèves" (they share the admin.pointage
-                // route-name prefix).
+                // Exclut .register : il a son propre élément de menu plus bas et ne doit pas aussi allumer «
+                // Pointage des élèves » (ils partagent le préfixe de nom de route admin.pointage).
                 active: (c) =>
                     (c.startsWith('admin.pointage') || c.startsWith('admin.attendance')) &&
                     !c.includes('.register'),
@@ -452,7 +451,7 @@ const navGroups: NavGroup[] = [
                 permission: 'voir_temoignages',
             },
             {
-                label: 'Slider accueil',
+                label: 'Diaporama accueil',
                 href: 'admin.sliders.index',
                 icon: Sliders,
                 active: (c) => c.startsWith('admin.sliders'),
@@ -592,8 +591,8 @@ const navGroups: NavGroup[] = [
                 href: 'admin.leave.index',
                 icon: CalendarOff,
                 active: (c) => c.startsWith('admin.leave'),
-                // No permission gate: self-service (own requests), like admin.dashboard.
-                // Approve/reject is gated inside the controller.
+                // Pas de contrôle de permission : libre-service (ses propres demandes), comme
+                // admin.dashboard. L'approbation ou le refus est contrôlé dans le contrôleur.
             },
         ],
     },

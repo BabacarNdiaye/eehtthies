@@ -14,13 +14,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Pins down a real bug: computeDetailedForStudent() used to derive its
- * "classmates for ranking" list from the class's *live* roster
- * (SchoolClass::students(), filtered to school_class_id + status=actif),
- * which silently excluded the target student themselves once their
- * school_class_id changed (promotion/transfer) — producing an empty
- * subject list for a report card that legitimately has grades. See
- * ClassPromotionController for the feature that surfaced this.
+ * Verrouille un vrai bug : computeDetailedForStudent() déduisait auparavant sa liste de « camarades pour le
+ * classement » de l'effectif *actuel* de la classe (SchoolClass::students(), filtré sur school_class_id +
+ * status=actif), ce qui excluait silencieusement l'élève ciblé lui-même dès que son school_class_id changeait
+ * (promotion ou transfert) — produisant une liste de matières vide pour un bulletin qui a pourtant
+ * légitimement des notes. Voir ClassPromotionController pour la fonctionnalité qui l'a révélé.
  */
 class ReportCardCalculatorTest extends TestCase
 {
@@ -48,8 +46,8 @@ class ReportCardCalculatorTest extends TestCase
         ]);
         Grade::create(['exam_id' => $exam->id, 'student_id' => $student->id, 'score' => 15, 'is_absent' => false]);
 
-        // Promote the student out of the old class — this is what broke the
-        // old-class bulletin before the fix.
+        // Fait passer l'élève hors de l'ancienne classe — c'est ce qui cassait le bulletin de l'ancienne
+        // classe avant le correctif.
         $student->update(['school_class_id' => $newClass->id, 'academic_year_id' => $yearN1->id]);
 
         $detail = app(ReportCardCalculator::class)->computeDetailedForStudent($student, $oldClass->id, $yearN->id, 'Semestre 1');
@@ -75,7 +73,7 @@ class ReportCardCalculatorTest extends TestCase
         Grade::create(['exam_id' => $exam->id, 'student_id' => $top->id, 'score' => 18, 'is_absent' => false]);
         Grade::create(['exam_id' => $exam->id, 'student_id' => $second->id, 'score' => 12, 'is_absent' => false]);
 
-        // $second moves to a different class before the bulletin is re-viewed.
+        // $second passe dans une autre classe avant que le bulletin ne soit revu.
         $second->update(['school_class_id' => $otherClass->id]);
 
         $detail = app(ReportCardCalculator::class)->computeDetailedForStudent($top, $oldClass->id, $year->id, 'Semestre 1');

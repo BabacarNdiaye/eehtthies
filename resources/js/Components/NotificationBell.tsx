@@ -22,13 +22,13 @@ function playChime() {
             osc.stop(now + i * 0.12 + 0.4);
         });
     } catch {
-        // Web Audio unsupported/blocked — fail silently, the badge still updates.
+        // Web Audio non pris en charge ou bloqué — échec silencieux, le badge se met quand même à jour.
     }
 }
 
 /**
- * Unread badge + sound alert for EEHT Connect (messages and announcements).
- * Clicking it opens EEHT Connect (passed as `href`).
+ * Badge de messages non lus + alerte sonore pour EEHT Connect (messages et annonces). Un clic dessus ouvre
+ * EEHT Connect (passé via `href`).
  */
 export default function NotificationBell({ href }: { href: string }) {
     const [count, setCount] = useState(0);
@@ -44,7 +44,7 @@ export default function NotificationBell({ href }: { href: string }) {
             previousCount.current = next;
             setCount(next);
         } catch {
-            // Ignore transient network errors — next poll will retry.
+            // On ignore les erreurs réseau passagères — la prochaine interrogation réessaiera.
         }
     };
 

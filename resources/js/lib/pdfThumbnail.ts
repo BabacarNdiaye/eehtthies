@@ -6,10 +6,10 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 const THUMBNAIL_WIDTH = 400;
 
 /**
- * Renders the first page of a PDF to a PNG thumbnail entirely in the browser.
- * Production has no Imagick/Ghostscript for server-side PDF rasterisation, so
- * this runs client-side instead. Returns null on anything that isn't a
- * renderable PDF — callers fall back to the generic file-type icon.
+ * Génère la miniature PNG de la première page d'un PDF entièrement dans le navigateur. La production n'a ni
+ * Imagick ni Ghostscript pour la rastérisation PDF côté serveur ; le traitement se fait donc côté client.
+ * Renvoie null pour tout ce qui n'est pas un PDF affichable — les appelants se rabattent sur l'icône
+ * générique de type de fichier.
  */
 export async function generatePdfThumbnail(file: File): Promise<File | null> {
     try {

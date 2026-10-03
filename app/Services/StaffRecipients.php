@@ -8,17 +8,17 @@ use Illuminate\Support\Collection;
 class StaffRecipients
 {
     /**
-     * Roles with their own dedicated portal instead of the back-office —
-     * mirrors App\Http\Middleware\EnsureUserIsStaff. Some of these roles are
-     * (oddly, but intentionally left as-is) also granted admin permissions
-     * like `voir_statistiques` in the seeded data for unrelated portal
-     * features, so this exclusion matters even when filtering by permission.
+     * Rôles disposant de leur propre portail dédié au lieu du back-office — reflète
+     * App\Http\Middleware\EnsureUserIsStaff. Certains de ces rôles reçoivent aussi (curieusement, mais
+     * volontairement laissé tel quel) des permissions d'administration comme `voir_statistiques` dans les
+     * données de départ, pour des fonctions de portail sans rapport ; cette exclusion compte donc même quand
+     * on filtre par permission.
      */
     private const PORTAL_ONLY_ROLES = ['eleve', 'parent'];
 
     /**
-     * Staff users (i.e. not students/parents) holding the given permission —
-     * the intended audience for internal admin digest e-mails.
+     * Utilisateurs du personnel (donc ni élèves ni parents) détenant la permission donnée — le public visé
+     * par les e-mails de synthèse internes.
      */
     public static function withPermission(string $permission): Collection
     {

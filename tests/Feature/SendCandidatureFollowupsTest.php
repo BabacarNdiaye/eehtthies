@@ -26,8 +26,8 @@ class SendCandidatureFollowupsTest extends TestCase
             'first_name' => 'Awa', 'last_name' => 'Test', 'status' => $status, 'email' => $email,
             'phone' => '770000000', 'formation_id' => $this->formation->id,
         ]);
-        // updated_at is not fillable, and auto-set to now() on create; back-date it
-        // directly (forceFill bypasses the fillable guard) to simulate inactivity.
+        // updated_at n'est pas fillable et est défini automatiquement à now() à la création ; on le recule
+        // directement (forceFill contourne la protection fillable) pour simuler l'inactivité.
         $candidature->timestamps = false;
         $candidature->forceFill(['updated_at' => now()->startOfDay()->subDays($daysSinceUpdate)])->save();
 

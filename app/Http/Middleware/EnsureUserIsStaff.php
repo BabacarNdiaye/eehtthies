@@ -9,20 +9,18 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureUserIsStaff
 {
     /**
-     * Roles with their own dedicated portal instead of the back-office
-     * (students, parents, teachers). Any other role — including custom
-     * roles created from Administration > Rôles & permissions — is staff.
+     * Rôles disposant de leur propre portail dédié au lieu du back-office (élèves, parents, enseignants).
+     * Tout autre rôle — y compris les rôles personnalisés créés depuis Administration > Rôles & permissions —
+     * fait partie du personnel.
      *
-     * Teachers are portal-only even though their role is granted full
-     * voir/ajouter/modifier/supprimer permissions on notes, examens,
-     * presences and emploi_du_temps: those permissions are meant to work
-     * through the teacher-scoped portal controllers (Portal\TeacherExamController,
-     * Portal\TeacherAttendanceController, etc.), which filter by the
-     * teacher's own classes. The shared Admin\* controllers behind those
-     * same permission gates do NOT filter by class ownership, so a teacher
-     * who reached them directly could edit any class's exams or attendance —
-     * blocking /admin/* entirely for this role is what actually enforces
-     * "only your own classes".
+     * Les enseignants n'ont accès qu'au portail, alors que leur rôle reçoit toutes les permissions
+     * voir/ajouter/modifier/supprimer sur notes, examens, presences et emploi_du_temps : ces permissions sont
+     * faites pour passer par les contrôleurs du portail limités à l'enseignant (Portal\TeacherExamController,
+     * Portal\TeacherAttendanceController, etc.), qui filtrent selon les propres classes de l'enseignant. Les
+     * contrôleurs Admin\* partagés derrière ces mêmes permissions ne filtrent PAS selon la propriété des
+     * classes ; un enseignant qui les atteindrait directement pourrait donc modifier les examens ou la
+     * présence de n'importe quelle classe — bloquer entièrement /admin/* pour ce rôle est ce qui impose
+     * réellement « uniquement vos propres classes ».
      */
     private const PORTAL_ONLY_ROLES = ['eleve', 'parent', 'enseignant'];
 

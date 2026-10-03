@@ -6,7 +6,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { Building2 } from 'lucide-react';
 
-// Must mirror App\Support\ThemePalette::DEFAULTS.
+// Doit refléter App\Support\ThemePalette::DEFAULTS.
 const THEME_DEFAULTS = {
     neutral: '#0b1728',
     primary: '#c8942a',

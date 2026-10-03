@@ -30,7 +30,7 @@ import {
 import { useEffect, useState } from 'react';
 
 /* ------------------------------------------------------------------ */
-/* Stat counter                                                        */
+/* Compteur de statistiques                                                        */
 /* ------------------------------------------------------------------ */
 
 function StatCounter({
@@ -119,7 +119,7 @@ function StatCounter({
 }
 
 /* ------------------------------------------------------------------ */
-/* Stats banner — flat, full-width strip directly under the hero        */
+/* Bandeau de statistiques — bande pleine largeur, directement sous le hero        */
 /* ------------------------------------------------------------------ */
 
 function StatsBanner({
@@ -183,7 +183,7 @@ function StatsBanner({
 }
 
 /* ------------------------------------------------------------------ */
-/* Hero slider                                                          */
+/* Diaporama du hero                                                          */
 /* ------------------------------------------------------------------ */
 
 function HeroSlider({ sliders }: { sliders: Slider[] }) {
@@ -444,7 +444,7 @@ export default function Home({
             <HeroSlider sliders={sliders} />
             <StatsBanner stats={stats} />
 
-            {/* Quick presentation + highlights */}
+            {/* Présentation rapide + points forts */}
             <section className="bg-ink-900 py-20 sm:py-24">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center">
@@ -754,7 +754,7 @@ export default function Home({
                 </div>
             </section>
 
-            {/* Testimonials */}
+            {/* Témoignages */}
             <section className="bg-ink-50 py-20 sm:py-24">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <Reveal>
@@ -821,7 +821,7 @@ export default function Home({
                 </div>
             </section>
 
-            {/* Gallery preview */}
+            {/* Aperçu de la galerie */}
             {galleryPreview.length > 0 && (
                 <section className="py-20 sm:py-24">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -871,7 +871,7 @@ export default function Home({
                 </section>
             )}
 
-            {/* Partners strip */}
+            {/* Bandeau des partenaires */}
             {partners.length > 0 && (
                 <section className="py-16">
                     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -906,7 +906,7 @@ export default function Home({
                 </section>
             )}
 
-            {/* Final CTA */}
+            {/* Appel à l'action final */}
             <section className="relative overflow-hidden bg-ink-950 py-20 sm:py-24">
                 <PatternOverlay />
                 <div

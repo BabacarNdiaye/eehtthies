@@ -1,10 +1,10 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
 
-// Reads "--{name}-{stop}" CSS custom properties (set at runtime from Admin >
-// Paramètres > Couleurs via App\Support\ThemePalette) so these palettes stay
-// fully configurable without a rebuild — while keeping Tailwind's opacity
-// modifiers (e.g. bg-gold-500/50) working.
+// Lit les propriétés CSS personnalisées « --{name}-{stop} » (définies à l'exécution depuis Admin > Paramètres
+// > Couleurs via App\Support\ThemePalette) pour que ces palettes restent entièrement configurables sans
+// recompilation — tout en conservant le fonctionnement des modificateurs d'opacité de Tailwind (p. ex.
+// bg-gold-500/50).
 function themeVar(name, stop) {
     const variable = `--${name}-${stop}`;
     return ({ opacityValue }) =>
@@ -33,9 +33,9 @@ export default {
                 serif: ['"Playfair Display"', ...defaultTheme.fontFamily.serif],
             },
             colors: {
-                // All four palettes are configurable from Admin > Paramètres >
-                // Couleurs (see App\Support\ThemePalette) — this file only
-                // wires up the CSS variables; the fallback hexes live there.
+                // Les quatre palettes sont configurables depuis Admin > Paramètres > Couleurs (voir
+                // App\Support\ThemePalette) — ce fichier ne fait que brancher les variables CSS ; les
+                // couleurs hexadécimales de secours s'y trouvent.
                 ink: themeScale('ink', [...configurableStops, 950]),
                 gold: themeScale('gold', configurableStops),
                 brand: themeScale('brand', configurableStops),

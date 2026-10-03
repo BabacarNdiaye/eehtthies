@@ -74,7 +74,7 @@ export default function Academic({
     return (
         <AdminLayout>
             <Head title="Statistiques académiques" />
-            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & Business Intelligence</h1>
+            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & pilotage</h1>
             <p className="mb-4 text-sm text-ink-500">Indicateurs académiques : effectifs, résultats et performance pédagogique.</p>
             <Tabs />
 

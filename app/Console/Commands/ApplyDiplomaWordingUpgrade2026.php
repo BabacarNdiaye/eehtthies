@@ -12,20 +12,20 @@ class ApplyDiplomaWordingUpgrade2026 extends Command
 {
     protected $signature = 'app:apply-diploma-wording-upgrade-2026';
 
-    protected $description = 'One-time: runs pending migrations, sets CQP specialty, and backfills students.training_duration from storage/app/graduates-durations-2026.csv. Guarded to run only once.';
+    protected $description = "Ponctuelle : exécute les migrations en attente, définit la spécialité du CQP et renseigne students.training_duration à partir de storage/app/graduates-durations-2026.csv. Protégée pour ne s'exécuter qu'une seule fois.";
 
     private const DONE_FLAG = 'diploma_wording_upgrade_2026_done';
 
     public function handle(): int
     {
         if (Setting::get(self::DONE_FLAG)) {
-            $this->info('Already ran, skipping.');
+            $this->info('Déjà exécutée, rien à faire.');
 
             return self::SUCCESS;
         }
 
         Artisan::call('migrate', ['--force' => true]);
-        $this->info('Migrate output: '.Artisan::output());
+        $this->info('Sortie de la migration : '.Artisan::output());
 
         Formation::where('code', 'CQP')->update(['specialty_override' => 'Restauration']);
 
@@ -44,7 +44,7 @@ class ApplyDiplomaWordingUpgrade2026 extends Command
 
         Setting::set(self::DONE_FLAG, json_encode(['ran_at' => now()->toDateTimeString(), 'durations_updated' => $updated]));
 
-        $this->info("Durations updated: {$updated}");
+        $this->info("Durées mises à jour : {$updated}");
 
         return self::SUCCESS;
     }

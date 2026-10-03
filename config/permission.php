@@ -9,38 +9,38 @@ return [
     'models' => [
 
         /*
-         * When using the "HasPermissions" trait from this package, we need to know which
-         * Eloquent model should be used to retrieve your permissions. Of course, it
-         * is often just the "Permission" model but you may use whatever you like.
+         * Avec le trait « HasPermissions » de ce paquet, nous devons savoir quel modèle Eloquent utiliser
+         * pour récupérer vos permissions. Bien sûr, c'est souvent simplement le modèle « Permission », mais
+         * vous pouvez utiliser ce que vous voulez.
          *
-         * The model you want to use as a Permission model needs to implement the
-         * `Spatie\Permission\Contracts\Permission` contract.
+         * Le modèle que vous voulez utiliser comme modèle de permission doit implémenter le contrat
+         * `Spatie\Permission\Contracts\Permission`.
          */
 
         'permission' => Permission::class,
 
         /*
-         * When using the "HasRoles" trait from this package, we need to know which
-         * Eloquent model should be used to retrieve your roles. Of course, it
-         * is often just the "Role" model but you may use whatever you like.
+         * Avec le trait « HasRoles » de ce paquet, nous devons savoir quel modèle Eloquent utiliser pour
+         * récupérer vos rôles. Bien sûr, c'est souvent simplement le modèle « Role », mais vous pouvez
+         * utiliser ce que vous voulez.
          *
-         * The model you want to use as a Role model needs to implement the
-         * `Spatie\Permission\Contracts\Role` contract.
+         * Le modèle que vous voulez utiliser comme modèle de rôle doit implémenter le contrat
+         * `Spatie\Permission\Contracts\Role`.
          */
 
         'role' => Role::class,
 
         /*
-         * When using the "Teams" feature from this package, we need to know which
-         * Eloquent model should be used to retrieve your teams. Of course, it
-         * is often just the "Team" model but you may use whatever you like.
+         * Avec la fonctionnalité « Teams » de ce paquet, nous devons savoir quel modèle Eloquent utiliser
+         * pour récupérer vos équipes. Bien sûr, c'est souvent simplement le modèle « Team », mais vous pouvez
+         * utiliser ce que vous voulez.
          */
         'team' => null,
 
         /*
-         * When using the "HasModels" trait and passing raw IDs to syncModels,
-         * attachModels, or detachModels, this model class will be used to
-         * resolve those IDs. If null, defaults to the guard's model.
+         * Avec le trait « HasModels » et en passant des identifiants bruts à syncModels, attachModels ou
+         * detachModels, cette classe de modèle sert à résoudre ces identifiants. Si elle vaut null, on
+         * utilise par défaut le modèle du garde.
          */
         'default_model' => null,
     ],
@@ -48,41 +48,41 @@ return [
     'table_names' => [
 
         /*
-         * When using the "HasRoles" trait from this package, we need to know which
-         * table should be used to retrieve your roles. We have chosen a basic
-         * default value but you may easily change it to any table you like.
+         * Avec le trait « HasRoles » de ce paquet, nous devons savoir quelle table utiliser pour récupérer
+         * vos rôles. Nous avons choisi une valeur par défaut simple, mais vous pouvez facilement la remplacer
+         * par la table de votre choix.
          */
 
         'roles' => 'roles',
 
         /*
-         * When using the "HasPermissions" trait from this package, we need to know which
-         * table should be used to retrieve your permissions. We have chosen a basic
-         * default value but you may easily change it to any table you like.
+         * Avec le trait « HasPermissions » de ce paquet, nous devons savoir quelle table utiliser pour
+         * récupérer vos permissions. Nous avons choisi une valeur par défaut simple, mais vous pouvez
+         * facilement la remplacer par la table de votre choix.
          */
 
         'permissions' => 'permissions',
 
         /*
-         * When using the "HasPermissions" trait from this package, we need to know which
-         * table should be used to retrieve your models permissions. We have chosen a
-         * basic default value but you may easily change it to any table you like.
+         * Avec le trait « HasPermissions » de ce paquet, nous devons savoir quelle table utiliser pour
+         * récupérer les permissions de vos modèles. Nous avons choisi une valeur par défaut simple, mais vous
+         * pouvez facilement la remplacer par la table de votre choix.
          */
 
         'model_has_permissions' => 'model_has_permissions',
 
         /*
-         * When using the "HasRoles" trait from this package, we need to know which
-         * table should be used to retrieve your models roles. We have chosen a
-         * basic default value but you may easily change it to any table you like.
+         * Avec le trait « HasRoles » de ce paquet, nous devons savoir quelle table utiliser pour récupérer
+         * les rôles de vos modèles. Nous avons choisi une valeur par défaut simple, mais vous pouvez
+         * facilement la remplacer par la table de votre choix.
          */
 
         'model_has_roles' => 'model_has_roles',
 
         /*
-         * When using the "HasRoles" trait from this package, we need to know which
-         * table should be used to retrieve your roles permissions. We have chosen a
-         * basic default value but you may easily change it to any table you like.
+         * Avec le trait « HasRoles » de ce paquet, nous devons savoir quelle table utiliser pour récupérer
+         * les permissions de vos rôles. Nous avons choisi une valeur par défaut simple, mais vous pouvez
+         * facilement la remplacer par la table de votre choix.
          */
 
         'role_has_permissions' => 'role_has_permissions',
@@ -90,128 +90,130 @@ return [
 
     'column_names' => [
         /*
-         * Change this if you want to name the related pivots other than defaults
+         * Modifiez ceci si vous voulez nommer les tables pivot associées autrement que par défaut
          */
         'role_pivot_key' => null, // default 'role_id',
         'permission_pivot_key' => null, // default 'permission_id',
 
         /*
-         * Change this if you want to name the related model primary key other than
-         * `model_id`.
+         * Modifiez ceci si vous voulez nommer la clé primaire du modèle associé autrement que `model_id`.
          *
-         * For example, this would be nice if your primary keys are all UUIDs. In
-         * that case, name this `model_uuid`.
+         * Par exemple, c'est pratique si vos clés primaires sont toutes des UUID. Dans ce cas, nommez-la
+         * `model_uuid`.
          */
 
         'model_morph_key' => 'model_id',
 
         /*
-         * Change this if you want to use the teams feature and your related model's
-         * foreign key is other than `team_id`.
+         * Modifiez ceci si vous voulez utiliser la fonctionnalité d'équipes et que la clé étrangère de votre
+         * modèle associé n'est pas `team_id`.
          */
 
         'team_foreign_key' => 'team_id',
     ],
 
     /*
-     * When set to true, the method for checking permissions will be registered on the gate.
-     * Set this to false if you want to implement custom logic for checking permissions.
+     * Lorsque la valeur est true, la méthode de vérification des permissions est enregistrée sur le gate.
+     * Mettez false si vous voulez implémenter votre propre logique de vérification des permissions.
      */
 
     'register_permission_check_method' => true,
 
     /*
-     * When set to true, Laravel\Octane\Events\OperationTerminated event listener will be registered
-     * this will refresh permissions on every TickTerminated, TaskTerminated and RequestTerminated
-     * NOTE: This should not be needed in most cases, but an Octane/Vapor combination benefited from it.
+     * Lorsque la valeur est true, l'écouteur d'événement Laravel\Octane\Events\OperationTerminated est
+     * enregistré ; cela rafraîchit les permissions à chaque TickTerminated, TaskTerminated et
+     * RequestTerminated
+     * REMARQUE : cela ne devrait pas être nécessaire dans la plupart des cas, mais une combinaison
+     * Octane/Vapor en a bénéficié.
      */
     'register_octane_reset_listener' => false,
 
     /*
-     * Events will fire when a role or permission is assigned/unassigned:
+     * Des événements sont déclenchés lorsqu'un rôle ou une permission est attribué ou retiré :
      * \Spatie\Permission\Events\RoleAttachedEvent
      * \Spatie\Permission\Events\RoleDetachedEvent
      * \Spatie\Permission\Events\PermissionAttachedEvent
      * \Spatie\Permission\Events\PermissionDetachedEvent
      *
-     * To enable, set to true, and then create listeners to watch these events.
+     * Pour l'activer, mettez true, puis créez des écouteurs pour surveiller ces événements.
      */
     'events_enabled' => false,
 
     /*
-     * Teams Feature.
-     * When set to true the package implements teams using the 'team_foreign_key'.
-     * If you want the migrations to register the 'team_foreign_key', you must
-     * set this to true before doing the migration.
-     * If you already did the migration then you must make a new migration to also
-     * add 'team_foreign_key' to 'roles', 'model_has_roles', and 'model_has_permissions'
-     * (view the latest version of this package's migration file)
+     * Fonctionnalité d'équipes.
+     * Lorsque la valeur est true, le paquet implémente les équipes via 'team_foreign_key'.
+     * Si vous voulez que les migrations enregistrent 'team_foreign_key', vous devez mettre true avant
+     * d'exécuter la migration.
+     * Si la migration a déjà été faite, créez une nouvelle migration pour ajouter aussi 'team_foreign_key' à
+     * 'roles', 'model_has_roles' et 'model_has_permissions' (voir la dernière version du fichier de migration
+     * de ce paquet)
      */
 
     'teams' => false,
 
     /*
-     * The class to use to resolve the permissions team id
+     * La classe à utiliser pour résoudre l'id d'équipe des permissions
      */
     'team_resolver' => DefaultTeamResolver::class,
 
     /*
      * Passport Client Credentials Grant
-     * When set to true the package will use Passports Client to check permissions
+     * Lorsque la valeur est true, le paquet utilise le client de Passport pour vérifier les permissions
      */
 
     'use_passport_client_credentials' => false,
 
     /*
-     * When set to true, the required permission names are added to exception messages.
-     * This could be considered an information leak in some contexts, so the default
-     * setting is false here for optimum safety.
+     * Lorsque la valeur est true, les noms des permissions requises sont ajoutés aux messages d'exception.
+     * Cela peut être considéré comme une fuite d'information dans certains contextes ; la valeur par défaut
+     * est donc false ici, par sécurité optimale.
      */
 
     'display_permission_in_exception' => false,
 
     /*
-     * When set to true, the required role names are added to exception messages.
-     * This could be considered an information leak in some contexts, so the default
-     * setting is false here for optimum safety.
+     * Lorsque la valeur est true, les noms des rôles requis sont ajoutés aux messages d'exception. Cela peut
+     * être considéré comme une fuite d'information dans certains contextes ; la valeur par défaut est donc
+     * false ici, par sécurité optimale.
      */
 
     'display_role_in_exception' => false,
 
     /*
-     * By default wildcard permission lookups are disabled.
-     * See documentation to understand supported syntax.
+     * Par défaut, la recherche de permissions avec jokers est désactivée. Voir la documentation pour
+     * comprendre la syntaxe prise en charge.
      */
 
     'enable_wildcard_permission' => false,
 
     /*
-     * The class to use for interpreting wildcard permissions.
-     * If you need to modify delimiters, override the class and specify its name here.
+     * La classe à utiliser pour interpréter les permissions avec jokers. Si vous devez modifier les
+     * délimiteurs, surchargez la classe et indiquez ici son nom.
      */
     // 'wildcard_permission' => Spatie\Permission\WildcardPermission::class,
 
-    /* Cache-specific settings */
+    /* Paramètres propres au cache */
 
     'cache' => [
 
         /*
-         * By default all permissions are cached for 24 hours to speed up performance.
-         * When permissions or roles are updated the cache is flushed automatically.
+         * Par défaut, toutes les permissions sont mises en cache pendant 24 heures pour accélérer les
+         * performances. Lorsque des permissions ou des rôles sont modifiés, le cache est vidé
+         * automatiquement.
          */
 
         'expiration_time' => DateInterval::createFromDateString('24 hours'),
 
         /*
-         * The cache key used to store all permissions.
+         * La clé de cache utilisée pour stocker toutes les permissions.
          */
 
         'key' => 'spatie.permission.cache',
 
         /*
-         * You may optionally indicate a specific cache driver to use for permission and
-         * role caching using any of the `store` drivers listed in the cache.php config
-         * file. Using 'default' here means to use the `default` set in cache.php.
+         * Vous pouvez éventuellement indiquer un pilote de cache précis pour la mise en cache des permissions
+         * et des rôles, parmi les pilotes `store` listés dans le fichier de configuration cache.php. Avec «
+         * default », on utilise le `default` défini dans cache.php.
          */
 
         'store' => 'default',

@@ -8,7 +8,7 @@ use NotificationChannels\WebPush\PushSubscription;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Exécute les migrations.
      *
      * @return void
      */
@@ -33,7 +33,7 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Annule les migrations.
      *
      * @return void
      */

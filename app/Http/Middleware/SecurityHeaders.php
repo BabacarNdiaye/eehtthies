@@ -26,10 +26,10 @@ class SecurityHeaders
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         }
 
-        // script-src is nonce-locked (no 'unsafe-inline'); style-src stays
-        // permissive because the theme CSS variables are injected as an
-        // inline <style> block and Tailwind/React rely on inline style
-        // attributes — style-based XSS is a much smaller risk than script-based.
+        // script-src est verrouillé par nonce (pas de 'unsafe-inline') ; style-src reste permissif, car les
+        // variables CSS du thème sont injectées dans un bloc <style> en ligne et Tailwind/React s'appuient
+        // sur des attributs style en ligne — le risque de XSS par les styles est bien plus faible que par les
+        // scripts.
         $response->headers->set('Content-Security-Policy', implode('; ', [
             "default-src 'self'",
             "script-src 'self' 'nonce-{$nonce}'",

@@ -139,7 +139,8 @@ class ClassPromotionTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        // Transaction must roll back — the first (valid) row must NOT have been applied either.
+        // La transaction doit être annulée — la première ligne (valide) ne doit PAS non plus avoir été
+        // appliquée.
         $studentOk->refresh();
         $this->assertSame('actif', $studentOk->status);
     }
@@ -148,7 +149,7 @@ class ClassPromotionTest extends TestCase
     {
         $this->seed(RolesAndPermissionsSeeder::class);
         $user = User::factory()->create();
-        $user->assignRole('caissier'); // no eleves permission
+        $user->assignRole('caissier'); // pas de permission eleves
 
         $formation = Formation::create(['name' => 'BTS Cuisine', 'code' => 'BTS-'.uniqid(), 'slug' => 'bts-'.uniqid()]);
         $year = $this->makeYear('2026-2027', '2026-09-01');
@@ -191,10 +192,10 @@ class ClassPromotionTest extends TestCase
         $response = $this->actingAs($user)->get(route('admin.class-promotion.index', ['school_class_id' => $sourceClass->id]));
 
         $response->assertOk();
-        // Exercises the exact JSON key the frontend reads for the configured next class
-        // (Eloquent relations serialize snake_case, e.g. "next_class" not "nextClass") —
-        // a mismatch here would silently break the pre-filled "promote" default client-side
-        // without failing any assertion that only checks the "decision" value.
+        // Vérifie la clé JSON exacte que lit le frontend pour la classe suivante configurée (les relations
+        // Eloquent se sérialisent en snake_case, p. ex. « next_class » et non « nextClass ») — une divergence
+        // ici casserait silencieusement la valeur « promouvoir » pré-remplie côté client, sans faire échouer
+        // une assertion qui ne vérifierait que la valeur de « decision ».
         $response->assertInertia(fn ($page) => $page
             ->component('Admin/ClassPromotion/Index')
             ->where('students.0.decision', 'admis')

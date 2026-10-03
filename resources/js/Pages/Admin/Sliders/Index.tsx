@@ -18,9 +18,9 @@ export default function Index({ sliders }: { sliders: Slider[] }) {
 
     return (
         <AdminLayout>
-            <Head title="Slider accueil" />
+            <Head title="Diaporama d'accueil" />
             <PageHeader
-                title="Slider d'accueil"
+                title="Diaporama d'accueil"
                 subtitle="Gérez les visuels défilants affichés en page d'accueil."
                 action={{ label: 'Nouvelle slide', href: route('admin.sliders.create') }}
             />

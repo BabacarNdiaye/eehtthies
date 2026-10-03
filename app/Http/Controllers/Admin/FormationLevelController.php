@@ -14,8 +14,8 @@ use Inertia\Response;
 
 class FormationLevelController extends Controller
 {
-    // TEMPORARY guard — remove once the formation_levels migration has run
-    // on this environment (progression-engine deploy, 2026-09-28).
+    // Garde-fou TEMPORAIRE — à retirer une fois la migration formation_levels exécutée sur cet environnement
+    // (déploiement du moteur de progression, 2026-09-28).
     private function migrated(): bool
     {
         return Schema::hasTable('formation_levels');

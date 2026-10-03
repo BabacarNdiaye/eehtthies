@@ -9,14 +9,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Regression test for a real privilege-scope bug: the `enseignant` role is
- * granted full voir/ajouter/modifier/supprimer permissions on notes, examens,
- * presences and emploi_du_temps so its own portal (Portal\TeacherExamController,
- * Portal\TeacherAttendanceController, etc.) can enforce "only your own classes".
- * The shared Admin\* controllers behind those same permission strings do NOT
- * filter by class ownership, so a teacher who reached them directly could
- * edit any class's exams or attendance. EnsureUserIsStaff must keep teachers
- * portal-only (like students and parents) so they can never reach /admin/*.
+ * Test de non-régression pour un vrai bug de portée des privilèges : le rôle `enseignant` reçoit toutes les
+ * permissions voir/ajouter/modifier/supprimer sur notes, examens, presences et emploi_du_temps pour que son
+ * propre portail (Portal\TeacherExamController, Portal\TeacherAttendanceController, etc.) puisse imposer «
+ * uniquement vos propres classes ». Les contrôleurs Admin\* partagés derrière ces mêmes chaînes de permission
+ * ne filtrent PAS selon la propriété des classes ; un enseignant qui les atteindrait directement pourrait
+ * donc modifier les examens ou la présence de n'importe quelle classe. EnsureUserIsStaff doit garder les
+ * enseignants limités au portail (comme les élèves et les parents) pour qu'ils n'atteignent jamais /admin/*.
  */
 class TeacherAdminAccessTest extends TestCase
 {

@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('lesson_logs', function (Blueprint $table) {
             $table->id();
-            // nullOnDelete (not cascade): a lesson log is a pedagogical record that
-            // must survive an admin later deleting/restructuring the timetable slot.
+            // nullOnDelete (et non cascade) : un cahier de texte est une trace pédagogique qui doit survivre
+            // si un administrateur supprime ou réorganise ensuite le créneau d'emploi du temps.
             $table->foreignId('timetable_entry_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('teacher_id')->constrained()->cascadeOnDelete();
             $table->foreignId('school_class_id')->constrained()->cascadeOnDelete();

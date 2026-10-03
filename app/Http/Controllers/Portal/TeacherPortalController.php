@@ -34,10 +34,10 @@ class TeacherPortalController extends Controller
 
         $classes = SchoolClass::whereIn('id', $classIds)->withCount('students')->get(['id', 'name']);
 
-        // Only exams whose (class, subject) actually matches this teacher's own
-        // timetable — so "Saisir les notes" always leads somewhere they're
-        // allowed to grade, instead of any exam merely happening in one of
-        // their classes (possibly in a subject they don't teach there).
+        // Uniquement les examens dont le couple (classe, matière) correspond à l'emploi du temps de
+        // l'enseignant — ainsi « Saisir les notes » mène toujours là où la saisie lui est permise, et pas
+        // vers n'importe quel examen simplement organisé dans l'une de ses classes (possiblement dans une
+        // matière qu'il n'y enseigne pas).
         $pairs = TimetableEntry::where('teacher_id', $teacher->id)
             ->get(['school_class_id', 'subject_id'])
             ->unique(fn ($e) => $e->school_class_id.'-'.$e->subject_id);

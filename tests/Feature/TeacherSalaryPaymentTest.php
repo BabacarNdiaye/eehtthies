@@ -12,12 +12,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Mirrors SalaryPaymentTest but for teachers, who are paid either a fixed
- * monthly salary or by the hour (Teacher::payment_type) via a separate
- * teacher_salary_payments table — kept separate from salary_payments rather
- * than making user_id nullable there, since altering an existing column
- * needs doctrine/dbal (not installed) and this was safer to deploy without
- * SSH/CLI access to production anyway.
+ * Reprend SalaryPaymentTest mais pour les enseignants, qui sont payés soit au salaire mensuel fixe, soit à
+ * l'heure (Teacher::payment_type) via une table teacher_salary_payments distincte — gardée séparée de
+ * salary_payments plutôt que de rendre user_id nullable, car modifier une colonne existante nécessite
+ * doctrine/dbal (non installé) et c'était de toute façon plus sûr à déployer sans accès SSH/CLI à la
+ * production.
  */
 class TeacherSalaryPaymentTest extends TestCase
 {

@@ -67,7 +67,7 @@ export default function Track({
             <PageHero
                 eyebrow="Suivi en ligne"
                 title="Suivre ma candidature"
-                subtitle="Renseignez votre référence de candidature et votre adresse email pour connaître l'état d'avancement de votre dossier."
+                subtitle="Renseignez votre référence de candidature et votre adresse e-mail pour connaître l'état d'avancement de votre dossier."
             />
 
             <section className="py-20 sm:py-24">
@@ -178,7 +178,7 @@ export default function Track({
                                     <p className="text-sm text-red-700">
                                         Aucune candidature trouvée avec ces
                                         informations. Vérifiez votre
-                                        référence et votre adresse email, ou
+                                        référence et votre adresse e-mail, ou
                                         contactez-nous si le problème
                                         persiste.
                                     </p>

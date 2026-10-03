@@ -71,7 +71,7 @@ class LessonLogTest extends TestCase
     public function test_teacher_can_log_their_own_session(): void
     {
         $this->seed(RolesAndPermissionsSeeder::class);
-        $now = Carbon::parse('2026-09-28'); // a Monday
+        $now = Carbon::parse('2026-09-28'); // un lundi
         [$user, , $entry] = $this->makeTeacherWithEntry($now);
 
         $response = $this->actingAs($user)->post(route('teacher.lesson-log.store'), [
@@ -88,8 +88,8 @@ class LessonLogTest extends TestCase
             'content' => 'Introduction aux fonctions.',
         ]);
 
-        // SQLite stores `date`-cast columns as full datetimes — same quirk the
-        // pre-existing AttendanceQrScanTest already works around this way.
+        // SQLite stocke les colonnes converties en `date` sous forme de datetimes complets — même
+        // particularité que celle déjà contournée de cette façon par AttendanceQrScanTest.
         $storedDate = DB::table('lesson_logs')
             ->where('timetable_entry_id', $entry->id)
             ->value('date');
@@ -126,12 +126,12 @@ class LessonLogTest extends TestCase
     public function test_date_not_matching_the_entrys_day_of_week_is_rejected(): void
     {
         $this->seed(RolesAndPermissionsSeeder::class);
-        $now = Carbon::parse('2026-09-28'); // Monday
+        $now = Carbon::parse('2026-09-28'); // Lundi
         [$user, , $entry] = $this->makeTeacherWithEntry($now);
 
         $response = $this->actingAs($user)->post(route('teacher.lesson-log.store'), [
             'timetable_entry_id' => $entry->id,
-            'date' => $now->copy()->addDay()->toDateString(), // Tuesday, entry is Monday-only
+            'date' => $now->copy()->addDay()->toDateString(), // Mardi, l'entrée n'existe que le lundi
             'content' => 'Devrait être rejeté.',
         ]);
 

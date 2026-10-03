@@ -135,7 +135,7 @@ export default function CandidatureCreate({
                             </div>
                         </div>
 
-                        {/* Identity */}
+                        {/* Identité */}
                         <div>
                             <h2 className="font-serif text-xl font-bold text-ink-900">
                                 Informations personnelles
@@ -284,7 +284,7 @@ export default function CandidatureCreate({
                             </div>
                         </div>
 
-                        {/* Guardian */}
+                        {/* Tuteur */}
                         <div>
                             <h2 className="font-serif text-xl font-bold text-ink-900">
                                 Contact du tuteur / parent
@@ -335,7 +335,7 @@ export default function CandidatureCreate({
                             </div>
                         </div>
 
-                        {/* Academic background */}
+                        {/* Parcours scolaire */}
                         <div>
                             <h2 className="font-serif text-xl font-bold text-ink-900">
                                 Parcours scolaire

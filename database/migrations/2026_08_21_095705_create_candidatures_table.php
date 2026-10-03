@@ -36,7 +36,7 @@ return new class extends Migration
                 'inscription_finalisee',
             ])->default('soumise');
             $table->text('admin_notes')->nullable();
-            $table->string('source')->nullable(); // site, facebook, telephone...
+            $table->string('source')->nullable(); // site, facebook, téléphone…
             $table->timestamp('interview_at')->nullable();
             $table->timestamp('submitted_at')->nullable();
             $table->timestamps();

@@ -104,6 +104,6 @@ class ReportCardZipExportTest extends TestCase
             'school_class_id' => $this->schoolClass->id,
         ]));
 
-        $response->assertStatus(302); // validation redirect (missing 'term')
+        $response->assertStatus(302); // redirection de validation (« term » manquant)
     }
 }

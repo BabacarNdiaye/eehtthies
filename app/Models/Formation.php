@@ -88,10 +88,10 @@ class Formation extends Model
     }
 
     /**
-     * "CAP Restauration" + diploma "CAP" -> "Restauration", for diploma wording
-     * ("en Restauration"). Falls back to `specialty_override` when the name
-     * doesn't carry the specialty as a "{diploma} {specialty}" suffix (e.g. a
-     * formation named just "Certificat de Qualification Professionnelle").
+     * « CAP Restauration » + diplôme « CAP » -> « Restauration », pour la formulation du diplôme (« en
+     * Restauration »). Se rabat sur `specialty_override` lorsque le nom ne porte pas la spécialité sous la
+     * forme d'un suffixe « {diploma} {specialty} » (p. ex. une formation nommée simplement « Certificat de
+     * Qualification Professionnelle »).
      */
     public function getSpecialtyAttribute(): string
     {
@@ -102,17 +102,16 @@ class Formation extends Model
         return $this->specialty_override ?: $this->name;
     }
 
-    /** "Certificat d'Aptitude Professionnelle" for diploma "CAP", falling back to the raw code. */
+    /** « Certificat d'Aptitude Professionnelle » pour le diplôme « CAP », avec repli sur le code brut. */
     public function getDiplomaFullNameAttribute(): ?string
     {
         return $this->diploma ? (self::DIPLOMA_LABELS[$this->diploma] ?? $this->diploma) : null;
     }
 
     /**
-     * "certificat" / "brevet" / "diplôme" — the generic noun this qualification
-     * is referred to as, derived from the first word of its full label, so the
-     * diploma document's closing sentence ("le présent {word} lui est
-     * délivré...") stays grammatically correct for every diploma type.
+     * « certificat » / « brevet » / « diplôme » — le nom générique sous lequel cette qualification est
+     * désignée, tiré du premier mot de son libellé complet, afin que la phrase de clôture du diplôme (« le
+     * présent {word} lui est délivré... ») reste grammaticalement correcte pour chaque type de diplôme.
      */
     public function getDocumentTypeWordAttribute(): string
     {

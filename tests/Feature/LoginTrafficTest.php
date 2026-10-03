@@ -14,11 +14,11 @@ class LoginTrafficTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Regression test for a real incident: this table was created by a
-     * migration deployed in the same batch as the listener that writes to
-     * it, and a real user's login hit this exact table-missing error in the
-     * gap before the migration ran. The listener must never let that (or
-     * any other traffic-logging failure) block a real login again.
+     * Test de non-régression pour un incident réel : cette table avait été créée par une migration déployée
+     * dans le même lot que l'écouteur qui y écrit, et la connexion d'un vrai utilisateur a rencontré
+     * exactement cette erreur de table manquante dans l'intervalle avant l'exécution de la migration.
+     * L'écouteur ne doit plus jamais laisser cette erreur (ni aucun autre échec de journalisation du trafic)
+     * bloquer une vraie connexion.
      */
     public function test_login_still_succeeds_even_if_the_login_logs_table_is_unavailable(): void
     {

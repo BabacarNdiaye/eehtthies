@@ -65,7 +65,7 @@ function parseProgramSections(text: string): ProgramSection[] {
     return sections;
 }
 
-/** "0.00" means "not published publicly" here, not "free" — show a call-to-contact instead of a misleading "0 FCFA". */
+/** « 0.00 » signifie ici « non publié publiquement », et non « gratuit » — afficher un appel à nous contacter plutôt qu'un trompeur « 0 FCFA ». */
 function feeLabel(value: string | number | null | undefined): string {
     const numeric = typeof value === 'string' ? parseFloat(value) : value;
     return numeric ? formatFcfa(value) : 'Nous consulter';

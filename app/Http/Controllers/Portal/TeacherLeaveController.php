@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** Self-service leave requests for teachers — same shape as Admin\LeaveController's own-requests view. */
+/** Demandes de congé en libre-service pour les enseignants — même forme que la vue « mes demandes » de Admin\LeaveController. */
 class TeacherLeaveController extends Controller
 {
     public function index(Request $request): Response

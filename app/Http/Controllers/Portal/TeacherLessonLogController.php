@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** Lets a teacher fill their own cahier de texte, one entry per timetable session. */
+/** Permet à un enseignant de remplir son propre cahier de texte, une entrée par séance d'emploi du temps. */
 class TeacherLessonLogController extends Controller
 {
     private function teacher(Request $request): Teacher

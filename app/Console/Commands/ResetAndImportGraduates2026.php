@@ -14,7 +14,7 @@ class ResetAndImportGraduates2026 extends Command
 {
     protected $signature = 'app:reset-import-graduates-2026';
 
-    protected $description = 'One-time: backs up the DB, clears existing students, then imports the 2026 graduates CSV. Guarded to run only once.';
+    protected $description = "Ponctuelle : sauvegarde la base, supprime les élèves existants, puis importe le CSV des diplômés 2026. Protégée pour ne s'exécuter qu'une seule fois.";
 
     private const DONE_FLAG = 'reset_import_graduates_2026_done';
 
@@ -27,20 +27,20 @@ class ResetAndImportGraduates2026 extends Command
     public function handle(): int
     {
         if (Setting::get(self::DONE_FLAG)) {
-            $this->info('Already ran, skipping.');
+            $this->info('Déjà exécutée, rien à faire.');
 
             return self::SUCCESS;
         }
 
         try {
             Artisan::call('backup:run');
-            Log::info('reset-import-graduates-2026: backup done, output: '.Artisan::output());
+            Log::info('reset-import-graduates-2026 : sauvegarde terminée, sortie : '.Artisan::output());
         } catch (\Throwable $e) {
-            // The zip file itself is written to disk before Spatie Backup's
-            // notification step runs, so a notification-only failure (e.g.
-            // the admin mailbox rejecting mail) shouldn't block the import —
-            // just log it and continue, the safety-net file still exists.
-            Log::warning('reset-import-graduates-2026: backup:run raised, continuing anyway: '.$e->getMessage());
+            // Le fichier zip est écrit sur disque avant l'étape de notification de Spatie Backup ; un échec
+            // limité à la notification (p. ex. la boîte mail de l'administrateur qui refuse le message) ne
+            // doit donc pas bloquer l'import — on le journalise et on continue, le fichier de sauvegarde de
+            // sécurité existant bel et bien.
+            Log::warning('reset-import-graduates-2026 : backup:run a levé une exception, on continue malgré tout : '.$e->getMessage());
         }
 
         Formation::firstOrCreate(
@@ -80,7 +80,7 @@ class ResetAndImportGraduates2026 extends Command
             }
 
             if ($firstName === '' || $lastName === '' || empty($data['matricule'])) {
-                $errors[] = 'Skipped row (missing required field): '.json_encode($data);
+                $errors[] = 'Ligne ignorée (champ obligatoire manquant) : '.json_encode($data);
 
                 continue;
             }
@@ -112,13 +112,13 @@ class ResetAndImportGraduates2026 extends Command
             'errors' => $errors,
         ]));
 
-        Log::info('reset-import-graduates-2026: done', [
+        Log::info('reset-import-graduates-2026 : terminé', [
             'deleted' => $deleted,
             'created' => $created,
             'errors' => $errors,
         ]);
 
-        $this->info("Deleted {$deleted}, created {$created}, errors: ".count($errors));
+        $this->info("Supprimés : {$deleted}, créés : {$created}, erreurs : ".count($errors));
 
         return self::SUCCESS;
     }

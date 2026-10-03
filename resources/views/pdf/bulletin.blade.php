@@ -77,7 +77,7 @@
             Établissement : <strong>{{ \App\Models\Setting::get('site_name', 'EEHT de Thiès') }}</strong><br>
             Téléphone : {{ \App\Models\Setting::get('site_phone', '—') }}<br>
             Adresse : {{ \App\Models\Setting::get('site_address', '—') }}<br>
-            Email : {{ \App\Models\Setting::get('site_email', '—') }}
+            E-mail : {{ \App\Models\Setting::get('site_email', '—') }}
         </div>
         <div class="cell right">
             Année Scolaire : <strong>{{ $reportCard->academicYear->label }}</strong><br>

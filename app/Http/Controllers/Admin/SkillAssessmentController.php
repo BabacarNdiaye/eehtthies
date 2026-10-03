@@ -37,7 +37,7 @@ class SkillAssessmentController extends Controller
         ]);
     }
 
-    /** "Fiche de compétences" — one student's most recent level per skill of their formation. */
+    /** « Fiche de compétences » — le niveau le plus récent d'un élève pour chaque compétence de sa formation. */
     public function studentPdf(Student $student)
     {
         abort_unless($student->formation_id, 404, "Cet élève n'est associé à aucune filière.");

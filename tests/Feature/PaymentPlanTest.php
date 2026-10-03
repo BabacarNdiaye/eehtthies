@@ -51,7 +51,7 @@ class PaymentPlanTest extends TestCase
         $this->assertSame(3, $plan->invoices()->count());
         $this->assertEquals(100000, $plan->invoices()->sum('amount'));
 
-        // Due dates spaced one month apart.
+        // Échéances espacées d'un mois.
         $dueDates = $plan->invoices()->orderBy('due_date')->pluck('due_date')->map->format('Y-m-d');
         $this->assertEquals(['2026-10-01', '2026-11-01', '2026-12-01'], $dueDates->all());
     }
@@ -63,7 +63,7 @@ class PaymentPlanTest extends TestCase
         $user->assignRole('caissier');
         $student = $this->makeStudent();
 
-        // 100 / 3 = 33.333... — the last tranche must absorb the remainder.
+        // 100 / 3 = 33,333… — la dernière tranche doit absorber le reste.
         $this->actingAs($user)->post(route('admin.payment-plans.store'), [
             'student_id' => $student->id,
             'label' => 'Test arrondi',
@@ -82,7 +82,7 @@ class PaymentPlanTest extends TestCase
     {
         $this->seed(RolesAndPermissionsSeeder::class);
         $user = User::factory()->create();
-        $user->assignRole('responsable-pedagogique'); // no comptabilite
+        $user->assignRole('responsable-pedagogique'); // pas de comptabilite
         $student = $this->makeStudent();
 
         $response = $this->actingAs($user)->post(route('admin.payment-plans.store'), [

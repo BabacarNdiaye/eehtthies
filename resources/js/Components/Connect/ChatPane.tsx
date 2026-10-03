@@ -980,7 +980,7 @@ export default function ChatPane({
                                 <Paperclip className="h-5 w-5" />
                             </button>
                             <div className="relative">
-                                <button onClick={() => setPopover(popover === 'emoji' ? null : 'emoji')} className="rounded-full p-2 text-ink-700 hover:bg-ink-50" aria-label="Emoji">
+                                <button onClick={() => setPopover(popover === 'emoji' ? null : 'emoji')} className="rounded-full p-2 text-ink-700 hover:bg-ink-50" aria-label="Émoji">
                                     <Smile className="h-5 w-5" />
                                 </button>
                                 {popover === 'emoji' && (
@@ -1101,7 +1101,7 @@ export default function ChatPane({
                                     <Info className="h-4 w-4" /> Infos de la conversation
                                 </button>
                                 <button onClick={() => setPopover('emoji')} className={menuItem}>
-                                    <Smile className="h-4 w-4" /> Emojis
+                                    <Smile className="h-4 w-4" /> Émojis
                                 </button>
                             </div>
                         )}

@@ -59,9 +59,8 @@ class UserController extends Controller
     }
 
     /**
-     * Roles that already have their own dedicated management module
-     * (Élèves, Enseignants) and therefore don't belong in the "Personnel"
-     * (administrative staff) listing.
+     * Rôles qui ont déjà leur propre module de gestion dédié (Élèves, Enseignants) et n'ont donc pas leur
+     * place dans la liste « Personnel » (personnel administratif).
      */
     private const NON_ADMIN_ROLES = ['enseignant', 'eleve', 'parent'];
 
@@ -70,7 +69,7 @@ class UserController extends Controller
         return Role::whereNotIn('name', self::NON_ADMIN_ROLES)->orderBy('name')->pluck('name');
     }
 
-    /** Possible managers for the "reports to" field: other admin staff. */
+    /** Responsables possibles pour le champ « rend compte à » : les autres membres du personnel administratif. */
     private function possibleManagers(?User $exclude = null)
     {
         return User::adminStaff()
@@ -130,7 +129,7 @@ class UserController extends Controller
                     if (! $value || ! $user) {
                         return;
                     }
-                    // Prevent creating a reporting cycle by walking up the proposed manager's chain.
+                    // Empêche de créer un cycle hiérarchique en remontant la chaîne du responsable proposé.
                     $current = User::find($value);
                     while ($current) {
                         if ($current->id === $user->id) {

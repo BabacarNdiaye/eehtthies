@@ -130,10 +130,10 @@ class StudentController extends Controller
             'schoolClasses' => SchoolClass::orderBy('name')->get(['id', 'name', 'formation_id']),
             'academicYears' => AcademicYear::orderByDesc('start_date')->get(['id', 'label']),
             'documentTypes' => StudentDocument::TYPES,
-            // Full bulletin history across every academic year — a promotion to a
-            // new class/year never deletes or hides these (ReportCard rows keep
-            // their own academic_year_id independently of the student's current
-            // one), so this is what makes that history visible in the dossier.
+            // Historique complet des bulletins sur toutes les années scolaires — une promotion vers une
+            // nouvelle classe ou année ne les supprime ni ne les masque jamais (les lignes ReportCard
+            // conservent leur propre academic_year_id, indépendamment de celui de l'élève), c'est donc ce qui
+            // rend cet historique visible dans le dossier.
             'reportCards' => $student
                 ? $student->reportCards()
                     ->with('academicYear:id,label')

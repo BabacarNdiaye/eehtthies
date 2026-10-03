@@ -14,8 +14,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Lets a teacher take attendance for their own classes/subjects only, unlike
- * the shared /admin/pointage page which isn't scoped to the acting teacher.
+ * Permet à un enseignant de faire l'appel uniquement pour ses propres classes et matières, contrairement à la
+ * page partagée /admin/pointage qui n'est pas limitée à l'enseignant connecté.
  */
 class TeacherAttendanceController extends Controller
 {
@@ -27,7 +27,7 @@ class TeacherAttendanceController extends Controller
         return $teacher;
     }
 
-    /** Distinct (class, subject) pairs this teacher actually teaches, from the timetable. */
+    /** Paires (classe, matière) distinctes que cet enseignant enseigne réellement, d'après l'emploi du temps. */
     private function classSubjectPairs(Teacher $teacher): Collection
     {
         return TimetableEntry::where('teacher_id', $teacher->id)

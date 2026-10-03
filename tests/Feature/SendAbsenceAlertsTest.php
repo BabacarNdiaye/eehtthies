@@ -71,7 +71,7 @@ class SendAbsenceAlertsTest extends TestCase
     {
         Mail::fake();
         $student = $this->makeStudentWithParentEmail();
-        $this->addUnjustifiedAbsences($student, 4); // 4 is not in [3,5,8,12]
+        $this->addUnjustifiedAbsences($student, 4); // 4 n'est pas dans [3,5,8,12]
 
         Artisan::call('app:send-absence-alerts');
 
@@ -135,7 +135,7 @@ class SendAbsenceAlertsTest extends TestCase
     {
         Mail::fake();
         $student = $this->makeStudentWithParentEmail();
-        $this->addUnjustifiedAbsences($student, 8); // milestone, more than 5 absences
+        $this->addUnjustifiedAbsences($student, 8); // seuil atteint, plus de 5 absences
 
         Artisan::call('app:send-absence-alerts');
 

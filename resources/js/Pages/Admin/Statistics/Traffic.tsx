@@ -45,7 +45,7 @@ export default function Traffic({ daily, byRole, totalUsers, activeUsers30d, nev
     return (
         <AdminLayout>
             <Head title="Trafic" />
-            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & Business Intelligence</h1>
+            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & pilotage</h1>
             <p className="mb-4 text-sm text-ink-500">
                 Utilisation de la plateforme : connexions au fil du temps, par profil.
             </p>

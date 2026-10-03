@@ -70,25 +70,26 @@ class AttendanceController extends Controller
         return $this->renderKiosk($this->modeFromRequest($request));
     }
 
-    // Staff-facing entry point for scanning students' ID card badges (gate mode),
-    // reachable from the admin nav without needing to know the ?mode=gate query trick.
+    // Point d'entrée destiné au personnel pour scanner les badges des cartes d'élève (mode portique),
+    // accessible depuis le menu d'administration sans qu'il faille connaître l'astuce du paramètre
+    // ?mode=gate.
     public function kioskGate(): Response
     {
         return $this->renderKiosk('gate');
     }
 
-    // Public kiosk view — token required in query string (GET /borne/pointage/open?token=...)
+    // Vue publique de la borne — jeton requis dans l'URL (GET /borne/pointage/open?token=...)
     public function kioskOpen(Request $request): Response
     {
         $token = $request->query('token');
         if (! $token || $token !== env('KIOSK_TOKEN')) {
-            abort(403, 'Token invalide ou manquant.');
+            abort(403, 'Jeton invalide ou manquant.');
         }
 
         return $this->renderKiosk($this->modeFromRequest($request));
     }
 
-    // Public kiosk without token/auth (temporary for testing)
+    // Borne publique sans jeton ni authentification (temporaire, pour les tests)
     public function kioskPublic(Request $request): Response
     {
         return $this->renderKiosk($this->modeFromRequest($request));
@@ -99,8 +100,8 @@ class AttendanceController extends Controller
         return $request->query('mode') === 'gate' ? 'gate' : 'classroom';
     }
 
-    // mode=gate renders the entry-gate variant of the kiosk (badge qr_token scan,
-    // no roster preloaded) instead of the classroom variant (student_id scan).
+    // mode=gate affiche la variante « portique » de la borne (scan du qr_token d'un badge, sans liste
+    // d'élèves préchargée) au lieu de la variante « salle de classe » (scan du student_id).
     private function renderKiosk(string $mode): Response
     {
         $students = $mode === 'gate'
@@ -130,8 +131,8 @@ class AttendanceController extends Controller
             'records.*.justification' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        // Resolved once (identical for every student in this batch) rather than
-        // per-record, to avoid an N+1 timetable lookup.
+        // Résolu une seule fois (identique pour tous les élèves de ce lot) plutôt qu'enregistrement par
+        // enregistrement, pour éviter une recherche d'emploi du temps en N+1.
         $entry = $resolver->scheduledPeriod(
             (int) $data['school_class_id'],
             isset($data['subject_id']) ? (int) $data['subject_id'] : null,
@@ -169,12 +170,13 @@ class AttendanceController extends Controller
         return $this->recordScan($student, $data, $request->user()->id, $resolver);
     }
 
-    // Public scan endpoint (POST /borne/pointage/scan/open) — expects kiosk_token in body
+    // Point d'entrée public de scan (POST /borne/pointage/scan/open) — attend kiosk_token dans le corps de la
+    // requête
     public function qrScanOpen(Request $request, AttendanceCheckInResolver $resolver)
     {
         $token = $request->input('kiosk_token');
         if (! $token || $token !== env('KIOSK_TOKEN')) {
-            return response()->json(['message' => 'Token kiosk invalide.'], 403);
+            return response()->json(['message' => 'Jeton de borne invalide.'], 403);
         }
 
         $data = $request->validate([
@@ -190,7 +192,7 @@ class AttendanceController extends Controller
         return $this->recordScan($student, $data, null, $resolver);
     }
 
-    // student_id (classroom kiosk) or qr_token (entry-gate badge scan) identifies the student.
+    // student_id (borne en salle de classe) ou qr_token (scan de badge au portique) identifie l'élève.
     private function resolveStudentFromScan(array $data): Student
     {
         $student = ! empty($data['qr_token'])
@@ -274,7 +276,7 @@ class AttendanceController extends Controller
         ]);
     }
 
-    /** Cahier d'absence — chronological register of non-"present" rows, not just aggregate counts. */
+    /** Cahier d'absence — registre chronologique des lignes non « présent », et pas seulement des totaux agrégés. */
     private function registerQuery(Request $request)
     {
         $schoolClassId = $request->integer('school_class_id') ?: null;
@@ -285,9 +287,9 @@ class AttendanceController extends Controller
         return Attendance::where('status', '!=', 'present')
             ->when($schoolClassId, fn ($q) => $q->where('school_class_id', $schoolClassId))
             ->when($subjectId, fn ($q) => $q->where('subject_id', $subjectId))
-            // whereDate (not whereBetween on the raw column) so this is correct
-            // regardless of whether the driver stores `date`-cast columns with or
-            // without a time component (SQLite keeps "Y-m-d H:i:s"; MySQL doesn't).
+            // whereDate (et non whereBetween sur la colonne brute) pour que le résultat soit correct que le
+            // pilote stocke ou non une composante horaire dans les colonnes converties en `date` (SQLite
+            // conserve « Y-m-d H:i:s » ; MySQL non).
             ->whereDate('date', '>=', $from)
             ->whereDate('date', '<=', $to)
             ->with([

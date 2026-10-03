@@ -11,10 +11,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Recording a salary payment must simultaneously create a matching Expense
- * (so payroll costs show up in Finance and the accounting ledger), and
- * cancelling it must remove both sides together — otherwise the books and
- * the payroll page silently disagree.
+ * L'enregistrement d'un paiement de salaire doit créer simultanément une Expense correspondante (pour que la
+ * masse salariale apparaisse dans les Finances et le grand livre), et son annulation doit supprimer les deux
+ * côtés ensemble — sinon les comptes et la page de paie divergent silencieusement.
  */
 class SalaryPaymentTest extends TestCase
 {

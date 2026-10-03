@@ -18,7 +18,7 @@ class Student extends Model
         '3 ans' => 'de trois (3) ans',
     ];
 
-    /** "1 an" -> "d'un (1) an", for the formal diploma wording ("une formation d'une durée {phrase}"). */
+    /** « 1 an » -> « d'un (1) an », pour la formulation officielle du diplôme (« une formation d'une durée {phrase} »). */
     public function getFormattedTrainingDurationAttribute(): ?string
     {
         if (! $this->training_duration) {
@@ -157,7 +157,7 @@ class Student extends Model
         return $this->training_attestation_number;
     }
 
-    /** Backfills the QR badge token for students created before the qr_token column existed. */
+    /** Renseigne le jeton du badge QR pour les élèves créés avant l'existence de la colonne qr_token. */
     public function generateQrToken(): string
     {
         if (empty($this->qr_token)) {

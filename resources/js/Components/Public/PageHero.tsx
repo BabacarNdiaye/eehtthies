@@ -2,9 +2,8 @@ import { ReactNode } from 'react';
 import { PatternOverlay } from '@/Components/Public/ImagePlaceholder';
 
 /**
- * Standard dark hero banner used at the top of interior public pages
- * (About, Teachers, Partners, Testimonials, FAQ, Contact, Formations,
- * News, Events, Gallery...).
+ * Bannière sombre standard en haut des pages publiques intérieures (À propos, Enseignants, Partenaires,
+ * Témoignages, FAQ, Contact, Formations, Actualités, Événements, Galerie...).
  */
 export default function PageHero({
     eyebrow,

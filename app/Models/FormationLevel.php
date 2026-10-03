@@ -38,7 +38,7 @@ class FormationLevel extends Model
         return $this->hasMany(SchoolClass::class);
     }
 
-    /** The level whose level_number is one higher, within the same formation — the automatic promotion target. */
+    /** Le niveau dont level_number est supérieur d'une unité, dans la même formation — la cible de promotion automatique. */
     public function nextLevel()
     {
         return $this->formation->levels()->where('level_number', $this->level_number + 1)->first();

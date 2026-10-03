@@ -5,9 +5,9 @@ namespace App\Support;
 use App\Models\Setting;
 
 /**
- * Generates full Tailwind-style tint/shade scales from the single base hex
- * colors configured in Site Settings, and exposes them as CSS custom
- * properties consumed by tailwind.config.js (ink/gold/brand/leaf).
+ * Génère des échelles complètes de teintes et d'ombres de style Tailwind à partir des couleurs hexadécimales
+ * de base définies dans les Paramètres du site, et les expose sous forme de propriétés CSS personnalisées
+ * consommées par tailwind.config.js (ink/gold/brand/leaf).
  */
 class ThemePalette
 {
@@ -18,7 +18,7 @@ class ThemePalette
         'leaf' => '#8bc93f',
     ];
 
-    /** Settings key => palette name. */
+    /** Clé de paramètre => nom de palette. */
     protected const KEYS = [
         'theme_neutral_color' => 'ink',
         'theme_primary_color' => 'gold',
@@ -27,17 +27,15 @@ class ThemePalette
     ];
 
     /**
-     * Shade stop => how far to mix toward white (positive) or black
-     * (negative), relative to the "anchor" stop where the chosen color
-     * lands untouched (amount 0).
+     * Cran de nuance => proportion de mélange vers le blanc (positif) ou le noir (négatif), relative au cran
+     * « d'ancrage » où la couleur choisie est conservée telle quelle (valeur 0).
      *
-     * gold/brand/leaf are brand accents: the chosen color is the vivid
-     * "500" stop, with tints above and shades below.
+     * gold/brand/leaf sont des accents de marque : la couleur choisie est le cran vif « 500 », avec des
+     * teintes plus claires au-dessus et des ombres plus sombres en dessous.
      *
-     * ink is the structural dark neutral used for backgrounds/text
-     * everywhere: the chosen color is the dominant "900" stop (matching
-     * how the previous static palette was actually used across the site),
-     * with an extra near-black "950" for overlays.
+     * ink est le neutre foncé structurel utilisé partout pour les fonds et le texte : la couleur choisie est
+     * le cran dominant « 900 » (comme l'ancienne palette statique était réellement utilisée sur tout le
+     * site), avec en plus un « 950 » presque noir pour les superpositions.
      */
     protected const STOPS = [
         'default' => [

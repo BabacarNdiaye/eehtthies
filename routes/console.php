@@ -6,45 +6,45 @@ use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+})->purpose('Affiche une citation inspirante');
 
-// Keeps config:cache/route:cache/view:cache fresh on this no-SSH host. Since
-// deploys happen by uploading PHP files directly (no artisan access), a
-// route/config change wouldn't take effect until the cache is rebuilt —
-// this bounds that staleness window to at most an hour instead of forever.
+// Garde les caches config:cache/route:cache/view:cache à jour sur cet hébergement sans SSH. Comme les
+// déploiements se font en téléversant directement les fichiers PHP (sans accès à artisan), une modification
+// de route ou de configuration ne prendrait pas effet tant que le cache n'est pas reconstruit — cela limite
+// cette fenêtre d'obsolescence à une heure au plus au lieu de la laisser indéfinie.
 Schedule::command('optimize')->hourly()->onOneServer();
 
-// Automatic backups: dump the database + uploaded media every night, then
-// clean up according to the retention policy in config/backup.php, and
-// alert by e-mail if a scheduled backup is missing or too large.
+// Sauvegardes automatiques : exporte chaque nuit la base de données + les médias téléversés, puis nettoie
+// selon la politique de rétention de config/backup.php, et alerte par e-mail si une sauvegarde planifiée est
+// manquante ou trop volumineuse.
 Schedule::command('backup:run')->dailyAt('02:00')->onOneServer();
 Schedule::command('backup:clean')->dailyAt('03:00')->onOneServer();
 Schedule::command('backup:monitor')->dailyAt('04:00')->onOneServer();
 
-// Weekly digest e-mail (Monday 07:00) to staff with voir_statistiques,
-// listing students flagged by absences, low grades or overdue invoices.
+// Synthèse hebdomadaire par e-mail (lundi 07h00) aux membres du personnel ayant voir_statistiques, listant
+// les élèves signalés pour absences, mauvaises notes ou factures en retard.
 Schedule::command('app:send-at-risk-digest')->weeklyOn(1, '07:00')->onOneServer();
 
-// Daily overdue-invoice reminder to parents/guardians — the command itself
-// only mails at fixed day-overdue milestones (3/7/15/30/60), so running it
-// daily does not spam families every day.
+// Rappel quotidien des factures en retard aux parents et tuteurs — la commande n'envoie un e-mail qu'à des
+// seuils fixes de jours de retard (3/7/15/30/60), donc la lancer chaque jour n'inonde pas les familles de
+// messages.
 Schedule::command('app:send-overdue-invoice-reminders')->dailyAt('08:00')->onOneServer();
 
-// Daily absence alert to parents/guardians — mails only when the student's
-// cumulative unjustified-absence count (this school year) hits a milestone
-// (3/5/8/12), so running it daily does not spam families every day.
+// Alerte quotidienne d'absence aux parents et tuteurs — n'envoie un e-mail que lorsque le total cumulé des
+// absences injustifiées de l'élève (cette année scolaire) atteint un seuil (3/5/8/12), donc la lancer chaque
+// jour n'inonde pas les familles de messages.
 Schedule::command('app:send-absence-alerts')->dailyAt('08:15')->onOneServer();
 
-// Monthly financial recap (1st of month, 07:30) to staff with voir_statistiques.
+// Récapitulatif financier mensuel (le 1er du mois, 07h30) aux membres du personnel ayant voir_statistiques.
 Schedule::command('app:send-financial-digest')->monthlyOn(1, '07:30')->onOneServer();
 
-// Daily grade-entry reminder to the teacher(s) in charge of an exam whose
-// grades are still incomplete — milestone-throttled (3/7 days after the
-// exam date), so running it daily does not spam a teacher every day.
+// Rappel quotidien de saisie des notes à l'enseignant ou aux enseignants responsables d'un examen dont les
+// notes sont encore incomplètes — limité par seuils (3/7 jours après la date de l'examen), donc la lancer
+// chaque jour n'inonde pas un enseignant de messages.
 Schedule::command('app:send-grade-entry-reminders')->dailyAt('17:00')->onOneServer();
 
-// Daily follow-up to candidates stuck in brouillon/dossier_incomplet —
-// milestone-throttled (3/7/14 days of inactivity).
+// Relance quotidienne des candidats bloqués en brouillon/dossier_incomplet — limitée par seuils (3/7/14 jours
+// d'inactivité).
 Schedule::command('app:send-candidature-followups')->dailyAt('09:00')->onOneServer();
 
 // Notifications push différées d'EEHT Connect : messages des grands groupes

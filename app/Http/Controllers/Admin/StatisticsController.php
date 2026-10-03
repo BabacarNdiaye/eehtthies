@@ -244,8 +244,8 @@ class StatisticsController extends Controller
             ];
         });
 
-        // "Personnel" bundles every role except the three portal-facing ones,
-        // matching the same grouping already used by EnsureUserIsStaff.
+        // « Personnel » regroupe tous les rôles sauf les trois orientés portail, comme le regroupement déjà
+        // utilisé par EnsureUserIsStaff.
         $roleLabels = ['eleve' => 'Élèves', 'enseignant' => 'Enseignants', 'parent' => 'Parents'];
         $activeUserIds = LoginLog::where('created_at', '>=', $since)->distinct()->pluck('user_id');
 
