@@ -18,7 +18,9 @@ class ReportCardZipExportTest extends TestCase
     use RefreshDatabase;
 
     private SchoolClass $schoolClass;
+
     private AcademicYear $academicYear;
+
     private User $staff;
 
     protected function setUp(): void

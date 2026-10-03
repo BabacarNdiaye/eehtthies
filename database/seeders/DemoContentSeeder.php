@@ -58,7 +58,7 @@ class DemoContentSeeder extends Seeder
                 'diploma' => 'CAP',
                 'level' => 'Niveau V',
                 'duration' => '1 an',
-                'description' => "Formation pratique intensive aux techniques culinaires professionnelles dans nos ateliers équipés.",
+                'description' => 'Formation pratique intensive aux techniques culinaires professionnelles dans nos ateliers équipés.',
                 'objectives' => 'Acquérir les bases techniques et professionnelles du métier de cuisinier.',
                 'career_prospects' => 'Commis de cuisine, cuisinier, chef de partie.',
                 'registration_fee' => 30000,
@@ -169,7 +169,7 @@ class DemoContentSeeder extends Seeder
         $events = [
             [
                 'title' => 'Journée Portes Ouvertes',
-                'description' => "Venez découvrir nos infrastructures, nos formations et échanger avec nos équipes pédagogiques.",
+                'description' => 'Venez découvrir nos infrastructures, nos formations et échanger avec nos équipes pédagogiques.',
                 'location' => 'Campus EEHT, Thiès',
                 'start_at' => now()->addDays(20)->setTime(9, 0),
                 'end_at' => now()->addDays(20)->setTime(17, 0),
@@ -198,7 +198,7 @@ class DemoContentSeeder extends Seeder
 
         $testimonials = [
             ['name' => 'Khady Fall', 'role' => 'Ancienne élève, BTS Hôtellerie', 'content' => "L'EEHT m'a donné toutes les clés pour réussir dans l'hôtellerie internationale. L'encadrement et les stages pratiques ont fait toute la différence.", 'rating' => 5],
-            ['name' => 'Ibrahima Sy', 'role' => 'Ancien élève, CAP Cuisine', 'content' => "Une formation exigeante mais passionnante, avec des ateliers modernes et des enseignants très expérimentés.", 'rating' => 5],
+            ['name' => 'Ibrahima Sy', 'role' => 'Ancien élève, CAP Cuisine', 'content' => 'Une formation exigeante mais passionnante, avec des ateliers modernes et des enseignants très expérimentés.', 'rating' => 5],
         ];
 
         foreach ($testimonials as $data) {
@@ -206,9 +206,9 @@ class DemoContentSeeder extends Seeder
         }
 
         $faqs = [
-            ['question' => 'Quelles sont les conditions d\'admission ?', 'answer' => "Les conditions varient selon la formation (BFEM pour le CAP, Baccalauréat pour le BTS). Consultez la fiche de chaque formation pour le détail.", 'category' => 'Admission', 'order' => 1],
+            ['question' => 'Quelles sont les conditions d\'admission ?', 'answer' => 'Les conditions varient selon la formation (BFEM pour le CAP, Baccalauréat pour le BTS). Consultez la fiche de chaque formation pour le détail.', 'category' => 'Admission', 'order' => 1],
             ['question' => 'Comment déposer ma candidature ?', 'answer' => "Rendez-vous dans l'espace candidat du site, créez votre dossier et téléversez les documents demandés.", 'category' => 'Admission', 'order' => 2],
-            ['question' => 'Quels sont les frais de scolarité ?', 'answer' => "Les frais varient selon la formation choisie. Ils sont détaillés sur la page de chaque formation.", 'category' => 'Finances', 'order' => 3],
+            ['question' => 'Quels sont les frais de scolarité ?', 'answer' => 'Les frais varient selon la formation choisie. Ils sont détaillés sur la page de chaque formation.', 'category' => 'Finances', 'order' => 3],
         ];
 
         foreach ($faqs as $data) {

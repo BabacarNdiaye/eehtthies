@@ -8,11 +8,11 @@ use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\TimetableEntry;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class TimetableController extends Controller
 {
@@ -63,19 +63,19 @@ class TimetableController extends Controller
 
         if ($overlap(TimetableEntry::where('school_class_id', $data['school_class_id']))->exists()) {
             throw ValidationException::withMessages([
-                'day_of_week' => "Cette classe a déjà un cours programmé sur ce créneau.",
+                'day_of_week' => 'Cette classe a déjà un cours programmé sur ce créneau.',
             ]);
         }
 
         if (! empty($data['teacher_id']) && $overlap(TimetableEntry::where('teacher_id', $data['teacher_id']))->exists()) {
             throw ValidationException::withMessages([
-                'teacher_id' => "Cet enseignant est déjà occupé sur ce créneau.",
+                'teacher_id' => 'Cet enseignant est déjà occupé sur ce créneau.',
             ]);
         }
 
         if (! empty($data['room_id']) && $overlap(TimetableEntry::where('room_id', $data['room_id']))->exists()) {
             throw ValidationException::withMessages([
-                'room_id' => "Cette salle est déjà occupée sur ce créneau.",
+                'room_id' => 'Cette salle est déjà occupée sur ce créneau.',
             ]);
         }
     }
@@ -130,7 +130,7 @@ class TimetableController extends Controller
             'days' => TimetableEntry::DAYS,
         ]);
 
-        $filename = 'emploi_du_temps_' . preg_replace('/[^A-Za-z0-9-_]/', '_', ($schoolClass->name ?? $schoolClassId)) . '.pdf';
+        $filename = 'emploi_du_temps_'.preg_replace('/[^A-Za-z0-9-_]/', '_', ($schoolClass->name ?? $schoolClassId)).'.pdf';
 
         return $pdf->stream($filename);
     }

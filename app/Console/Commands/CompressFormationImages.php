@@ -40,7 +40,7 @@ class CompressFormationImages extends Command
 
             if ($newSize >= $originalSize) {
                 Storage::disk('public')->delete($newPath);
-                $this->line("Skipped {$formation->code} (already optimal): ".round($originalSize / 1024)."KB");
+                $this->line("Skipped {$formation->code} (already optimal): ".round($originalSize / 1024).'KB');
 
                 continue;
             }
@@ -50,7 +50,7 @@ class CompressFormationImages extends Command
 
             $savedBytes += $originalSize - $newSize;
             $touched++;
-            $this->info("{$formation->code}: ".round($originalSize / 1024)."KB -> ".round($newSize / 1024)."KB");
+            $this->info("{$formation->code}: ".round($originalSize / 1024).'KB -> '.round($newSize / 1024).'KB');
         }
 
         $this->info("Compressed {$touched} image(s), saved ".round($savedBytes / 1024 / 1024, 2).' MB total.');

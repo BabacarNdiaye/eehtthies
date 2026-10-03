@@ -16,7 +16,7 @@ trait Exportable
     {
         return response()->streamDownload(function () use ($columns, $rows) {
             $handle = fopen('php://output', 'w');
-            fputs($handle, "\xEF\xBB\xBF"); // UTF-8 BOM so Excel renders accents correctly
+            fwrite($handle, "\xEF\xBB\xBF"); // UTF-8 BOM so Excel renders accents correctly
             fputcsv($handle, array_map(fn ($c) => $c['label'], $columns), escape: '\\');
 
             foreach ($rows as $row) {

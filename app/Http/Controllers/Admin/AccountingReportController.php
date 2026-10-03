@@ -251,7 +251,7 @@ class AccountingReportController extends Controller
             'Bilan',
             $columns,
             $rows,
-            "Situation patrimoniale au ".now()->parse($asOf)->translatedFormat('d F Y'),
+            'Situation patrimoniale au '.now()->parse($asOf)->translatedFormat('d F Y'),
         );
     }
 

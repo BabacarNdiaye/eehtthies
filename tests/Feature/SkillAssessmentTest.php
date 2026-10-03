@@ -133,7 +133,7 @@ class SkillAssessmentTest extends TestCase
     {
         $this->seed(RolesAndPermissionsSeeder::class);
         [$formation, $class, $student] = $this->makeClassWithStudent('D');
-        [, $otherClass, ] = $this->makeClassWithStudent('E');
+        [, $otherClass] = $this->makeClassWithStudent('E');
         [$user] = $this->makeTeacherFor($otherClass);
         $skill = Skill::create(['formation_id' => $formation->id, 'name' => 'Mise en place', 'order' => 1]);
 

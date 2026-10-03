@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\LeaveRequest;
 use App\Models\User;
+use App\Notifications\PushAlert;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -81,7 +82,7 @@ class LeaveRequestTest extends TestCase
 
         $response->assertRedirect();
         $this->assertDatabaseHas('leave_requests', ['id' => $leave->id, 'status' => 'approuve', 'reviewed_by' => $approver->id]);
-        Notification::assertSentTo($requester, \App\Notifications\PushAlert::class);
+        Notification::assertSentTo($requester, PushAlert::class);
     }
 
     public function test_teacher_can_manage_their_own_leave_via_portal(): void

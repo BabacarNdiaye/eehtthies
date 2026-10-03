@@ -107,7 +107,7 @@ class PaymentPlanController extends Controller
     {
         $hasPayments = $paymentPlan->invoices()->whereHas('payments')->exists();
 
-        abort_if($hasPayments, 422, "Impossible de supprimer : au moins une tranche a déjà reçu un paiement.");
+        abort_if($hasPayments, 422, 'Impossible de supprimer : au moins une tranche a déjà reçu un paiement.');
 
         // Delete each Invoice model individually (not a mass ->delete() on the
         // relation query) so Invoice::deleted() fires and AccountingPoster::void()

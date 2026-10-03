@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Attendance;
 use App\Models\AcademicYear;
+use App\Models\Attendance;
 use App\Models\Exam;
 use App\Models\Formation;
 use App\Models\Grade;
@@ -25,8 +25,11 @@ class StudentRiskAnalyzerTest extends TestCase
     use RefreshDatabase;
 
     private Formation $formation;
+
     private SchoolClass $schoolClass;
+
     private Subject $subject;
+
     private AcademicYear $academicYear;
 
     protected function setUp(): void

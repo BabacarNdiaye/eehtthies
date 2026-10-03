@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Mail\ResetPassword as ResetPasswordMail;
 use Illuminate\Auth\Notifications\ResetPassword as BaseResetPassword;
-use Illuminate\Notifications\Notification;
 
 class ResetPasswordNotification extends BaseResetPassword
 {

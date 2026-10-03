@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Models\ContactMessage;
 use App\Models\Faq;
 use App\Models\Partner;
 use App\Models\Teacher;
@@ -71,7 +72,7 @@ class PageController extends Controller
             'message' => ['required', 'string', 'max:5000'],
         ]);
 
-        \App\Models\ContactMessage::create($data);
+        ContactMessage::create($data);
 
         return back()->with('success', 'Votre message a bien été envoyé. Nous vous répondrons dans les plus brefs délais.');
     }

@@ -12,6 +12,7 @@ use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class LessonLogTest extends TestCase
@@ -89,7 +90,7 @@ class LessonLogTest extends TestCase
 
         // SQLite stores `date`-cast columns as full datetimes — same quirk the
         // pre-existing AttendanceQrScanTest already works around this way.
-        $storedDate = \Illuminate\Support\Facades\DB::table('lesson_logs')
+        $storedDate = DB::table('lesson_logs')
             ->where('timetable_entry_id', $entry->id)
             ->value('date');
         $this->assertEquals($now->toDateString(), Carbon::parse($storedDate)->format('Y-m-d'));

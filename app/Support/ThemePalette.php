@@ -95,6 +95,7 @@ class ThemePalette
         foreach ($stops as $stop => $amount) {
             if ($amount === 0) {
                 $shades[$stop] = "{$r} {$g} {$b}";
+
                 continue;
             }
 

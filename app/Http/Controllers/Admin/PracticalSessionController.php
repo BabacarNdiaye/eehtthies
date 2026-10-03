@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PracticalSession;
+use App\Models\PracticalSessionItem;
 use App\Models\Product;
 use App\Models\SchoolClass;
 use App\Models\Subject;
@@ -112,7 +113,7 @@ class PracticalSessionController extends Controller
         return back()->with('success', 'Produit ajouté à la séance et sorti du stock.');
     }
 
-    public function destroyItem(Request $request, PracticalSession $practicalSession, \App\Models\PracticalSessionItem $item)
+    public function destroyItem(Request $request, PracticalSession $practicalSession, PracticalSessionItem $item)
     {
         abort_unless($item->practical_session_id === $practicalSession->id, 404);
 

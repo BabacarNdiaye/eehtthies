@@ -13,7 +13,7 @@ class SendAtRiskDigest extends Command
 {
     protected $signature = 'app:send-at-risk-digest';
 
-    protected $description = "Envoie par e-mail au personnel de direction la liste hebdomadaire des élèves à risque (absences, moyennes, impayés).";
+    protected $description = 'Envoie par e-mail au personnel de direction la liste hebdomadaire des élèves à risque (absences, moyennes, impayés).';
 
     public function handle(StudentRiskAnalyzer $analyzer): int
     {

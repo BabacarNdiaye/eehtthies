@@ -7,9 +7,9 @@ use App\Models\Formation;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
-use App\Models\Teacher;
 use App\Models\TimetableEntry;
 use App\Models\User;
+use App\Notifications\PushAlert;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -132,7 +132,7 @@ class AttendanceLatenessTest extends TestCase
             'timetable_entry_id' => $entry->id,
         ]);
 
-        Notification::assertSentTo($studentUser, \App\Notifications\PushAlert::class);
+        Notification::assertSentTo($studentUser, PushAlert::class);
 
         Carbon::setTestNow();
     }

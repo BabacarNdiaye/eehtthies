@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\AcademicYear;
 use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Models\Exam;
+use App\Models\Grade;
 use App\Models\Room;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class ExamController extends Controller
 {
@@ -142,7 +143,7 @@ class ExamController extends Controller
         ]);
 
         foreach ($data['grades'] as $entry) {
-            \App\Models\Grade::updateOrCreate(
+            Grade::updateOrCreate(
                 ['exam_id' => $exam->id, 'student_id' => $entry['student_id']],
                 [
                     'score' => $entry['is_absent'] ?? false ? null : ($entry['score'] ?? null),

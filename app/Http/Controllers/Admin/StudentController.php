@@ -8,6 +8,7 @@ use App\Models\AcademicYear;
 use App\Models\Formation;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Models\StudentDocument;
 use App\Models\User;
 use App\Support\Exportable;
 use App\Support\InstitutionalEmail;
@@ -113,7 +114,7 @@ class StudentController extends Controller
             'formations' => Formation::orderBy('name')->get(['id', 'name']),
             'schoolClasses' => SchoolClass::orderBy('name')->get(['id', 'name', 'formation_id']),
             'academicYears' => AcademicYear::orderByDesc('start_date')->get(['id', 'label']),
-            'documentTypes' => \App\Models\StudentDocument::TYPES,
+            'documentTypes' => StudentDocument::TYPES,
             // Full bulletin history across every academic year — a promotion to a
             // new class/year never deletes or hides these (ReportCard rows keep
             // their own academic_year_id independently of the student's current
@@ -367,7 +368,7 @@ class StudentController extends Controller
 
     public function diplomaPdf(Student $student)
     {
-        abort_unless($student->status === 'diplome', 422, "Le diplôme ne peut être généré que pour un élève diplômé.");
+        abort_unless($student->status === 'diplome', 422, 'Le diplôme ne peut être généré que pour un élève diplômé.');
         abort_unless($student->formation, 422, "Cet élève n'a pas de formation associée.");
 
         $student->generateDiplomaNumber();

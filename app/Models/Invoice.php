@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Notifications\PushAlert;
+use App\Support\AccountingPoster;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Invoice extends Model
 {
@@ -56,9 +58,9 @@ class Invoice extends Model
         });
 
         static::created(function (Invoice $invoice) {
-            \App\Support\AccountingPoster::postInvoice($invoice);
+            AccountingPoster::postInvoice($invoice);
 
-            $invoice->student?->user?->notify(new \App\Notifications\PushAlert(
+            $invoice->student?->user?->notify(new PushAlert(
                 'Nouvelle facture',
                 "{$invoice->label} — ".number_format((float) $invoice->amount, 0, ',', ' ').' FCFA',
                 '/espace-eleve/factures'
@@ -66,10 +68,10 @@ class Invoice extends Model
         });
         static::updated(function (Invoice $invoice) {
             if ($invoice->wasChanged(['amount', 'discount', 'type', 'label'])) {
-                \App\Support\AccountingPoster::postInvoice($invoice);
+                AccountingPoster::postInvoice($invoice);
             }
         });
-        static::deleted(fn (Invoice $invoice) => \App\Support\AccountingPoster::void($invoice));
+        static::deleted(fn (Invoice $invoice) => AccountingPoster::void($invoice));
     }
 
     public function student()

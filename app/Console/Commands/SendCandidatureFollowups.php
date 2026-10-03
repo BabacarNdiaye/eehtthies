@@ -12,9 +12,10 @@ class SendCandidatureFollowups extends Command
 {
     protected $signature = 'app:send-candidature-followups';
 
-    protected $description = "Relance par e-mail les candidats dont le dossier est resté en brouillon ou incomplet, à des paliers fixes (3, 7, 14 jours sans activité) pour les encourager à finaliser leur candidature.";
+    protected $description = 'Relance par e-mail les candidats dont le dossier est resté en brouillon ou incomplet, à des paliers fixes (3, 7, 14 jours sans activité) pour les encourager à finaliser leur candidature.';
 
     private const MILESTONES = [3, 7, 14];
+
     private const FOLLOWED_UP_STATUSES = ['brouillon', 'dossier_incomplet'];
 
     public function handle(): int

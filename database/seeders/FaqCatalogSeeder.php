@@ -37,7 +37,7 @@ class FaqCatalogSeeder extends Seeder
             ],
             [
                 'question' => 'Les formations courtes sont-elles accessibles sans diplôme ?',
-                'answer' => "Oui. Les formations courtes (Formation courte en Restauration, Agent de Caisse, Chef de Rang, Barista) ainsi que les Certificats de Spécialité sont accessibles sans diplôme préalable, sur simple motivation.",
+                'answer' => 'Oui. Les formations courtes (Formation courte en Restauration, Agent de Caisse, Chef de Rang, Barista) ainsi que les Certificats de Spécialité sont accessibles sans diplôme préalable, sur simple motivation.',
                 'category' => 'Admission',
                 'order' => 4,
             ],
@@ -49,7 +49,7 @@ class FaqCatalogSeeder extends Seeder
             ],
             [
                 'question' => 'Les formations incluent-elles un stage en entreprise ?',
-                'answer' => "La plupart de nos formations diplômantes (CAP, BEP, BT, BTS, DTS) incluent un stage professionnel en entreprise dans leur programme. Le détail — durée et place du stage dans le cursus — figure dans la rubrique « Programme » de chaque formation.",
+                'answer' => 'La plupart de nos formations diplômantes (CAP, BEP, BT, BTS, DTS) incluent un stage professionnel en entreprise dans leur programme. Le détail — durée et place du stage dans le cursus — figure dans la rubrique « Programme » de chaque formation.',
                 'category' => 'Scolarité',
                 'order' => 6,
             ],

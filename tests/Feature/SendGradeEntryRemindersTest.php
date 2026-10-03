@@ -22,6 +22,7 @@ class SendGradeEntryRemindersTest extends TestCase
     use RefreshDatabase;
 
     private SchoolClass $schoolClass;
+
     private Subject $subject;
 
     protected function setUp(): void

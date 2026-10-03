@@ -29,7 +29,7 @@ class AttendanceController extends Controller
         $existing = collect();
 
         if ($schoolClassId) {
-            $students = \App\Models\Student::where('school_class_id', $schoolClassId)
+            $students = Student::where('school_class_id', $schoolClassId)
                 ->where('status', 'actif')
                 ->orderBy('last_name')
                 ->get(['id', 'matricule', 'first_name', 'last_name'])
@@ -105,7 +105,7 @@ class AttendanceController extends Controller
     {
         $students = $mode === 'gate'
             ? []
-            : \App\Models\Student::where('status', 'actif')
+            : Student::where('status', 'actif')
                 ->orderBy('last_name')
                 ->get(['id', 'matricule', 'first_name', 'last_name', 'school_class_id', 'photo']);
 
@@ -244,7 +244,7 @@ class AttendanceController extends Controller
         $summary = collect();
 
         if ($schoolClassId) {
-            $summary = \App\Models\Student::where('school_class_id', $schoolClassId)
+            $summary = Student::where('school_class_id', $schoolClassId)
                 ->where('status', 'actif')
                 ->orderBy('last_name')
                 ->get(['id', 'matricule', 'first_name', 'last_name'])

@@ -12,7 +12,7 @@ class SendOverdueInvoiceReminders extends Command
 {
     protected $signature = 'app:send-overdue-invoice-reminders';
 
-    protected $description = "Envoie une relance par e-mail au parent/tuteur pour les factures en retard, à des paliers fixes (3, 7, 15, 30, 60 jours de retard) pour éviter de spammer.";
+    protected $description = 'Envoie une relance par e-mail au parent/tuteur pour les factures en retard, à des paliers fixes (3, 7, 15, 30, 60 jours de retard) pour éviter de spammer.';
 
     private const MILESTONES = [3, 7, 15, 30, 60];
 

@@ -15,7 +15,7 @@ class SendFinancialDigest extends Command
 {
     protected $signature = 'app:send-financial-digest';
 
-    protected $description = "Envoie au personnel de direction le bilan financier du mois écoulé (recettes, dépenses, solde, comparaison au mois précédent).";
+    protected $description = 'Envoie au personnel de direction le bilan financier du mois écoulé (recettes, dépenses, solde, comparaison au mois précédent).';
 
     public function handle(): int
     {

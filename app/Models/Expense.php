@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Support\AccountingPoster;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Expense extends Model
 {
@@ -47,12 +48,12 @@ class Expense extends Model
 
     protected static function booted(): void
     {
-        static::created(fn (Expense $expense) => \App\Support\AccountingPoster::postExpense($expense));
+        static::created(fn (Expense $expense) => AccountingPoster::postExpense($expense));
         static::updated(function (Expense $expense) {
             if ($expense->wasChanged(['amount', 'category', 'payment_method', 'expense_date', 'label'])) {
-                \App\Support\AccountingPoster::postExpense($expense);
+                AccountingPoster::postExpense($expense);
             }
         });
-        static::deleted(fn (Expense $expense) => \App\Support\AccountingPoster::void($expense));
+        static::deleted(fn (Expense $expense) => AccountingPoster::void($expense));
     }
 }

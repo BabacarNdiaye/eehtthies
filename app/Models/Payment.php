@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use App\Support\AccountingPoster;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Payment extends Model
 {
@@ -45,8 +46,8 @@ class Payment extends Model
             }
         });
 
-        static::created(fn (Payment $payment) => \App\Support\AccountingPoster::postPayment($payment));
-        static::deleted(fn (Payment $payment) => \App\Support\AccountingPoster::void($payment));
+        static::created(fn (Payment $payment) => AccountingPoster::postPayment($payment));
+        static::deleted(fn (Payment $payment) => AccountingPoster::void($payment));
     }
 
     public function invoice()
