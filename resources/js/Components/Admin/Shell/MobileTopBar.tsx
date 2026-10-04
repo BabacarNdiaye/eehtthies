@@ -1,7 +1,7 @@
 import SiteLogo from '@/Components/SiteLogo';
 import { haptic } from '@/lib/portal';
 import { Link } from '@inertiajs/react';
-import { Bell, ChevronLeft } from 'lucide-react';
+import { Bell, ChevronLeft, Search } from 'lucide-react';
 
 interface Props {
     /** Groupe de la page (« Pédagogie — Scolarité »), ou null sur le tableau de bord. */
@@ -9,6 +9,8 @@ interface Props {
     /** Adresse de retour d'une fiche, d'un formulaire de création ou de modification ; null sur une page d'index. */
     backHref: string | null;
     unread: number;
+    /** Donné sur les écrans de saisie, où la barre du bas (et sa loupe) est remplacée par la barre Enregistrer. */
+    onSearch?: () => void;
 }
 
 const roundButton =
@@ -18,7 +20,7 @@ const roundButton =
  * Barre haute du téléphone et de la tablette (< lg), compacte : retour (sous-pages) ou logo (pages d'index),
  * groupe de la page, cloche des messages. Le titre de la page reste celui de son h1, juste en dessous.
  */
-export default function MobileTopBar({ caption, backHref, unread }: Props) {
+export default function MobileTopBar({ caption, backHref, unread, onSearch }: Props) {
     return (
         <header
             className="sticky top-0 z-30 border-b border-ink-100 bg-white/90 px-2 backdrop-blur-xl lg:hidden"
@@ -36,6 +38,21 @@ export default function MobileTopBar({ caption, backHref, unread }: Props) {
                 )}
 
                 <p className="min-w-0 flex-1 truncate px-1 text-sm font-semibold text-ink-700">{caption ?? 'EEHT Admin'}</p>
+
+                {onSearch && (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            haptic();
+                            onSearch();
+                        }}
+                        aria-haspopup="dialog"
+                        aria-label="Rechercher"
+                        className={`${roundButton} text-ink-600`}
+                    >
+                        <Search className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                )}
 
                 <Link
                     href={route('connect.index')}

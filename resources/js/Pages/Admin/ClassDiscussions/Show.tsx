@@ -1,6 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
+import { IconButton } from '@/Components/Admin/IconButton';
 import { Head, router } from '@inertiajs/react';
 import { Inbox, Trash2 } from 'lucide-react';
 
@@ -34,13 +35,13 @@ export default function Show({ schoolClass, messages }: { schoolClass: { id: num
                                 {m.attachment_name && <p className="mt-1 text-sm text-ink-500">📎 {m.attachment_name}</p>}
                                 <p className="mt-1 text-xs text-ink-500">{new Date(m.created_at).toLocaleString('fr-FR')}</p>
                             </div>
-                            <button
+                            <IconButton
                                 onClick={() => destroy(m)}
-                                className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50"
-                                aria-label="Supprimer"
+                                label="Supprimer"
+                                tone="danger"
                             >
                                 <Trash2 className="h-4 w-4" />
-                            </button>
+                            </IconButton>
                         </div>
                     ))}
                     {messages.length === 0 && (

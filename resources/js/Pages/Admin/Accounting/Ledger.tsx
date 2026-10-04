@@ -81,7 +81,7 @@ export default function Ledger({ accounts, account, openingBalance, lines, filte
 
                     <Card className="overflow-hidden">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
+                            <table data-table="scroll" className="w-full text-left text-sm">
                                 <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
                                     <tr>
                                         <th className="px-5 py-3">Date</th>

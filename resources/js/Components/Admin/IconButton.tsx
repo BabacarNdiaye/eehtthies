@@ -1,5 +1,5 @@
 import { InertiaLinkProps, Link } from '@inertiajs/react';
-import { ButtonHTMLAttributes, PropsWithChildren } from 'react';
+import { AnchorHTMLAttributes, ButtonHTMLAttributes, PropsWithChildren } from 'react';
 
 type Tone = 'default' | 'danger';
 
@@ -34,6 +34,21 @@ export function IconButton({
         <button type={type} aria-label={label} title={label} className={classes(tone, className)} {...props}>
             {children}
         </button>
+    );
+}
+
+/** Lien natif réduit à une icône, pour un téléchargement ou un PDF : Inertia ne doit pas l'intercepter. Le nom est obligatoire. */
+export function IconAnchor({
+    label,
+    tone = 'default',
+    className,
+    children,
+    ...props
+}: PropsWithChildren<Common & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'aria-label' | 'title' | 'className'>>) {
+    return (
+        <a aria-label={label} title={label} className={classes(tone, className)} {...props}>
+            {children}
+        </a>
     );
 }
 

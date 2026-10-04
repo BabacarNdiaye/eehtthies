@@ -3,6 +3,7 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Textarea } from '@/Components/Admin/Field';
 import FormActions from '@/Components/Admin/FormActions';
+import SectionNav, { Section } from '@/Components/Admin/SectionNav';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Building2, RotateCcw } from 'lucide-react';
@@ -31,6 +32,17 @@ const colorFields: {
     { key: 'theme_primary_color', label: 'Couleur principale', hint: "Boutons, titres d'accent, éléments mis en avant.", fallback: THEME_DEFAULTS.primary },
     { key: 'theme_secondary_color', label: 'Couleur secondaire', hint: 'Badges, rubans de formation, accents de marque.', fallback: THEME_DEFAULTS.secondary },
     { key: 'theme_accent_color', label: "Couleur d'accent", hint: 'Petites touches de couleur complémentaires.', fallback: THEME_DEFAULTS.accent },
+];
+
+const sections: Section[] = [
+    { id: 'identite', label: 'Identité' },
+    { id: 'couleurs', label: 'Couleurs' },
+    { id: 'coordonnees', label: 'Coordonnées' },
+    { id: 'legal', label: 'Légal' },
+    { id: 'reseaux', label: 'Réseaux' },
+    { id: 'statistiques', label: 'Statistiques' },
+    { id: 'directeur', label: 'Directeur' },
+    { id: 'photo', label: 'Photo' },
 ];
 
 export default function Edit({ settings }: { settings: Record<string, string> }) {
@@ -89,8 +101,10 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                 subtitle="Configurez l'identité, les coordonnées et les informations légales de l'établissement."
             />
 
+            <SectionNav sections={sections} />
+
             <form onSubmit={submit} className="space-y-6">
-                <Card className="p-6">
+                <Card id="identite" className="scroll-mt-32 p-6">
                     <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">Identité de l'établissement</h2>
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <Field label="Nom complet de l'école" required error={errors.site_name}>
@@ -136,7 +150,7 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                     </div>
                 </Card>
 
-                <Card className="p-6">
+                <Card id="couleurs" className="scroll-mt-32 p-6">
                     <h2 className="mb-1 font-serif text-lg font-bold text-ink-900">Couleurs du site</h2>
                     <p className="mb-4 text-sm text-ink-500">
                         Personnalisez la palette utilisée sur le site public et le back-office. Les nuances claires et
@@ -165,7 +179,7 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                     </div>
                 </Card>
 
-                <Card className="p-6">
+                <Card id="coordonnees" className="scroll-mt-32 p-6">
                     <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">Coordonnées</h2>
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <Field label="E-mail de contact" error={errors.site_email}>
@@ -199,7 +213,7 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                     </div>
                 </Card>
 
-                <Card className="p-6">
+                <Card id="legal" className="scroll-mt-32 p-6">
                     <h2 className="mb-1 font-serif text-lg font-bold text-ink-900">Informations légales</h2>
                     <p className="mb-4 text-sm text-ink-500">Affichées sur les documents officiels (factures, reçus, attestations).</p>
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -212,7 +226,7 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                     </div>
                 </Card>
 
-                <Card className="p-6">
+                <Card id="reseaux" className="scroll-mt-32 p-6">
                     <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">Réseaux sociaux</h2>
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <Field label="Page Facebook" error={errors.facebook_url}>
@@ -258,7 +272,7 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                     </div>
                 </Card>
 
-                <Card className="p-6">
+                <Card id="statistiques" className="scroll-mt-32 p-6">
                     <h2 className="mb-1 font-serif text-lg font-bold text-ink-900">Statistiques affichées sur l'accueil</h2>
                     <p className="mb-4 text-sm text-ink-500">
                         Ces chiffres apparaissent dans la section « en chiffres » de la page d'accueil publique.
@@ -287,7 +301,7 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                     </div>
                 </Card>
 
-                <Card className="p-6">
+                <Card id="directeur" className="scroll-mt-32 p-6">
                     <h2 className="mb-1 font-serif text-lg font-bold text-ink-900">Mot du directeur</h2>
                     <p className="mb-4 text-sm text-ink-500">
                         Affiché sur la page « À propos » du site public, avec la photo du directeur.
@@ -345,7 +359,7 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                     </div>
                 </Card>
 
-                <Card className="p-6">
+                <Card id="photo" className="scroll-mt-32 p-6">
                     <h2 className="mb-1 font-serif text-lg font-bold text-ink-900">Photo de présentation</h2>
                     <p className="mb-4 text-sm text-ink-500">
                         Affichée sur la page d'accueil, à côté du texte de présentation de l'école.

@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Checkbox, TextInput } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Exam, Grade } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Inbox } from 'lucide-react';
@@ -124,18 +125,20 @@ export default function Grades({ exam, students, grades }: Props) {
                         </tbody>
                     </table>
                 </div>
-                {students.length > 0 && (
-                    <div className="flex justify-end border-t border-ink-100 p-4">
-                        <button
-                            onClick={save}
-                            disabled={processing}
-                            className="rounded-lg bg-ink-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-ink-800 disabled:opacity-50"
-                        >
-                            Enregistrer les notes
-                        </button>
-                    </div>
-                )}
             </Card>
+
+            {students.length > 0 && (
+                <FormActions className="mt-6">
+                    <button
+                        type="button"
+                        onClick={save}
+                        disabled={processing}
+                        className="rounded-lg bg-ink-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-ink-800 disabled:opacity-50"
+                    >
+                        Enregistrer les notes
+                    </button>
+                </FormActions>
+            )}
         </AdminLayout>
     );
 }

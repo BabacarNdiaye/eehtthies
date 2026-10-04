@@ -129,13 +129,12 @@ export default function Index({ exams, schoolClasses, types, filters }: Props) {
                                     </td>
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end gap-2">
-                                            <Link
+                                            <IconLink
                                                 href={route('admin.exams.grades', exam.id)}
-                                                className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
-                                                title="Saisir les notes"
+                                                label="Saisir les notes"
                                             >
                                                 <ClipboardList className="h-4 w-4" />
-                                            </Link>
+                                            </IconLink>
                                             <IconLink
                                                 href={route('admin.exams.edit', exam.id)}
                                                 label="Modifier"

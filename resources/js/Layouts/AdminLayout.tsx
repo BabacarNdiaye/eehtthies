@@ -9,13 +9,14 @@ import PullIndicator from '@/Components/Portal/PullIndicator';
 import useAutoPushSubscribe from '@/hooks/useAutoPushSubscribe';
 import useMediaQuery from '@/hooks/useMediaQuery';
 import usePullToRefresh from '@/hooks/usePullToRefresh';
+import useResponsiveTables from '@/hooks/useResponsiveTables';
 import useUnreadCount from '@/hooks/useUnreadCount';
 import { recallListUrl, rememberListUrl, rememberRecent } from '@/lib/adminMemory';
 import { crumbsFor, isFormRoute, locate, shortcutTab, visibleGroups } from '@/lib/adminNav';
 import { PageProps } from '@/types';
 import { router, usePage } from '@inertiajs/react';
 import { Home, LayoutGrid, MessageCircle, Search } from 'lucide-react';
-import { PropsWithChildren, useCallback, useEffect, useMemo, useState } from 'react';
+import { PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 /** Vrai quand la frappe part dans un champ : le raccourci « / » ne doit alors pas ouvrir la palette. */
 function isTyping(target: EventTarget | null): boolean {
@@ -41,7 +42,10 @@ export default function AdminLayout({ children }: PropsWithChildren) {
     const unread = useUnreadCount(!isDesktop);
     const [menuOpen, setMenuOpen] = useState(false);
     const [paletteOpen, setPaletteOpen] = useState(false);
+    const mainRef = useRef<HTMLElement>(null);
     useAutoPushSubscribe();
+    // Sous 768 px les tableaux deviennent des cartes : le hook leur fournit les libellés de leurs colonnes.
+    useResponsiveTables(mainRef);
 
     const permissions = auth.permissions;
     const groups = useMemo(() => visibleGroups(permissions), [permissions]);
@@ -145,13 +149,14 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                 {isDesktop ? (
                     <DesktopTopBar crumbs={crumbs} onSearch={openPalette} />
                 ) : (
-                    <MobileTopBar caption={crumbs.group} backHref={backHref} unread={unread} />
+                    <MobileTopBar caption={crumbs.group} backHref={backHref} unread={unread} onSearch={stacked ? openPalette : undefined} />
                 )}
 
                 {flash?.success && <FlashBanner message={flash.success} tone="success" />}
                 {flash?.error && <FlashBanner message={flash.error} tone="error" />}
 
                 <main
+                    ref={mainRef}
                     id="contenu"
                     tabIndex={-1}
                     className="flex-1 px-4 py-6 pb-[calc(var(--portal-bar-h)+1.5rem)] outline-none sm:px-6 lg:py-8 lg:pb-24"

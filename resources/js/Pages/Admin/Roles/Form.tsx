@@ -95,7 +95,7 @@ export default function Form({ role, modules, actions, isProtected }: Props) {
                             <p className="mt-1 text-sm text-ink-500">Cochez les actions autorisées pour ce rôle, module par module.</p>
                         </div>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
+                            <table data-table="scroll" className="w-full text-left text-sm">
                                 <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
                                     <tr>
                                         <th className="sticky left-0 bg-ink-50 px-5 py-3">Module</th>

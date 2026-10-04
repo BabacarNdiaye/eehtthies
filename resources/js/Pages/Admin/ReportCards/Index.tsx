@@ -3,7 +3,7 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { Field, Select } from '@/Components/Admin/Field';
-import { IconLink } from '@/Components/Admin/IconButton';
+import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, ReportCard, SchoolClass } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Award, CheckSquare, Download, Eye, Square, Trash2 } from 'lucide-react';
@@ -230,13 +230,13 @@ export default function Index({ reportCards, schoolClasses, academicYears, terms
                                             >
                                                 <Eye className="h-4 w-4" />
                                             </IconLink>
-                                            <button
+                                            <IconButton
                                                 onClick={() => destroy(rc)}
-                                                title="Supprimer"
-                                                className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50"
+                                                label="Supprimer"
+                                                tone="danger"
                                             >
                                                 <Trash2 className="h-4 w-4" />
-                                            </button>
+                                            </IconButton>
                                         </div>
                                     </td>
                                 </tr>

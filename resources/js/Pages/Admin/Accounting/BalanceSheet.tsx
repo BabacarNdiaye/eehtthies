@@ -33,7 +33,7 @@ function Column({ title, rows, extraRow, total }: { title: string; rows: Row[]; 
             <div className="bg-ink-900 px-5 py-3">
                 <h2 className="font-serif text-base font-bold text-white">{title}</h2>
             </div>
-            <table className="w-full text-left text-sm">
+            <table data-table="scroll" className="w-full text-left text-sm">
                 <tbody className="divide-y divide-ink-100">
                     {rows.map((row) => (
                         <tr key={row.code} className="transition-colors duration-150 hover:bg-ink-50/60">

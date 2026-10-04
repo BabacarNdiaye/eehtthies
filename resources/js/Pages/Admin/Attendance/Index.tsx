@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, TextInput } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { SchoolClass, Subject } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Inbox } from 'lucide-react';
@@ -220,7 +221,9 @@ export default function Index({
 
             {selectedClassId && (
                 <>
-                    <Card className="mb-6 p-5">
+                    {/* Coller le contenu d'un QR n'a de sens qu'avec un lecteur branché à un ordinateur : au téléphone, la
+                        page « Scanner les cartes » du menu fait ce travail. */}
+                    <Card className="mb-6 hidden p-5 md:block">
                         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                             <div>
                                 <h3 className="text-base font-semibold text-ink-900">Pointage par QR</h3>
@@ -261,7 +264,7 @@ export default function Index({
                                 <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
                                     <tr>
                                         <th className="px-5 py-3">Élève</th>
-                                        <th className="px-5 py-3">QR</th>
+                                        <th data-card-hide className="px-5 py-3">QR</th>
                                         <th className="px-5 py-3">Statut</th>
                                         <th className="px-5 py-3">Justification</th>
                                     </tr>
@@ -293,7 +296,7 @@ export default function Index({
                                                             key={value}
                                                             type="button"
                                                             onClick={() => setStatus(s.id, value)}
-                                                            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 ${
+                                                            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 max-md:min-h-10 max-md:px-4 max-md:text-sm ${
                                                                 records[s.id]?.status === value
                                                                     ? statusStyles[value]
                                                                     : 'border-ink-200 text-ink-400 hover:bg-ink-50'
@@ -328,18 +331,20 @@ export default function Index({
                                 </tbody>
                             </table>
                         </div>
-                        {students.length > 0 && (
-                            <div className="flex justify-end border-t border-ink-100 p-4">
-                                <button
-                                    onClick={save}
-                                    disabled={processing}
-                                    className="rounded-lg bg-ink-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-ink-800 disabled:opacity-50"
-                                >
-                                    Enregistrer les présences
-                                </button>
-                            </div>
-                        )}
                     </Card>
+
+                    {students.length > 0 && (
+                        <FormActions className="mt-6">
+                            <button
+                                type="button"
+                                onClick={save}
+                                disabled={processing}
+                                className="rounded-lg bg-ink-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-ink-800 disabled:opacity-50"
+                            >
+                                Enregistrer les présences
+                            </button>
+                        </FormActions>
+                    )}
                 </>
             )}
         </AdminLayout>

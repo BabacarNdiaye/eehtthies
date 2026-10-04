@@ -4,7 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import { Select } from '@/Components/Admin/Field';
-import { IconButton, IconLink } from '@/Components/Admin/IconButton';
+import { IconAnchor, IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Internship, Paginated } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Download, Inbox, Pencil, Trash2 } from 'lucide-react';
@@ -76,15 +76,14 @@ export default function Index({ internships, statuses, filters }: Props) {
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end gap-2">
                                             {i.status === 'termine' && (
-                                                <a
+                                                <IconAnchor
                                                     href={route('admin.internships.attestation', i.id)}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
-                                                    title="Télécharger l'attestation"
+                                                    label="Télécharger l'attestation"
                                                 >
                                                     <Download className="h-4 w-4" />
-                                                </a>
+                                                </IconAnchor>
                                             )}
                                             <IconLink href={route('admin.internships.edit', i.id)} label="Modifier">
                                                 <Pencil className="h-4 w-4" />

@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Select } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Head, router } from '@inertiajs/react';
 import { ArrowRightCircle, Inbox, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -256,17 +257,19 @@ export default function Index({ schoolClasses, sourceClass, students, decisions,
                             </tbody>
                         </table>
                     </div>
-                    {students.length > 0 && (
-                        <div className="flex justify-end border-t border-ink-100 p-4">
-                            <button
-                                onClick={submit}
-                                className="inline-flex items-center gap-2 rounded-lg bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-ink-800"
-                            >
-                                <ArrowRightCircle className="h-4 w-4" /> Confirmer la passation
-                            </button>
-                        </div>
-                    )}
                 </Card>
+            )}
+
+            {selectedClassId && students.length > 0 && (
+                <FormActions className="mt-6">
+                    <button
+                        type="button"
+                        onClick={submit}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-ink-800"
+                    >
+                        <ArrowRightCircle className="h-4 w-4" /> Confirmer la passation
+                    </button>
+                </FormActions>
             )}
         </AdminLayout>
     );

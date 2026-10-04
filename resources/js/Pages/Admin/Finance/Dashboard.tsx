@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import PageHeader from '@/Components/Admin/PageHeader';
 import { Head, Link } from '@inertiajs/react';
 import {
     Bar,
@@ -66,32 +67,26 @@ export default function Dashboard({ kpis, monthly, expensesByCategory, categoryL
         <AdminLayout>
             <Head title="Finance" />
 
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <h1 className="font-serif text-2xl font-bold text-ink-900">Tableau de bord financier</h1>
-                    <p className="mt-1 text-sm text-ink-500">Vue d'ensemble des recettes, dépenses et de la trésorerie.</p>
-                </div>
-                <div className="flex gap-2">
-                    <a
-                        href={route('admin.finance.export.invoices')}
-                        className="inline-flex items-center gap-2 rounded-lg border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-50"
-                    >
-                        <Download className="h-4 w-4" /> Export factures
-                    </a>
-                    <a
-                        href={route('admin.finance.export.expenses')}
-                        className="inline-flex items-center gap-2 rounded-lg border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-50"
-                    >
-                        <Download className="h-4 w-4" /> Export dépenses
-                    </a>
-                    <Link
-                        href={route('admin.finance.cash-journal')}
-                        className="inline-flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink-800"
-                    >
-                        Journal de caisse
-                    </Link>
-                </div>
-            </div>
+            <PageHeader title="Tableau de bord financier" subtitle="Vue d'ensemble des recettes, dépenses et de la trésorerie.">
+                <a
+                    href={route('admin.finance.export.invoices')}
+                    className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-50"
+                >
+                    <Download className="h-4 w-4" /> Export factures
+                </a>
+                <a
+                    href={route('admin.finance.export.expenses')}
+                    className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-50"
+                >
+                    <Download className="h-4 w-4" /> Export dépenses
+                </a>
+                <Link
+                    href={route('admin.finance.cash-journal')}
+                    className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink-800"
+                >
+                    Journal de caisse
+                </Link>
+            </PageHeader>
 
             <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Kpi icon={TrendingUp} label="Recettes (total)" value={fcfa(kpis.total_revenue)} tint="bg-emerald-100 text-emerald-700" />

@@ -83,7 +83,7 @@ function ActivityDetails({
     const keys = Object.keys(attributes);
 
     return (
-        <table className="w-full text-xs">
+        <table data-table="scroll" className="w-full text-xs">
             <thead>
                 <tr className="text-left text-ink-500">
                     <th className="pb-1 pr-4">Champ</th>

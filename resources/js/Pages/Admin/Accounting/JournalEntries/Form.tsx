@@ -80,7 +80,7 @@ export default function Form({ journals, accounts }: Props) {
 
                 <Card className="overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
+                        <table data-table="scroll" className="w-full text-left text-sm">
                             <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
                                 <tr>
                                     <th className="px-4 py-3">Compte</th>

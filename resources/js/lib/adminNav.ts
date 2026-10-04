@@ -738,13 +738,16 @@ export interface Located {
     group: NavGroup;
 }
 
+/** Écrans de saisie qui ne s'appellent ni create ni edit : l'appel, les notes d'une épreuve, la passation de classe. */
+const entryRoutes = new Set(['admin.pointage.index', 'admin.attendance.index', 'admin.exams.grades', 'admin.class-promotion.index']);
+
 /**
- * Vrai pour une page de création ou de modification (admin.students.create, admin.settings.edit…). Sur téléphone
- * ces écrans « de saisie » n'ont pas de barre du bas : la barre Enregistrer collée au bas de l'écran la remplace,
- * et la flèche du haut ramène à la liste.
+ * Vrai pour une page de saisie : création ou modification (admin.students.create, admin.settings.edit…), appel,
+ * notes, passation. Sur téléphone ces écrans n'ont pas de barre du bas : la barre Enregistrer collée au bas de
+ * l'écran (FormActions) la remplace, la flèche du haut ramène à la liste et la loupe ouvre la recherche.
  */
 export function isFormRoute(current: string): boolean {
-    return /\.(create|edit)$/.test(current);
+    return /\.(create|edit)$/.test(current) || entryRoutes.has(current);
 }
 
 /** Retire les accents et les majuscules : « Élèves » et « eleves » se valent dans la recherche. */

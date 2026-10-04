@@ -71,6 +71,29 @@ class AdminMarkupGuardTest extends TestCase
         $this->assertSame([], $violations, "Contrôles-icônes sans nom :\n".implode("\n", $violations));
     }
 
+    public function test_every_table_is_a_list_of_cards_or_an_explicit_scrolling_matrix(): void
+    {
+        $violations = [];
+
+        foreach ($this->adminSources() as $path => $source) {
+            preg_match_all('/<table\b([^>]*)>(.*?)<\/table>/s', $source, $tables, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+            foreach ($tables as $table) {
+                $explicitScroll = str_contains($table[1][0], 'data-table="scroll"');
+                $hasHeader = str_contains($table[2][0], '<thead');
+
+                if ($explicitScroll || $hasHeader) {
+                    continue;
+                }
+
+                $line = substr_count(substr($source, 0, $table[0][1]), "\n") + 1;
+                $violations[] = "{$path}:{$line} : <table> sans <thead> ni data-table=\"scroll\" : sur téléphone il ne deviendrait pas une carte et ne serait pas lisible";
+            }
+        }
+
+        $this->assertSame([], $violations, "Tableaux ni en cartes ni en défilement :\n".implode("\n", $violations));
+    }
+
     public function test_the_guard_does_catch_an_unnamed_icon_button(): void
     {
         $pattern = '/<(button|Link|a)\b((?:[^<>]|=>)*?)>\s*<([A-Z][A-Za-z0-9]*)\b(?:[^<>]|=>)*?\/>\s*<\/\1>/s';

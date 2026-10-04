@@ -93,7 +93,7 @@ export default function Monthly({ students, formations, academicYears, schoolMon
             ) : (
                 <Card className="overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
+                        <table data-table="scroll" className="w-full text-left text-sm">
                             <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
                                 <tr>
                                     <th className="sticky left-0 z-10 bg-ink-50 px-5 py-3">Élève</th>

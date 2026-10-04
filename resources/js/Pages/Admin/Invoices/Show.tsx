@@ -3,7 +3,7 @@ import AttachmentsPanel from '@/Components/Admin/AttachmentsPanel';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
-import { IconButton } from '@/Components/Admin/IconButton';
+import { IconAnchor, IconButton } from '@/Components/Admin/IconButton';
 import { Invoice } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Download, Inbox, Trash2 } from 'lucide-react';
@@ -121,15 +121,14 @@ export default function Show({ invoice, methods }: Props) {
                                             <td className="px-5 py-3 font-medium text-ink-900">{fcfa(p.amount)}</td>
                                             <td className="px-5 py-3">
                                                 <div className="flex justify-end gap-2">
-                                                    <a
+                                                    <IconAnchor
                                                         href={route('admin.invoices.payments.receipt', [invoice.id, p.id])}
                                                         target="_blank"
                                                         rel="noreferrer"
-                                                        className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
-                                                        title="Télécharger le reçu"
+                                                        label="Télécharger le reçu"
                                                     >
                                                         <Download className="h-4 w-4" />
-                                                    </a>
+                                                    </IconAnchor>
                                                     <IconButton onClick={() => deletePayment(p.id)} label="Supprimer" tone="danger">
                                                         <Trash2 className="h-4 w-4" />
                                                     </IconButton>

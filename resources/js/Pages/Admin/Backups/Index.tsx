@@ -1,6 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
+import { IconAnchor, IconButton } from '@/Components/Admin/IconButton';
 import { Head, router } from '@inertiajs/react';
 import { CheckCircle2, Download, HardDrive, Trash2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
@@ -114,20 +115,19 @@ export default function Index({ backups, healthy, error, totalSize }: Props) {
                                     <td className="px-5 py-3 text-ink-600">{formatSize(backup.size)}</td>
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end gap-2">
-                                            <a
+                                            <IconAnchor
                                                 href={route('admin.backups.download', { disk: backup.disk, path: backup.path })}
-                                                className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
-                                                title="Télécharger"
+                                                label="Télécharger"
                                             >
                                                 <Download className="h-4 w-4" />
-                                            </a>
-                                            <button
+                                            </IconAnchor>
+                                            <IconButton
                                                 onClick={() => destroy(backup)}
-                                                className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50"
-                                                title="Supprimer"
+                                                label="Supprimer"
+                                                tone="danger"
                                             >
                                                 <Trash2 className="h-4 w-4" />
-                                            </button>
+                                            </IconButton>
                                         </div>
                                     </td>
                                 </tr>

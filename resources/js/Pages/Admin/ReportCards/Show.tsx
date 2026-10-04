@@ -69,7 +69,7 @@ export default function Show({ reportCard, subjects, decisions, mentions }: Prop
                             <h2 className="font-serif text-lg font-semibold text-ink-900">Relevé de notes par matière</h2>
                         </div>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
+                            <table data-table="scroll" className="w-full text-left text-sm">
                                 <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
                                     <tr>
                                         <th className="px-4 py-3">Matière</th>
