@@ -1,12 +1,15 @@
-import PublicLayout from '@/Layouts/PublicLayout';
-import SectionHeading from '@/Components/Public/SectionHeading';
-import ImagePlaceholder, {
-    PatternOverlay,
-} from '@/Components/Public/ImagePlaceholder';
-import StarRating from '@/Components/Public/StarRating';
+import FormationCard from '@/Components/Public/FormationCard';
+import HeroSlider from '@/Components/Public/HeroSlider';
+import ImagePlaceholder, { PatternOverlay } from '@/Components/Public/ImagePlaceholder';
+import NewsCard from '@/Components/Public/NewsCard';
+import QuickActions from '@/Components/Public/QuickActions';
 import Reveal from '@/Components/Public/Reveal';
+import SectionHeading from '@/Components/Public/SectionHeading';
+import SnapCarousel from '@/Components/Public/SnapCarousel';
+import StarRating from '@/Components/Public/StarRating';
+import PublicLayout from '@/Layouts/PublicLayout';
+import { initials, storageUrl } from '@/lib/publicFormat';
 import { Formation, GalleryMediaItem, NewsArticle, PageProps, Partner, Slider, Testimonial } from '@/types';
-import { formatDateLong, initials, storageUrl } from '@/lib/publicFormat';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     Award,
@@ -15,13 +18,11 @@ import {
     Building2,
     Camera,
     ChefHat,
-    ChevronLeft,
     ChevronRight,
     Facebook,
     GraduationCap,
     Handshake,
     Heart,
-    Newspaper,
     Quote,
     Sparkles,
     TrendingUp,
@@ -52,6 +53,12 @@ function StatCounter({
     const [count, setCount] = useState(0);
 
     useEffect(() => {
+        // Préférence « moins d'animations » : le chiffre final s'affiche tout de suite.
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            setCount(target);
+            return;
+        }
+
         let start: number | null = null;
         const duration = 1200;
         let raf: number;
@@ -109,7 +116,7 @@ function StatCounter({
             </div>
             <div
                 className={`mt-1.5 text-xs font-medium uppercase tracking-widest sm:text-sm ${
-                    isLight ? 'text-ink-400' : 'text-ink-300'
+                    isLight ? 'text-ink-500' : 'text-ink-300'
                 }`}
             >
                 {label}
@@ -122,6 +129,13 @@ function StatCounter({
 /* Bandeau de statistiques — bande pleine largeur, directement sous le hero        */
 /* ------------------------------------------------------------------ */
 
+const statColumns: Record<number, string> = {
+    1: 'sm:grid-cols-1',
+    2: 'sm:grid-cols-2',
+    3: 'sm:grid-cols-3',
+    4: 'sm:grid-cols-4',
+};
+
 function StatsBanner({
     stats,
 }: {
@@ -132,222 +146,34 @@ function StatsBanner({
         partners_count: string;
     };
 }) {
+    // Une statistique à zéro (aucun partenaire publié, par exemple) ferait mauvais effet : on ne l'affiche pas.
+    const items = [
+        { icon: Award, accent: 'gold', value: stats.years_experience, suffix: '+', label: "Années d'expérience" },
+        { icon: Users, accent: 'brand', value: stats.students_trained, suffix: '+', label: 'Étudiants formés' },
+        { icon: TrendingUp, accent: 'leaf', value: stats.success_rate, suffix: '%', label: 'Taux de réussite' },
+        { icon: Handshake, accent: 'brand', value: stats.partners_count, suffix: '+', label: 'Partenaires' },
+    ] as const;
+    const visible = items.filter((item) => (parseInt(item.value, 10) || 0) > 0);
+
+    if (visible.length === 0) return null;
+
+    // Nombre impair : sur téléphone (2 colonnes), la dernière statistique occupe toute la largeur plutôt que de laisser un trou.
+    const oddCount = visible.length % 2 === 1;
+
     return (
-        <div className="bg-white">
+        <div className="bg-white pt-3 sm:pt-0">
             <Reveal>
-                <div className="mx-auto grid max-w-6xl grid-cols-2 divide-y divide-ink-100 px-4 sm:grid-cols-4 sm:divide-x sm:divide-y-0 sm:px-6 lg:px-8">
-                    <div className="py-8 sm:px-6 sm:py-10">
-                        <StatCounter
-                            icon={Award}
-                            tone="light"
-                            accent="gold"
-                            value={stats.years_experience}
-                            suffix="+"
-                            label="Années d'expérience"
-                        />
-                    </div>
-                    <div className="py-8 sm:px-6 sm:py-10">
-                        <StatCounter
-                            icon={Users}
-                            tone="light"
-                            accent="brand"
-                            value={stats.students_trained}
-                            suffix="+"
-                            label="Étudiants formés"
-                        />
-                    </div>
-                    <div className="py-8 sm:px-6 sm:py-10">
-                        <StatCounter
-                            icon={TrendingUp}
-                            tone="light"
-                            accent="leaf"
-                            value={stats.success_rate}
-                            suffix="%"
-                            label="Taux de réussite"
-                        />
-                    </div>
-                    <div className="py-8 sm:px-6 sm:py-10">
-                        <StatCounter
-                            icon={Handshake}
-                            tone="light"
-                            accent="brand"
-                            value={stats.partners_count}
-                            suffix="+"
-                            label="Partenaires"
-                        />
-                    </div>
-                </div>
-            </Reveal>
-        </div>
-    );
-}
-
-/* ------------------------------------------------------------------ */
-/* Diaporama du hero                                                          */
-/* ------------------------------------------------------------------ */
-
-function HeroSlider({ sliders }: { sliders: Slider[] }) {
-    const [index, setIndex] = useState(0);
-    const count = sliders.length;
-
-    useEffect(() => {
-        if (count <= 1) return;
-        const id = setInterval(() => {
-            setIndex((i) => (i + 1) % count);
-        }, 6000);
-        return () => clearInterval(id);
-    }, [count]);
-
-    if (count === 0) {
-        return (
-            <section className="relative flex min-h-[88vh] items-center overflow-hidden bg-ink-950">
-                <PatternOverlay />
                 <div
-                    className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-brand-500/20 blur-3xl"
-                    aria-hidden
-                />
-                <div
-                    className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-leaf-500/10 blur-3xl"
-                    aria-hidden
-                />
-                <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-                    <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold-400/30 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-gold-300 backdrop-blur">
-                        <Sparkles className="h-3.5 w-3.5" />
-                        Elite École Hôtelière et Touristique de Thiès
-                    </span>
-                    <h1 className="font-serif text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
-                        L'excellence au service de vos{' '}
-                        <span className="bg-gradient-to-r from-gold-300 via-gold-400 to-brand-300 bg-clip-text text-transparent">
-                            ambitions hôtelières &amp; touristiques
-                        </span>
-                    </h1>
-                    <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-ink-300">
-                        Depuis de nombreuses années, l'EEHT de Thiès forme
-                        les talents de demain dans l'hôtellerie, la
-                        restauration et le tourisme, alliant excellence
-                        académique et savoir-faire professionnel.
-                    </p>
-                    <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                        <Link
-                            href={route('formations.index')}
-                            className="rounded-full bg-gold-500 px-7 py-3.5 text-sm font-semibold text-ink-900 shadow-soft transition hover:-translate-y-0.5 hover:bg-gold-400 hover:shadow-lg"
-                        >
-                            Découvrir nos formations
-                        </Link>
-                        <Link
-                            href={route('candidature.create')}
-                            className="rounded-full border border-white/30 px-7 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10"
-                        >
-                            Candidater maintenant
-                        </Link>
-                    </div>
-                </div>
-            </section>
-        );
-    }
-
-    return (
-        <section className="relative min-h-[88vh] w-full overflow-hidden bg-ink-950">
-            {sliders.map((slide, i) => {
-                const image = storageUrl(slide.image);
-                return (
-                    <div
-                        key={slide.id}
-                        className={`absolute inset-0 transition-opacity duration-1000 ${
-                            i === index ? 'opacity-100' : 'opacity-0'
-                        }`}
-                    >
-                        {image ? (
-                            <img
-                                src={image}
-                                alt={slide.title}
-                                className="h-full w-full object-cover"
-                            />
-                        ) : (
-                            <div className="h-full w-full bg-gradient-to-br from-ink-950 via-brand-900 to-ink-900" />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-ink-950/95 via-ink-950/60 to-ink-950/30" />
-                    </div>
-                );
-            })}
-
-            <div className="relative flex min-h-[88vh] items-center">
-                <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-                    {sliders.map((slide, i) => (
-                        <div
-                            key={slide.id}
-                            className={`transition-all duration-700 ${
-                                i === index
-                                    ? 'relative opacity-100'
-                                    : 'absolute inset-0 opacity-0'
-                            }`}
-                        >
-                            {i === index && (
-                                <>
-                                    <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold-400/30 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-gold-300 backdrop-blur">
-                                        <Sparkles className="h-3.5 w-3.5" />
-                                        EEHT de Thiès
-                                    </span>
-                                    <h1 className="font-serif text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
-                                        {slide.title}
-                                    </h1>
-                                    {slide.subtitle && (
-                                        <p className="mx-auto mt-6 max-w-2xl text-lg font-light leading-relaxed text-ink-200">
-                                            {slide.subtitle}
-                                        </p>
-                                    )}
-                                    {slide.button_text && slide.button_link && (
-                                        <div className="mt-10">
-                                            <Link
-                                                href={slide.button_link}
-                                                className="inline-flex rounded-full bg-gold-500 px-8 py-3.5 text-sm font-semibold text-ink-900 shadow-soft transition hover:-translate-y-0.5 hover:bg-gold-400 hover:shadow-lg"
-                                            >
-                                                {slide.button_text}
-                                            </Link>
-                                        </div>
-                                    )}
-                                </>
-                            )}
+                    className={`mx-auto grid max-w-6xl grid-cols-2 divide-y divide-ink-100 px-4 sm:divide-x sm:divide-y-0 sm:px-6 lg:px-8 ${statColumns[visible.length]}`}
+                >
+                    {visible.map((item, i) => (
+                        <div key={item.label} className={`py-5 sm:px-6 sm:py-10 ${oddCount && i === visible.length - 1 ? 'col-span-2 sm:col-span-1' : ''}`}>
+                            <StatCounter icon={item.icon} tone="light" accent={item.accent} value={item.value} suffix={item.suffix} label={item.label} />
                         </div>
                     ))}
                 </div>
-            </div>
-
-            {count > 1 && (
-                <>
-                    <button
-                        onClick={() =>
-                            setIndex((i) => (i - 1 + count) % count)
-                        }
-                        aria-label="Diapositive précédente"
-                        className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/20 sm:left-8"
-                    >
-                        <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <button
-                        onClick={() => setIndex((i) => (i + 1) % count)}
-                        aria-label="Diapositive suivante"
-                        className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/20 sm:right-8"
-                    >
-                        <ChevronRight className="h-5 w-5" />
-                    </button>
-                    <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 gap-2">
-                        {sliders.map((slide, i) => (
-                            <button
-                                key={slide.id}
-                                onClick={() => setIndex(i)}
-                                aria-label={`Aller à la diapositive ${i + 1}`}
-                                className={`h-2 rounded-full transition-all ${
-                                    i === index
-                                        ? 'w-8 bg-gold-400'
-                                        : 'w-2 bg-white/40 hover:bg-white/60'
-                                }`}
-                            />
-                        ))}
-                    </div>
-                </>
-            )}
-        </section>
+            </Reveal>
+        </div>
     );
 }
 
@@ -442,15 +268,17 @@ export default function Home({
             <Head title="EEHT de Thiès - Elite École Hôtelière et Touristique" />
 
             <HeroSlider sliders={sliders} />
+            <QuickActions />
             <StatsBanner stats={stats} />
 
             {/* Présentation rapide + points forts */}
-            <section className="bg-ink-900 py-20 sm:py-24">
+            <section className="bg-ink-900 py-12 sm:py-24">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center">
-                        <Reveal className="relative">
+                    <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
+                        {/* Sans photo, ce bloc n'est qu'un cadre vide : on ne le montre pas sur téléphone. */}
+                        <Reveal className={`relative ${aboutPhoto ? '' : 'hidden lg:block'}`}>
                             <div
-                                className="relative aspect-[4/5] w-full max-w-md overflow-hidden bg-ink-800"
+                                className="relative aspect-[4/3] w-full max-w-md overflow-hidden bg-ink-800 lg:aspect-[4/5]"
                                 style={{
                                     clipPath:
                                         'polygon(0 0, 100% 0, 100% 92%, 88% 100%, 0 100%)',
@@ -461,6 +289,7 @@ export default function Home({
                                         src={aboutPhoto}
                                         alt="Étudiants de l'EEHT de Thiès"
                                         loading="lazy"
+                                        decoding="async"
                                         className="h-full w-full object-cover"
                                     />
                                 ) : (
@@ -505,6 +334,13 @@ export default function Home({
                                         professionnelle.
                                     </p>
                                 </div>
+                                <Link
+                                    href={route('pages.about')}
+                                    className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-gold-300 hover:text-gold-200"
+                                >
+                                    Découvrir l'école
+                                    <ChevronRight className="h-4 w-4" />
+                                </Link>
                             </Reveal>
                         </div>
                     </div>
@@ -512,7 +348,7 @@ export default function Home({
             </section>
 
             {/* Formations showcase */}
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <SectionHeading
@@ -523,81 +359,20 @@ export default function Home({
                     </Reveal>
 
                     {formations.length === 0 ? (
-                        <p className="mt-14 text-center text-ink-500">
+                        <p className="mt-10 text-center text-ink-500 sm:mt-14">
                             Nos formations seront bientôt présentées ici.
                         </p>
                     ) : (
-                        <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                            {formations.map((formation, i) => {
-                                const image = storageUrl(formation.image);
-                                return (
-                                    <Reveal key={formation.id} delay={i * 80}>
-                                        <Link
-                                            href={route(
-                                                'formations.show',
-                                                formation.slug,
-                                            )}
-                                            className="group flex h-full flex-col bg-white shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
-                                        >
-                                            <div
-                                                className="relative h-52 w-full overflow-hidden"
-                                                style={{
-                                                    clipPath:
-                                                        'polygon(0 0, 100% 0, 100% 84%, 0 100%)',
-                                                }}
-                                            >
-                                                {image ? (
-                                                    <img
-                                                        src={image}
-                                                        alt={formation.name}
-                                                        loading="lazy"
-                                                        className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                                                    />
-                                                ) : (
-                                                    <ImagePlaceholder
-                                                        className="h-full w-full"
-                                                        label={initials(
-                                                            formation.name,
-                                                        )}
-                                                    />
-                                                )}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-transparent to-transparent" />
-                                                {formation.diploma && (
-                                                    <span className="absolute left-4 top-4 bg-brand-600 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow-md">
-                                                        {formation.diploma}
-                                                    </span>
-                                                )}
-                                                {formation.duration && (
-                                                    <span className="absolute bottom-5 right-4 text-xs font-semibold uppercase tracking-wide text-white/90">
-                                                        {formation.duration}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <span className="h-1 w-full bg-gradient-to-r from-gold-400 via-brand-500 to-leaf-400" />
-                                            <div className="flex flex-1 flex-col border-x border-b border-ink-100 p-7">
-                                                <h3 className="font-serif text-xl font-bold leading-snug text-ink-900 transition group-hover:text-brand-700">
-                                                    {formation.name}
-                                                </h3>
-                                                {formation.description && (
-                                                    <p className="mt-3 line-clamp-2 flex-1 text-sm leading-relaxed text-ink-500">
-                                                        {formation.description}
-                                                    </p>
-                                                )}
-                                                <span className="mt-6 inline-flex items-center gap-3 text-sm font-semibold text-ink-900">
-                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink-900 text-white transition duration-300 group-hover:bg-brand-600 group-hover:rotate-45">
-                                                        <ChevronRight className="h-4 w-4" />
-                                                    </span>
-                                                    Voir la formation
-                                                </span>
-                                            </div>
-                                        </Link>
-                                    </Reveal>
-                                );
-                            })}
-                        </div>
+                        <Reveal className="mt-10 sm:mt-14">
+                            <SnapCarousel label="Nos formations" gridClassName="sm:grid sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
+                                {formations.map((formation) => (
+                                    <FormationCard key={formation.id} formation={formation} />
+                                ))}
+                            </SnapCarousel>
+                        </Reveal>
                     )}
 
-                    <div className="mt-12 text-center">
+                    <div className="mt-8 text-center sm:mt-12">
                         <Link
                             href={route('formations.index')}
                             className="inline-flex items-center gap-2 rounded-full bg-ink-900 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-ink-800"
@@ -610,29 +385,29 @@ export default function Home({
             </section>
 
             {/* Pourquoi choisir l'EEHT */}
-            <section className="bg-ink-50 py-20 sm:py-24">
+            <section className="bg-ink-50 py-12 sm:py-24">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <SectionHeading
                             eyebrow="Notre différence"
-                            title="Pourquoi choisir l'EEHT ?"
+                            title={"Pourquoi choisir l'EEHT ?"}
                             subtitle="Un modèle de formation exigeant, pensé pour préparer nos étudiants aux réalités des métiers de l'hôtellerie et du tourisme."
                         />
                     </Reveal>
 
-                    <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="mt-10 grid grid-cols-2 gap-3 sm:mt-14 sm:gap-6 lg:grid-cols-4">
                         {features.map((feature, i) => (
                             <Reveal key={feature.title} delay={i * 60}>
-                                <div className="group h-full rounded-2xl bg-white p-7 shadow-sm transition hover:-translate-y-1.5 hover:shadow-2xl">
+                                <div className="group h-full rounded-2xl bg-white p-4 shadow-sm transition hover:-translate-y-1.5 hover:shadow-2xl sm:p-7">
                                     <span
-                                        className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${featureToneClasses[feature.tone]}`}
+                                        className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors sm:h-11 sm:w-11 ${featureToneClasses[feature.tone]}`}
                                     >
                                         <feature.icon className="h-5 w-5" />
                                     </span>
-                                    <h3 className="mt-5 font-serif text-base font-bold text-ink-900">
+                                    <h3 className="mt-4 font-serif text-sm font-bold leading-snug text-ink-900 sm:mt-5 sm:text-base">
                                         {feature.title}
                                     </h3>
-                                    <p className="mt-2 text-sm leading-relaxed text-ink-500">
+                                    <p className="mt-1.5 line-clamp-3 text-xs leading-relaxed text-ink-500 sm:mt-2 sm:line-clamp-none sm:text-sm">
                                         {feature.text}
                                     </p>
                                 </div>
@@ -643,7 +418,7 @@ export default function Home({
             </section>
 
             {/* Actualités & Facebook */}
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <SectionHeading
@@ -654,79 +429,21 @@ export default function Home({
                     </Reveal>
 
                     {news.length === 0 ? (
-                        <p className="mt-14 text-center text-ink-500">
+                        <p className="mt-10 text-center text-ink-500 sm:mt-14">
                             Aucune actualité publiée pour le moment.
                         </p>
                     ) : (
-                        <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                            {news.map((article, i) => {
-                                const image = storageUrl(article.image);
-                                return (
-                                    <Reveal key={article.id} delay={i * 80}>
-                                        <Link
-                                            href={route(
-                                                'news.show',
-                                                article.slug,
-                                            )}
-                                            className="group flex h-full flex-col bg-white shadow-sm transition hover:shadow-xl"
-                                        >
-                                            <div
-                                                className="relative h-48 w-full overflow-hidden"
-                                                style={{
-                                                    clipPath:
-                                                        'polygon(0 0, 100% 0, 100% 84%, 0 100%)',
-                                                }}
-                                            >
-                                                {image ? (
-                                                    <img
-                                                        src={image}
-                                                        alt={article.title}
-                                                        loading="lazy"
-                                                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                                                    />
-                                                ) : (
-                                                    <ImagePlaceholder
-                                                        className="h-full w-full"
-                                                        icon={Newspaper}
-                                                    />
-                                                )}
-                                            </div>
-                                            <div className="flex flex-1 flex-col border-x border-b border-ink-100 p-6">
-                                                <span className="h-0.5 w-10 bg-gold-500" />
-                                                <div className="mt-4 flex items-center justify-between text-xs font-semibold uppercase tracking-wide">
-                                                    <span className="text-brand-600">
-                                                        {article.category ?? 'Actualité'}
-                                                    </span>
-                                                    <span className="text-ink-400">
-                                                        {formatDateLong(
-                                                            article.published_at,
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                <h3 className="mt-3 font-serif text-lg font-bold leading-snug text-ink-900 transition group-hover:text-brand-700">
-                                                    {article.title}
-                                                </h3>
-                                                {article.excerpt && (
-                                                    <p className="mt-2 line-clamp-2 flex-1 text-sm leading-relaxed text-ink-500">
-                                                        {article.excerpt}
-                                                    </p>
-                                                )}
-                                                <span className="mt-5 inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wide text-ink-900">
-                                                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-gold-500 text-gold-600 transition group-hover:bg-gold-500 group-hover:text-ink-900">
-                                                        <ChevronRight className="h-3.5 w-3.5" />
-                                                    </span>
-                                                    Lire la suite
-                                                </span>
-                                            </div>
-                                        </Link>
-                                    </Reveal>
-                                );
-                            })}
-                        </div>
+                        <Reveal className="mt-10 sm:mt-14">
+                            <SnapCarousel label="Dernières actualités" gridClassName="sm:grid sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
+                                {news.map((article) => (
+                                    <NewsCard key={article.id} article={article} />
+                                ))}
+                            </SnapCarousel>
+                        </Reveal>
                     )}
 
                     {siteSettings.facebook_url && (
-                        <div className="mt-14 flex flex-col items-center gap-5 rounded-2xl bg-[#1877F2] px-8 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
+                        <div className="mt-10 flex flex-col items-center gap-5 rounded-2xl bg-[#1565d8] px-8 py-10 text-center sm:mt-14 sm:flex-row sm:justify-between sm:text-left">
                             <div className="flex items-center gap-4">
                                 <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/15">
                                     <Facebook className="h-7 w-7 text-white" />
@@ -735,7 +452,7 @@ export default function Home({
                                     <h3 className="font-serif text-lg font-bold text-white">
                                         Suivez-nous sur Facebook
                                     </h3>
-                                    <p className="mt-1 text-sm text-white/90">
+                                    <p className="mt-1 text-sm text-white">
                                         Ne manquez aucune actualité, photo ou
                                         événement de l'école.
                                     </p>
@@ -745,7 +462,7 @@ export default function Home({
                                 href={siteSettings.facebook_url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#1877F2] shadow-soft transition hover:bg-white/90"
+                                className="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#1565d8] shadow-soft transition hover:bg-white/90"
                             >
                                 Voir notre page
                             </a>
@@ -754,28 +471,27 @@ export default function Home({
                 </div>
             </section>
 
-            {/* Témoignages */}
-            <section className="bg-ink-50 py-20 sm:py-24">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <Reveal>
-                        <SectionHeading
-                            eyebrow="Ils témoignent"
-                            title="Ce qu'ils disent de nous"
-                            subtitle="Étudiants, diplômés et partenaires partagent leur expérience à l'EEHT de Thiès."
-                        />
-                    </Reveal>
+            {/* Témoignages : la section n'apparaît que lorsqu'il y en a (une section vide occupait tout un écran) */}
+            {testimonials.length > 0 && (
+                <section className="bg-ink-50 py-12 sm:py-24">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <Reveal>
+                            <SectionHeading
+                                eyebrow="Ils témoignent"
+                                title="Ce qu'ils disent de nous"
+                                subtitle="Étudiants, diplômés et partenaires partagent leur expérience à l'EEHT de Thiès."
+                            />
+                        </Reveal>
 
-                    {testimonials.length === 0 ? (
-                        <p className="mt-14 text-center text-ink-500">
-                            Les témoignages seront bientôt disponibles.
-                        </p>
-                    ) : (
-                        <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                            {testimonials.map((testimonial, i) => {
-                                const photo = storageUrl(testimonial.photo);
-                                return (
-                                    <Reveal key={testimonial.id} delay={i * 80}>
-                                        <div className="relative flex h-full flex-col overflow-hidden rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-2xl">
+                        <Reveal className="mt-10 sm:mt-14">
+                            <SnapCarousel label="Témoignages" focusable gridClassName="sm:grid sm:grid-cols-2 sm:gap-8 lg:grid-cols-4">
+                                {testimonials.map((testimonial) => {
+                                    const photo = storageUrl(testimonial.photo);
+                                    return (
+                                        <div
+                                            key={testimonial.id}
+                                            className="relative flex h-full flex-col overflow-hidden rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-2xl"
+                                        >
                                             <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-gold-400 via-brand-400 to-leaf-400" />
                                             <Quote className="h-6 w-6 text-gold-200" />
                                             <p className="mt-3 line-clamp-4 flex-1 text-sm leading-relaxed text-ink-600">
@@ -813,17 +529,17 @@ export default function Home({
                                                 </div>
                                             </div>
                                         </div>
-                                    </Reveal>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-            </section>
+                                    );
+                                })}
+                            </SnapCarousel>
+                        </Reveal>
+                    </div>
+                </section>
+            )}
 
             {/* Aperçu de la galerie */}
             {galleryPreview.length > 0 && (
-                <section className="py-20 sm:py-24">
+                <section className="py-12 sm:py-24">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <Reveal>
                             <div className="flex flex-wrap items-end justify-between gap-4">
@@ -843,7 +559,7 @@ export default function Home({
                             </div>
                         </Reveal>
 
-                        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:grid-cols-4">
                             {galleryPreview.map((item, i) => {
                                 const image = storageUrl(item.path);
                                 return (
@@ -857,6 +573,7 @@ export default function Home({
                                                     src={image}
                                                     alt={item.caption ?? "Photo de l'EEHT de Thiès"}
                                                     loading="lazy"
+                                                    decoding="async"
                                                     className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
                                                 />
                                             ) : (
@@ -873,9 +590,9 @@ export default function Home({
 
             {/* Bandeau des partenaires */}
             {partners.length > 0 && (
-                <section className="py-16">
+                <section className="py-12 sm:py-16">
                     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-                        <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-ink-400">
+                        <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-ink-500">
                             Ils nous font confiance
                         </p>
                         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
@@ -907,7 +624,7 @@ export default function Home({
             )}
 
             {/* Appel à l'action final */}
-            <section className="relative overflow-hidden bg-ink-950 py-20 sm:py-24">
+            <section className="relative overflow-hidden bg-ink-950 py-12 sm:py-24">
                 <PatternOverlay />
                 <div
                     className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-gold-500/10 blur-3xl"
@@ -920,7 +637,7 @@ export default function Home({
                 <Reveal className="relative mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
                     <Sparkles className="mx-auto h-9 w-9 text-gold-400" />
                     <h2 className="mt-6 font-serif text-3xl font-bold text-white sm:text-4xl">
-                        Prêt à écrire votre avenir avec l'EEHT de Thiès ?
+                        Prêt à écrire votre avenir avec l'EEHT de Thiès&nbsp;?
                     </h2>
                     <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-300">
                         Rejoignez une école qui allie exigence académique et
