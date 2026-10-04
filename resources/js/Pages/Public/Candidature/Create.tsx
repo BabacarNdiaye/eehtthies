@@ -45,9 +45,11 @@ export default function CandidatureCreate({
 }) {
     const [initial] = useState<CandidatureData>(() => {
         const draft = loadDraft();
+        // Le brouillon ne rappelle une formation que si elle est encore proposée (sinon la liste n'afficherait rien).
+        const draftFormation = formations.some((option) => String(option.id) === draft.formation_id) ? draft.formation_id : undefined;
 
         return {
-            formation_id: selectedFormationId ? String(selectedFormationId) : (draft.formation_id ?? ''),
+            formation_id: selectedFormationId ? String(selectedFormationId) : (draftFormation ?? ''),
             first_name: draft.first_name ?? '',
             last_name: draft.last_name ?? '',
             birth_date: draft.birth_date ?? '',

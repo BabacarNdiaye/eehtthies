@@ -65,6 +65,7 @@ class Seo
         $siteName = (string) (Setting::get('site_name') ?: $app);
         $route = $request->route();
         $name = $route?->getName();
+        $logo = self::defaultImage();
 
         $seo = [
             'title' => $app,
@@ -72,7 +73,7 @@ class Seo
             'robots' => 'noindex, nofollow',
             'canonical' => null,
             'url' => null,
-            'image' => self::defaultImage(),
+            'image' => $logo,
             'type' => 'website',
             'locale' => 'fr_FR',
             'site_name' => $siteName,
@@ -96,7 +97,7 @@ class Seo
             ];
 
             if ($name === 'home') {
-                $seo['json_ld'] = self::encode(self::organization($siteName));
+                $seo['json_ld'] = self::encode(self::organization($siteName, $logo));
             }
         } elseif ($name === 'formations.show' && ($formation = $route->parameter('formation')) instanceof Formation && $formation->is_active) {
             $seo = self::formation($seo, $formation, $app, $siteName);
@@ -109,7 +110,7 @@ class Seo
         }
 
         // Une image propre à la page donne un grand aperçu ; le logo carré par défaut, un petit.
-        $seo['card'] = $seo['image'] !== null && $seo['image'] !== self::defaultImage() ? 'summary_large_image' : 'summary';
+        $seo['card'] = $seo['image'] !== $logo ? 'summary_large_image' : 'summary';
 
         return $seo;
     }
@@ -180,7 +181,7 @@ class Seo
     }
 
     /** @return array<string, mixed> */
-    private static function organization(string $siteName): array
+    private static function organization(string $siteName, string $logo): array
     {
         $social = array_values(array_filter([
             Setting::get('facebook_url'),
@@ -195,7 +196,7 @@ class Seo
             '@type' => 'EducationalOrganization',
             'name' => $siteName,
             'url' => route('home'),
-            'logo' => self::defaultImage(),
+            'logo' => $logo,
             'telephone' => Setting::get('site_phone'),
             'email' => Setting::get('site_email'),
             'address' => $address ? ['@type' => 'PostalAddress', 'streetAddress' => $address, 'addressCountry' => 'SN'] : null,
