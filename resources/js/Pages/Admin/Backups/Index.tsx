@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { IconAnchor, IconButton } from '@/Components/Admin/IconButton';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { CheckCircle2, Download, HardDrive, Trash2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
@@ -52,8 +53,8 @@ export default function Index({ backups, healthy, error, totalSize }: Props) {
         );
     };
 
-    const destroy = (backup: BackupRow) => {
-        if (confirm(`Supprimer la sauvegarde "${backup.name}" ? Cette action est irréversible.`)) {
+    const destroy = async (backup: BackupRow) => {
+        if (await confirmAction(`Supprimer la sauvegarde "${backup.name}" ? Cette action est irréversible.`)) {
             router.delete(route('admin.backups.destroy', { disk: backup.disk, path: backup.path }), {
                 preserveScroll: true,
             });

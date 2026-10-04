@@ -3,6 +3,7 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Select } from '@/Components/Admin/Field';
 import FormActions from '@/Components/Admin/FormActions';
+import { alertAction, confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { ArrowRightCircle, Inbox, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -81,7 +82,7 @@ export default function Index({ schoolClasses, sourceClass, students, decisions,
         setRows((prev) => ({ ...prev, [studentId]: { ...prev[studentId], ...patch } }));
     };
 
-    const submit = () => {
+    const submit = async () => {
         const assignments = Object.entries(rows)
             .filter(([, r]) => r.action !== 'skip')
             .map(([studentId, r]) => ({
@@ -91,7 +92,7 @@ export default function Index({ schoolClasses, sourceClass, students, decisions,
             }));
 
         if (assignments.length === 0) {
-            alert("Aucune action sélectionnée — choisissez au moins une action pour un élève.");
+            await alertAction("Aucune action sélectionnée — choisissez au moins une action pour un élève.");
             return;
         }
 
@@ -99,11 +100,11 @@ export default function Index({ schoolClasses, sourceClass, students, decisions,
             (a) => (a.action === 'promote' || a.action === 'stay') && !a.target_class_id,
         );
         if (missingTarget) {
-            alert('Choisissez une classe de destination pour chaque élève promu ou redoublant.');
+            await alertAction('Choisissez une classe de destination pour chaque élève promu ou redoublant.');
             return;
         }
 
-        if (!confirm(`Confirmer la passation pour ${assignments.length} élève(s) ? Cette action modifie leur classe/statut immédiatement.`)) {
+        if (!await confirmAction(`Confirmer la passation pour ${assignments.length} élève(s) ? Cette action modifie leur classe/statut immédiatement.`)) {
             return;
         }
 

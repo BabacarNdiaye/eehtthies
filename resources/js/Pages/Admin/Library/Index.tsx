@@ -5,6 +5,7 @@ import Modal from '@/Components/Modal';
 import LibraryBrowser, { LibraryResourceRow } from '@/Components/Library/LibraryBrowser';
 import DocumentFileField from '@/Components/Library/DocumentFileField';
 import { IconButton } from '@/Components/Admin/IconButton';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -58,8 +59,8 @@ export default function Index({ resources }: { resources: LibraryResourceRow[] }
         });
     };
 
-    const destroy = (r: LibraryResourceRow) => {
-        if (confirm(`Supprimer la ressource "${r.title}" ?`)) {
+    const destroy = async (r: LibraryResourceRow) => {
+        if (await confirmAction(`Supprimer la ressource "${r.title}" ?`)) {
             router.delete(route('admin.library.destroy', r.id), { preserveScroll: true });
         }
     };

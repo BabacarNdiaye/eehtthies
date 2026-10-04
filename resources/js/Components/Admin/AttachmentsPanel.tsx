@@ -1,5 +1,6 @@
 import Card from '@/Components/Admin/Card';
 import { Attachment } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { router } from '@inertiajs/react';
 import { Download, FileUp, Paperclip, Trash2 } from 'lucide-react';
 import { ChangeEvent, useRef, useState } from 'react';
@@ -51,8 +52,8 @@ export default function AttachmentsPanel({
         );
     };
 
-    const remove = (attachment: Attachment) => {
-        if (confirm(`Supprimer « ${attachment.original_name} » ?`)) {
+    const remove = async (attachment: Attachment) => {
+        if (await confirmAction(`Supprimer « ${attachment.original_name} » ?`)) {
             router.delete(route('attachments.destroy', attachment.id), { preserveScroll: true });
         }
     };

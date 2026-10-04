@@ -9,6 +9,7 @@ import Modal from '@/Components/Modal';
 import { TextInput } from '@/Components/Admin/Field';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, Teacher } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Mail, Pencil, Trash2, Upload, UserRound } from 'lucide-react';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
@@ -62,9 +63,9 @@ export default function Index({ teachers, filters }: Props) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
-    const destroy = (teacher: Teacher) => {
+    const destroy = async (teacher: Teacher) => {
         if (
-            confirm(
+            await confirmAction(
                 `Supprimer l'enseignant "${teacher.first_name} ${teacher.last_name}" ? Cette action est irréversible.`,
             )
         ) {
@@ -94,8 +95,8 @@ export default function Index({ teachers, filters }: Props) {
                 </button>
                 <button
                     type="button"
-                    onClick={() => {
-                        if (confirm("Générer automatiquement une adresse e-mail pour chaque enseignant qui n'en a pas ?")) {
+                    onClick={async () => {
+                        if (await confirmAction("Générer automatiquement une adresse e-mail pour chaque enseignant qui n'en a pas ?")) {
                             router.post(route('admin.teachers.generateMissingEmails'), {}, { preserveScroll: true });
                         }
                     }}

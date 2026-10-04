@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Checkbox } from '@/Components/Admin/Field';
 import { IconButton } from '@/Components/Admin/IconButton';
 import { AcademicYear } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -56,8 +57,8 @@ export default function Index({ academicYears }: { academicYears: AcademicYear[]
         });
     };
 
-    const destroy = (year: AcademicYear) => {
-        if (confirm(`Supprimer l'année académique "${year.label}" ? Cette action est irréversible.`)) {
+    const destroy = async (year: AcademicYear) => {
+        if (await confirmAction(`Supprimer l'année académique "${year.label}" ? Cette action est irréversible.`)) {
             router.delete(route('admin.academic-years.destroy', year.id), { preserveScroll: true });
         }
     };

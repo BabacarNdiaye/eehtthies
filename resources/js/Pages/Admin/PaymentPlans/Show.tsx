@@ -1,6 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
+import { confirmAction } from '@/lib/confirm';
 import { Head, Link, router } from '@inertiajs/react';
 import { Trash2 } from 'lucide-react';
 
@@ -41,8 +42,8 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function Show({ plan, paidAmount, balance, progressPercent }: Props) {
-    const destroy = () => {
-        if (!confirm("Supprimer cet échéancier ? Impossible si une tranche a déjà reçu un paiement.")) return;
+    const destroy = async () => {
+        if (!await confirmAction("Supprimer cet échéancier ? Impossible si une tranche a déjà reçu un paiement.")) return;
         router.delete(route('admin.payment-plans.destroy', plan.id));
     };
 

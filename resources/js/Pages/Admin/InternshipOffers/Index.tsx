@@ -4,12 +4,13 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { InternshipOffer, Paginated } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2 } from 'lucide-react';
 
 export default function Index({ offers }: { offers: Paginated<InternshipOffer> }) {
-    const destroy = (offer: InternshipOffer) => {
-        if (confirm(`Supprimer l'offre de stage "${offer.title}" ?`)) {
+    const destroy = async (offer: InternshipOffer) => {
+        if (await confirmAction(`Supprimer l'offre de stage "${offer.title}" ?`)) {
             router.delete(route('admin.internship-offers.destroy', offer.id));
         }
     };

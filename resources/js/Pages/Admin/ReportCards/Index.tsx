@@ -5,6 +5,7 @@ import Pagination from '@/Components/Admin/Pagination';
 import { Field, Select } from '@/Components/Admin/Field';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, ReportCard, SchoolClass } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Award, CheckSquare, Download, Eye, Square, Trash2 } from 'lucide-react';
 
@@ -49,8 +50,8 @@ export default function Index({ reportCards, schoolClasses, academicYears, terms
         router.patch(route('admin.report-cards.publish', reportCard.id), {}, { preserveScroll: true });
     };
 
-    const destroy = (reportCard: ReportCard) => {
-        if (confirm(`Supprimer le bulletin de ${reportCard.student?.first_name} ${reportCard.student?.last_name} (${reportCard.term}) ? Cette action est irréversible.`)) {
+    const destroy = async (reportCard: ReportCard) => {
+        if (await confirmAction(`Supprimer le bulletin de ${reportCard.student?.first_name} ${reportCard.student?.last_name} (${reportCard.term}) ? Cette action est irréversible.`)) {
             router.delete(route('admin.report-cards.destroy', reportCard.id), { preserveScroll: true });
         }
     };

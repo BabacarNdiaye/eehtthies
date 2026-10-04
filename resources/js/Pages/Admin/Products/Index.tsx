@@ -6,6 +6,7 @@ import Pagination from '@/Components/Admin/Pagination';
 import { Select } from '@/Components/Admin/Field';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, Product } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, Link, router } from '@inertiajs/react';
 import { AlertTriangle, ArrowLeftRight, Inbox, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -31,8 +32,8 @@ export default function Index({ products, categories, filters, lowStockCount }: 
         );
     };
 
-    const destroy = (product: Product) => {
-        if (confirm(`Supprimer le produit "${product.name}" ?`)) {
+    const destroy = async (product: Product) => {
+        if (await confirmAction(`Supprimer le produit "${product.name}" ?`)) {
             router.delete(route('admin.products.destroy', product.id));
         }
     };

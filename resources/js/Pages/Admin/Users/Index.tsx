@@ -7,6 +7,7 @@ import ExportButtons from '@/Components/Admin/ExportButtons';
 import { Select } from '@/Components/Admin/Field';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, PageProps, User } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, usePage } from '@inertiajs/react';
 import { Pencil, Trash2, UserRound } from 'lucide-react';
 import { useState } from 'react';
@@ -31,8 +32,8 @@ export default function Index({ users, roles, filters }: Props) {
         );
     };
 
-    const destroy = (user: UserRow) => {
-        if (confirm(`Supprimer "${user.name}" du personnel ? Cette action est irréversible.`)) {
+    const destroy = async (user: UserRow) => {
+        if (await confirmAction(`Supprimer "${user.name}" du personnel ? Cette action est irréversible.`)) {
             router.delete(route('admin.users.destroy', user.id));
         }
     };

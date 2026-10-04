@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import ExportButtons from '@/Components/Admin/ExportButtons';
 import { Field, Select, TextInput, Textarea } from '@/Components/Admin/Field';
 import Modal from '@/Components/Modal';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { CheckCircle2, Clock3, Coins, Printer, Trash2, Users, Wallet } from 'lucide-react';
@@ -103,8 +104,8 @@ export default function Index({ staff, year, months, monthLabels, paymentMethods
         });
     };
 
-    const cancelPayment = (row: StaffRow, salaryPaymentId: number) => {
-        if (!confirm('Annuler ce paiement de salaire ? La dépense associée sera également supprimée.')) return;
+    const cancelPayment = async (row: StaffRow, salaryPaymentId: number) => {
+        if (!await confirmAction('Annuler ce paiement de salaire ? La dépense associée sera également supprimée.')) return;
 
         const routeName = row.type === 'teacher' ? 'admin.salaries.destroyTeacherPayment' : 'admin.salaries.destroy';
         router.delete(route(routeName, salaryPaymentId), { preserveScroll: true });

@@ -3,13 +3,14 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Slider } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { ImageOff, Pencil, Trash2 } from 'lucide-react';
 
 export default function Index({ sliders }: { sliders: Slider[] }) {
-    const destroy = (slider: Slider) => {
+    const destroy = async (slider: Slider) => {
         if (
-            confirm(
+            await confirmAction(
                 `Supprimer la slide "${slider.title}" ? Cette action est irréversible.`,
             )
         ) {

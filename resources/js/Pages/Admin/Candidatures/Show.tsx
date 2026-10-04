@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
 import { Candidature } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, Download, FileText, UserPlus } from 'lucide-react';
 
@@ -53,9 +54,9 @@ export default function Show({ candidature, documents, statuses }: Props) {
     const canConvert =
         candidature.status === 'acceptee' && candidature.student_count === 0;
 
-    const convert = () => {
+    const convert = async () => {
         if (
-            confirm(
+            await confirmAction(
                 `Transformer ${candidature.first_name} ${candidature.last_name} en élève ? Cette action créera un dossier élève à partir de cette candidature.`,
             )
         ) {

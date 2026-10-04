@@ -5,6 +5,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Select } from '@/Components/Admin/Field';
 import { IconButton } from '@/Components/Admin/IconButton';
 import { Subject } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -60,8 +61,8 @@ export default function Index({
         });
     };
 
-    const destroy = (subject: SubjectRow) => {
-        if (confirm(`Supprimer la matière "${subject.name}" ? Cette action est irréversible.`)) {
+    const destroy = async (subject: SubjectRow) => {
+        if (await confirmAction(`Supprimer la matière "${subject.name}" ? Cette action est irréversible.`)) {
             router.delete(route('admin.subjects.destroy', subject.id), { preserveScroll: true });
         }
     };

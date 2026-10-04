@@ -94,6 +94,23 @@ class AdminMarkupGuardTest extends TestCase
         $this->assertSame([], $violations, "Tableaux ni en cartes ni en défilement :\n".implode("\n", $violations));
     }
 
+    public function test_no_native_browser_dialog_is_left_in_the_admin(): void
+    {
+        $violations = [];
+
+        foreach ($this->adminSources() as $path => $source) {
+            // `confirmAction(` et `alertAction(` n'ont pas la même racine : seul l'appel natif est repéré.
+            if (preg_match_all('/(?<![\w.])(?:window\.)?(?:confirm|alert|prompt)\(/', $source, $matches, PREG_OFFSET_CAPTURE)) {
+                foreach ($matches[0] as $match) {
+                    $line = substr_count(substr($source, 0, $match[1]), "\n") + 1;
+                    $violations[] = "{$path}:{$line} : {$match[0]} natif (utiliser confirmAction ou alertAction de @/lib/confirm)";
+                }
+            }
+        }
+
+        $this->assertSame([], $violations, "Boîtes natives du navigateur :\n".implode("\n", $violations));
+    }
+
     public function test_the_guard_does_catch_an_unnamed_icon_button(): void
     {
         $pattern = '/<(button|Link|a)\b((?:[^<>]|=>)*?)>\s*<([A-Z][A-Za-z0-9]*)\b(?:[^<>]|=>)*?\/>\s*<\/\1>/s';

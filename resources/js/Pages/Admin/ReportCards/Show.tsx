@@ -3,6 +3,7 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, Textarea } from '@/Components/Admin/Field';
 import { ReportCard, SubjectBreakdown } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Download, ExternalLink, Inbox, Trash2 } from 'lucide-react';
 
@@ -31,8 +32,8 @@ export default function Show({ reportCard, subjects, decisions, mentions }: Prop
         router.patch(route('admin.report-cards.publish', reportCard.id), {}, { preserveScroll: true });
     };
 
-    const destroy = () => {
-        if (confirm(`Supprimer le bulletin de ${reportCard.student?.first_name} ${reportCard.student?.last_name} (${reportCard.term}) ? Cette action est irréversible.`)) {
+    const destroy = async () => {
+        if (await confirmAction(`Supprimer le bulletin de ${reportCard.student?.first_name} ${reportCard.student?.last_name} (${reportCard.term}) ? Cette action est irréversible.`)) {
             router.delete(route('admin.report-cards.destroy', reportCard.id));
         }
     };

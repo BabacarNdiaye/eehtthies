@@ -5,6 +5,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
 import { IconAnchor, IconButton } from '@/Components/Admin/IconButton';
 import { Invoice } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Download, Inbox, Trash2 } from 'lucide-react';
 
@@ -53,14 +54,14 @@ export default function Show({ invoice, methods }: Props) {
         });
     };
 
-    const deletePayment = (paymentId: number) => {
-        if (confirm('Supprimer ce paiement ?')) {
+    const deletePayment = async (paymentId: number) => {
+        if (await confirmAction('Supprimer ce paiement ?')) {
             router.delete(route('admin.invoices.payments.destroy', [invoice.id, paymentId]), { preserveScroll: true });
         }
     };
 
-    const deleteInvoice = () => {
-        if (confirm('Supprimer cette facture ? Cette action est irréversible.')) {
+    const deleteInvoice = async () => {
+        if (await confirmAction('Supprimer cette facture ? Cette action est irréversible.')) {
             router.delete(route('admin.invoices.destroy', invoice.id));
         }
     };

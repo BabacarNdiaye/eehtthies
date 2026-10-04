@@ -1,6 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
+import { confirmAction } from '@/lib/confirm';
 import { Head, Link, router } from '@inertiajs/react';
 import { Lock, Trash2 } from 'lucide-react';
 
@@ -31,8 +32,8 @@ export default function Show({ entry }: { entry: Entry }) {
     const totalDebit = entry.lines.reduce((s, l) => s + Number(l.debit), 0);
     const totalCredit = entry.lines.reduce((s, l) => s + Number(l.credit), 0);
 
-    const destroy = () => {
-        if (confirm('Supprimer cette écriture manuelle ?')) {
+    const destroy = async () => {
+        if (await confirmAction('Supprimer cette écriture manuelle ?')) {
             router.delete(route('admin.accounting.journal-entries.destroy', entry.id));
         }
     };

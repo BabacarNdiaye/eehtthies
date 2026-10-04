@@ -4,6 +4,7 @@ import './bootstrap';
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import ConfirmHost from './Components/ConfirmHost';
 import ConnectLauncher from './Components/ConnectLauncher';
 import PwaInstallBanner from './Components/PwaInstallBanner';
 import { clearOfflineData } from './lib/offline';
@@ -33,6 +34,7 @@ createInertiaApp({
         root.render(
             <>
                 <App {...props} />
+                <ConfirmHost />
                 <ConnectLauncher initialPage={props.initialPage as never} />
                 <PwaInstallBanner />
             </>,

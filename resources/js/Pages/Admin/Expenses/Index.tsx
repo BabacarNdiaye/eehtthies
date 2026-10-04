@@ -5,6 +5,7 @@ import Pagination from '@/Components/Admin/Pagination';
 import { Select } from '@/Components/Admin/Field';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Expense, Paginated } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2 } from 'lucide-react';
 
@@ -21,8 +22,8 @@ export default function Index({ expenses, categories, filters }: Props) {
         router.get(route('admin.expenses.index'), { category: filters.category ?? '', ...overrides }, { preserveState: true, replace: true });
     };
 
-    const destroy = (expense: Expense) => {
-        if (confirm(`Supprimer la dépense "${expense.label}" ?`)) {
+    const destroy = async (expense: Expense) => {
+        if (await confirmAction(`Supprimer la dépense "${expense.label}" ?`)) {
             router.delete(route('admin.expenses.destroy', expense.id));
         }
     };

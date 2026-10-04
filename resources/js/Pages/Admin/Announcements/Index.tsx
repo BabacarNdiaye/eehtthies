@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { Field, Select, TextInput, Textarea } from '@/Components/Admin/Field';
 import { Paginated } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, useForm } from '@inertiajs/react';
 import { Inbox, Megaphone } from 'lucide-react';
 
@@ -41,9 +42,9 @@ export default function Index({ announcements, formations, schoolClasses, priori
         audience_id: '' as number | '',
     });
 
-    const submit = (e: React.FormEvent) => {
+    const submit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!confirm('Confirmer l\'envoi de cette annonce ? Elle sera livrée immédiatement à tous les destinataires ciblés.')) {
+        if (!await confirmAction('Confirmer l\'envoi de cette annonce ? Elle sera livrée immédiatement à tous les destinataires ciblés.')) {
             return;
         }
         post(route('admin.announcements.store'), { preserveScroll: true, onSuccess: () => reset('title', 'body') });

@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput } from '@/Components/Admin/Field';
 import { IconButton } from '@/Components/Admin/IconButton';
 import { Room } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -48,8 +49,8 @@ export default function Index({ rooms }: { rooms: Room[] }) {
         });
     };
 
-    const destroy = (room: Room) => {
-        if (confirm(`Supprimer la salle "${room.name}" ? Cette action est irréversible.`)) {
+    const destroy = async (room: Room) => {
+        if (await confirmAction(`Supprimer la salle "${room.name}" ? Cette action est irréversible.`)) {
             router.delete(route('admin.rooms.destroy', room.id), { preserveScroll: true });
         }
     };

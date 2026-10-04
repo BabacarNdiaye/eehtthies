@@ -3,6 +3,7 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, TextInput, Textarea } from '@/Components/Admin/Field';
 import { IconButton } from '@/Components/Admin/IconButton';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -66,8 +67,8 @@ export default function Index({ formations, skills, selectedFormationId }: Props
         });
     };
 
-    const destroy = (skill: SkillRow) => {
-        if (confirm(`Supprimer la compétence "${skill.name}" ? Les évaluations liées seront aussi supprimées.`)) {
+    const destroy = async (skill: SkillRow) => {
+        if (await confirmAction(`Supprimer la compétence "${skill.name}" ? Les évaluations liées seront aussi supprimées.`)) {
             router.delete(route('admin.skills.destroy', skill.id), { preserveScroll: true });
         }
     };

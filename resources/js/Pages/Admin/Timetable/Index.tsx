@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, TextInput } from '@/Components/Admin/Field';
 import { IconButton } from '@/Components/Admin/IconButton';
 import { Room, SchoolClass, Subject, TimetableEntry } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Clock, MapPin, Pencil, Plus, Trash2, User, X } from 'lucide-react';
 import { useState } from 'react';
@@ -76,8 +77,8 @@ export default function Index({ schoolClasses, subjects, teachers, rooms, entrie
         });
     };
 
-    const destroy = (entry: TimetableEntry) => {
-        if (confirm('Supprimer ce créneau de l\'emploi du temps ?')) {
+    const destroy = async (entry: TimetableEntry) => {
+        if (await confirmAction('Supprimer ce créneau de l\'emploi du temps ?')) {
             router.delete(route('admin.timetable.destroy', entry.id), { preserveScroll: true });
         }
     };

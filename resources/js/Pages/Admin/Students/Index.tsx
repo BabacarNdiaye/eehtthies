@@ -9,6 +9,7 @@ import Modal from '@/Components/Modal';
 import { Select } from '@/Components/Admin/Field';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, Student } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { IdCard, Mail, Pencil, Trash2, Upload, UserRound, Users } from 'lucide-react';
 import { ChangeEvent, Fragment, useEffect, useRef, useState } from 'react';
@@ -83,9 +84,9 @@ export default function Index({ students, formations, schoolClasses, classCounts
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
-    const destroy = (student: Student) => {
+    const destroy = async (student: Student) => {
         if (
-            confirm(
+            await confirmAction(
                 `Supprimer l'élève "${student.first_name} ${student.last_name}" ? Cette action est irréversible.`,
             )
         ) {
@@ -105,12 +106,12 @@ export default function Index({ students, formations, schoolClasses, classCounts
                 }}
             >
                 <ExportButtons csvHref={route('admin.students.export.csv')} pdfHref={route('admin.students.export.pdf')} />
-                <div className="inline-flex items-center gap-2">
+                <div className="flex max-w-full flex-wrap items-center gap-2">
                     <Select
                         aria-label="Classe des cartes"
                         value={cardsClassId}
                         onChange={(e) => setCardsClassId(e.target.value)}
-                        className="!w-auto"
+                        className="!w-auto max-w-full"
                     >
                         <option value="">Choisir une classe…</option>
                         {schoolClasses.map((c) => (
@@ -150,8 +151,8 @@ export default function Index({ students, formations, schoolClasses, classCounts
                 </button>
                 <button
                     type="button"
-                    onClick={() => {
-                        if (confirm("Générer automatiquement une adresse e-mail pour chaque élève ou tuteur qui n'en a pas ?")) {
+                    onClick={async () => {
+                        if (await confirmAction("Générer automatiquement une adresse e-mail pour chaque élève ou tuteur qui n'en a pas ?")) {
                             router.post(route('admin.students.generateMissingEmails'), {}, { preserveScroll: true });
                         }
                     }}

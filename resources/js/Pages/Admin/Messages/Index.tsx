@@ -4,12 +4,13 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { IconButton } from '@/Components/Admin/IconButton';
 import { ContactMessage, Paginated } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, Link, router } from '@inertiajs/react';
 import { Inbox, Trash2 } from 'lucide-react';
 
 export default function Index({ messages }: { messages: Paginated<ContactMessage> }) {
-    const destroy = (message: ContactMessage) => {
-        if (confirm(`Supprimer le message de "${message.name}" ? Cette action est irréversible.`)) {
+    const destroy = async (message: ContactMessage) => {
+        if (await confirmAction(`Supprimer le message de "${message.name}" ? Cette action est irréversible.`)) {
             router.delete(route('admin.messages.destroy', message.id));
         }
     };

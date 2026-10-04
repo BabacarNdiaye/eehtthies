@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, Testimonial } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Pencil, Star, Trash2 } from 'lucide-react';
 
@@ -23,9 +24,9 @@ function Stars({ rating }: { rating: number }) {
 }
 
 export default function Index({ testimonials }: { testimonials: Paginated<Testimonial> }) {
-    const destroy = (testimonial: Testimonial) => {
+    const destroy = async (testimonial: Testimonial) => {
         if (
-            confirm(
+            await confirmAction(
                 `Supprimer le témoignage de "${testimonial.name}" ? Cette action est irréversible.`,
             )
         ) {

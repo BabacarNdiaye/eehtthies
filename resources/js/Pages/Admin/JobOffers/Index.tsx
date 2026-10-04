@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { JobOffer, Paginated } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2 } from 'lucide-react';
 
@@ -13,8 +14,8 @@ interface Props {
 }
 
 export default function Index({ offers, contractTypes }: Props) {
-    const destroy = (offer: JobOffer) => {
-        if (confirm(`Supprimer l'offre "${offer.title}" ?`)) {
+    const destroy = async (offer: JobOffer) => {
+        if (await confirmAction(`Supprimer l'offre "${offer.title}" ?`)) {
             router.delete(route('admin.job-offers.destroy', offer.id));
         }
     };

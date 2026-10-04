@@ -4,13 +4,14 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, Partner } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { ExternalLink, Inbox, Pencil, Trash2 } from 'lucide-react';
 
 export default function Index({ partners }: { partners: Paginated<Partner> }) {
-    const destroy = (partner: Partner) => {
+    const destroy = async (partner: Partner) => {
         if (
-            confirm(
+            await confirmAction(
                 `Supprimer le partenaire "${partner.name}" ? Cette action est irréversible.`,
             )
         ) {

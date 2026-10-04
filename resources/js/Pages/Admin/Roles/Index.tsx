@@ -3,6 +3,7 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Role } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Lock, Pencil, Trash2 } from 'lucide-react';
 
@@ -12,8 +13,8 @@ interface Props {
 }
 
 export default function Index({ roles, protectedRoles }: Props) {
-    const destroy = (role: Role) => {
-        if (confirm(`Supprimer le rôle "${role.name}" ? Cette action est irréversible.`)) {
+    const destroy = async (role: Role) => {
+        if (await confirmAction(`Supprimer le rôle "${role.name}" ? Cette action est irréversible.`)) {
             router.delete(route('admin.roles.destroy', role.id));
         }
     };

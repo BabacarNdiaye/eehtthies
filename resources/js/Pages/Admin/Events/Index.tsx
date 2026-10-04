@@ -4,13 +4,14 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { EventItem, Paginated } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2 } from 'lucide-react';
 
 export default function Index({ events }: { events: Paginated<EventItem> }) {
-    const destroy = (event: EventItem) => {
+    const destroy = async (event: EventItem) => {
         if (
-            confirm(
+            await confirmAction(
                 `Supprimer l'événement "${event.title}" ? Cette action est irréversible.`,
             )
         ) {

@@ -4,15 +4,16 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Gallery, Paginated } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Images, Pencil, Trash2 } from 'lucide-react';
 
 type GalleryRow = Gallery & { media_count: number };
 
 export default function Index({ galleries }: { galleries: Paginated<GalleryRow> }) {
-    const destroy = (gallery: GalleryRow) => {
+    const destroy = async (gallery: GalleryRow) => {
         if (
-            confirm(
+            await confirmAction(
                 `Supprimer l'album "${gallery.title}" ainsi que tous ses médias ? Cette action est irréversible.`,
             )
         ) {

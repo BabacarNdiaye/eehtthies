@@ -5,6 +5,7 @@ import Pagination from '@/Components/Admin/Pagination';
 import { Select } from '@/Components/Admin/Field';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Exam, Paginated, SchoolClass } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, Link, router } from '@inertiajs/react';
 import { CheckSquare, ClipboardList, Pencil, Square, Trash2 } from 'lucide-react';
 
@@ -28,8 +29,8 @@ export default function Index({ exams, schoolClasses, types, filters }: Props) {
         );
     };
 
-    const destroy = (exam: Exam) => {
-        if (confirm(`Supprimer l'épreuve "${exam.title}" ? Les notes associées seront également supprimées.`)) {
+    const destroy = async (exam: Exam) => {
+        if (await confirmAction(`Supprimer l'épreuve "${exam.title}" ? Les notes associées seront également supprimées.`)) {
             router.delete(route('admin.exams.destroy', exam.id));
         }
     };

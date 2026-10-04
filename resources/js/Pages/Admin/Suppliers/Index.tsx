@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Textarea } from '@/Components/Admin/Field';
 import { IconButton } from '@/Components/Admin/IconButton';
 import { Supplier } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -36,8 +37,8 @@ export default function Index({ suppliers }: { suppliers: Supplier[] }) {
         editForm.patch(route('admin.suppliers.update', id), { preserveScroll: true, onSuccess: () => setEditingId(null) });
     };
 
-    const destroy = (supplier: Supplier) => {
-        if (confirm(`Supprimer le fournisseur "${supplier.name}" ?`)) {
+    const destroy = async (supplier: Supplier) => {
+        if (await confirmAction(`Supprimer le fournisseur "${supplier.name}" ?`)) {
             router.delete(route('admin.suppliers.destroy', supplier.id), { preserveScroll: true });
         }
     };

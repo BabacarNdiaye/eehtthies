@@ -4,13 +4,14 @@ import CsvImport from '@/Components/Admin/CsvImport';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Formation } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2 } from 'lucide-react';
 
 export default function Index({ formations }: { formations: Formation[] }) {
-    const destroy = (formation: Formation) => {
+    const destroy = async (formation: Formation) => {
         if (
-            confirm(
+            await confirmAction(
                 `Supprimer la formation "${formation.name}" ? Cette action est irréversible.`,
             )
         ) {

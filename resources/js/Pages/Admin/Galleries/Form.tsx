@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Checkbox } from '@/Components/Admin/Field';
 import FormActions from '@/Components/Admin/FormActions';
 import { Gallery, GalleryMediaItem } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Film, Trash2, UploadCloud } from 'lucide-react';
 import { ChangeEvent, useRef, useState } from 'react';
@@ -49,9 +50,9 @@ export default function Form({ gallery }: { gallery?: GalleryWithMedia }) {
         );
     };
 
-    const deleteMedia = (media: GalleryMediaItem) => {
+    const deleteMedia = async (media: GalleryMediaItem) => {
         if (!gallery) return;
-        if (confirm('Supprimer ce média de l\'album ?')) {
+        if (await confirmAction('Supprimer ce média de l\'album ?')) {
             router.delete(route('admin.galleries.media.destroy', [gallery.id, media.id]), {
                 preserveScroll: true,
             });

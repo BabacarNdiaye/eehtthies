@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { IconButton } from '@/Components/Admin/IconButton';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Inbox, Trash2 } from 'lucide-react';
 
@@ -14,8 +15,8 @@ type ClassMessage = {
 };
 
 export default function Show({ schoolClass, messages }: { schoolClass: { id: number; name: string }; messages: ClassMessage[] }) {
-    const destroy = (message: ClassMessage) => {
-        if (confirm('Supprimer ce message ? Cette action est irréversible.')) {
+    const destroy = async (message: ClassMessage) => {
+        if (await confirmAction('Supprimer ce message ? Cette action est irréversible.')) {
             router.delete(route('admin.class-discussions.destroy', message.id), { preserveScroll: true });
         }
     };

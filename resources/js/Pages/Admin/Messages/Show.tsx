@@ -2,12 +2,13 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { ContactMessage } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, Mail, Trash2 } from 'lucide-react';
 
 export default function Show({ contactMessage }: { contactMessage: ContactMessage }) {
-    const destroy = () => {
-        if (confirm(`Supprimer le message de "${contactMessage.name}" ? Cette action est irréversible.`)) {
+    const destroy = async () => {
+        if (await confirmAction(`Supprimer le message de "${contactMessage.name}" ? Cette action est irréversible.`)) {
             router.delete(route('admin.messages.destroy', contactMessage.id), {
                 onSuccess: () => router.visit(route('admin.messages.index')),
             });

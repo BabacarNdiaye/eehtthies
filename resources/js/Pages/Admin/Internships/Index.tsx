@@ -6,6 +6,7 @@ import StatusBadge from '@/Components/Admin/StatusBadge';
 import { Select } from '@/Components/Admin/Field';
 import { IconAnchor, IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Internship, Paginated } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Download, Inbox, Pencil, Trash2 } from 'lucide-react';
 
@@ -20,8 +21,8 @@ export default function Index({ internships, statuses, filters }: Props) {
         router.get(route('admin.internships.index'), { status: filters.status ?? '', ...overrides }, { preserveState: true, replace: true });
     };
 
-    const destroy = (internship: Internship) => {
-        if (confirm(`Supprimer le stage "${internship.title}" ?`)) {
+    const destroy = async (internship: Internship) => {
+        if (await confirmAction(`Supprimer le stage "${internship.title}" ?`)) {
             router.delete(route('admin.internships.destroy', internship.id));
         }
     };

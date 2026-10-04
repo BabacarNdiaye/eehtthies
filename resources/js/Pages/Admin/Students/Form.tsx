@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import { Checkbox, Field, Select, TextInput, Textarea } from '@/Components/Admin/Field';
 import FormActions from '@/Components/Admin/FormActions';
 import { ReportCard, Student, StudentDocument } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Archive, Download, FileCheck, GraduationCap, IdCard, KeyRound, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
@@ -731,8 +732,8 @@ function DocumentsCard({
                                 </a>
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        if (confirm('Supprimer ce document ?')) {
+                                    onClick={async () => {
+                                        if (await confirmAction('Supprimer ce document ?')) {
                                             router.delete(
                                                 route('admin.students.documents.destroy', [student.id, doc.id]),
                                                 { preserveScroll: true },

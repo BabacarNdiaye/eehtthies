@@ -3,12 +3,13 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Faq } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
 
 export default function Index({ faqs }: { faqs: Faq[] }) {
-    const destroy = (faq: Faq) => {
-        if (confirm('Supprimer cette question ? Cette action est irréversible.')) {
+    const destroy = async (faq: Faq) => {
+        if (await confirmAction('Supprimer cette question ? Cette action est irréversible.')) {
             router.delete(route('admin.faqs.destroy', faq.id));
         }
     };

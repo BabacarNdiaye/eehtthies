@@ -4,12 +4,13 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, PracticalSession } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2 } from 'lucide-react';
 
 export default function Index({ sessions }: { sessions: Paginated<PracticalSession & { items_count: number }> }) {
-    const destroy = (session: PracticalSession) => {
-        if (confirm(`Supprimer la séance "${session.title}" ?`)) {
+    const destroy = async (session: PracticalSession) => {
+        if (await confirmAction(`Supprimer la séance "${session.title}" ?`)) {
             router.delete(route('admin.practical-sessions.destroy', session.id));
         }
     };

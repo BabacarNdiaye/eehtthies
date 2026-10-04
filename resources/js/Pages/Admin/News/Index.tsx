@@ -4,13 +4,14 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { NewsArticle, Paginated } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Inbox, Pencil, Star, Trash2 } from 'lucide-react';
 
 export default function Index({ articles }: { articles: Paginated<NewsArticle> }) {
-    const destroy = (article: NewsArticle) => {
+    const destroy = async (article: NewsArticle) => {
         if (
-            confirm(
+            await confirmAction(
                 `Supprimer l'article "${article.title}" ? Cette action est irréversible.`,
             )
         ) {

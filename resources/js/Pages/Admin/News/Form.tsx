@@ -4,6 +4,7 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Textarea, Select, Checkbox } from '@/Components/Admin/Field';
 import FormActions from '@/Components/Admin/FormActions';
 import { NewsArticle } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { ChangeEvent, useState } from 'react';
 import { Trash2 } from 'lucide-react';
@@ -213,8 +214,8 @@ function PhotosCard({ article }: { article: NewsArticle }) {
                             <img src={`/storage/${photo.path}`} alt="" className="h-24 w-full object-cover" />
                             <button
                                 type="button"
-                                onClick={() => {
-                                    if (confirm('Supprimer cette photo ?')) {
+                                onClick={async () => {
+                                    if (await confirmAction('Supprimer cette photo ?')) {
                                         router.delete(
                                             route('admin.news.photos.destroy', [article.id, photo.id]),
                                             { preserveScroll: true },

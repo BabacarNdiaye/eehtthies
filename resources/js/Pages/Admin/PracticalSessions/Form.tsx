@@ -5,6 +5,7 @@ import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
 import { IconButton } from '@/Components/Admin/IconButton';
 import FormActions from '@/Components/Admin/FormActions';
 import { PracticalSession } from '@/types';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -57,8 +58,8 @@ export default function Form({ session, schoolClasses, subjects, teachers, produ
         });
     };
 
-    const removeItem = (itemId: number) => {
-        if (confirm('Retirer ce produit de la séance ? Le stock consommé sera restitué.')) {
+    const removeItem = async (itemId: number) => {
+        if (await confirmAction('Retirer ce produit de la séance ? Le stock consommé sera restitué.')) {
             router.delete(route('admin.practical-sessions.items.destroy', [session!.id, itemId]), { preserveScroll: true });
         }
     };

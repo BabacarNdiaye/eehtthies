@@ -5,6 +5,7 @@ import FilterBar, { SearchField } from '@/Components/Admin/FilterBar';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, TextInput, Checkbox } from '@/Components/Admin/Field';
 import { IconButton } from '@/Components/Admin/IconButton';
+import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -67,8 +68,8 @@ export default function Index({ accounts, natures, filters }: Props) {
         });
     };
 
-    const destroy = (account: AccountRow) => {
-        if (confirm(`Supprimer le compte "${account.code} — ${account.name}" ?`)) {
+    const destroy = async (account: AccountRow) => {
+        if (await confirmAction(`Supprimer le compte "${account.code} — ${account.name}" ?`)) {
             router.delete(route('admin.accounting.accounts.destroy', account.id), { preserveScroll: true });
         }
     };
