@@ -48,6 +48,15 @@
     body[data-portal] .connect-fab {
         display: none;
     }
+
+    /* Page de saisie en étapes du site public : barre Précédent / Continuer à la place de la barre du bas. */
+    body[data-site-form] {
+        --portal-bar-h: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    body[data-site-form] .connect-fab {
+        display: none;
+    }
 }
 
 /* Application installée : le navigateur n'offre plus « tirer pour actualiser », l'application le fait elle-même. */

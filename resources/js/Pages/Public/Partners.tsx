@@ -18,7 +18,7 @@ export default function Partners({ partners }: { partners: Partner[] }) {
                 subtitle="L'EEHT de Thiès collabore avec des hôtels, restaurants, agences de voyage et institutions qui accompagnent nos étudiants vers l'insertion professionnelle."
             />
 
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {partners.length === 0 ? (
                         <p className="text-center text-ink-500">
@@ -50,9 +50,9 @@ export default function Partners({ partners }: { partners: Partner[] }) {
                                                 )}
                                             </div>
                                             <div>
-                                                <h3 className="font-serif text-base font-bold text-ink-900">
+                                                <h2 className="font-serif text-base font-bold text-ink-900">
                                                     {partner.name}
-                                                </h3>
+                                                </h2>
                                                 {partner.type && (
                                                     <span className="mt-1 inline-block rounded-full bg-gold-50 px-2.5 py-0.5 text-xs font-medium text-gold-700">
                                                         {partner.type}
@@ -89,9 +89,9 @@ export default function Partners({ partners }: { partners: Partner[] }) {
                                 <Handshake className="h-6 w-6 text-gold-400" />
                             </span>
                             <div>
-                                <h3 className="font-serif text-lg font-bold text-ink-900">
+                                <h2 className="font-serif text-lg font-bold text-ink-900">
                                     Devenir partenaire de l'EEHT
-                                </h3>
+                                </h2>
                                 <p className="mt-1 text-sm text-ink-500">
                                     Vous représentez une entreprise du secteur
                                     et souhaitez collaborer avec nous ?

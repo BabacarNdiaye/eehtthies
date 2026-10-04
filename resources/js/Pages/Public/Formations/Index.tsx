@@ -48,18 +48,24 @@ export default function FormationsIndex({
                 </span>
             </PageHero>
 
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {diplomaFilters.length > 0 && (
-                        <Reveal className="mb-10 rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-                            <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-ink-400">
+                        <Reveal className="mb-6 rounded-2xl border border-ink-100 bg-white p-4 shadow-soft sm:mb-10 sm:p-6">
+                            <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-ink-500">
                                 Diplôme
                             </div>
-                            <div className="flex flex-wrap gap-2">
+                            {/* Sur téléphone : une seule rangée qui se balaie (au lieu de plusieurs lignes de pastilles). */}
+                            <div
+                                role="group"
+                                aria-label="Filtrer par diplôme"
+                                className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0"
+                            >
                                 <button
                                     type="button"
                                     onClick={() => setActiveDiploma(null)}
-                                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                                    aria-pressed={activeDiploma === null}
+                                    className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 sm:py-2 ${
                                         activeDiploma === null
                                             ? 'bg-ink-900 text-white'
                                             : 'border border-ink-200 text-ink-600 hover:-translate-y-0.5 hover:bg-ink-50'
@@ -72,7 +78,8 @@ export default function FormationsIndex({
                                         key={diploma}
                                         type="button"
                                         onClick={() => setActiveDiploma(diploma)}
-                                        className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                                        aria-pressed={activeDiploma === diploma}
+                                        className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 sm:py-2 ${
                                             activeDiploma === diploma
                                                 ? 'bg-ink-900 text-white'
                                                 : 'border border-ink-200 text-ink-600 hover:-translate-y-0.5 hover:bg-ink-50'
@@ -109,12 +116,13 @@ export default function FormationsIndex({
                                 return (
                                     <Reveal key={formation.id} delay={(i % 6) * 70}>
                                         <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-elevated">
-                                            <div className="relative h-48 w-full overflow-hidden">
+                                            <div className="relative h-40 w-full overflow-hidden sm:h-48">
                                                 {image ? (
                                                     <img
                                                         src={image}
-                                                        alt={formation.name}
+                                                        alt=""
                                                         loading="lazy"
+                                                        decoding="async"
                                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
                                                 ) : (
@@ -129,10 +137,10 @@ export default function FormationsIndex({
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className="flex flex-1 flex-col p-6">
-                                                <h3 className="font-serif text-lg font-bold text-ink-900 transition-colors duration-200 group-hover:text-gold-600">
+                                            <div className="flex flex-1 flex-col p-5 sm:p-6">
+                                                <h2 className="font-serif text-lg font-bold text-ink-900 transition-colors duration-200 group-hover:text-gold-600">
                                                     {formation.name}
-                                                </h3>
+                                                </h2>
                                                 <div className="mt-3 flex flex-wrap gap-2">
                                                     {formation.diploma_recognition && (
                                                         <span className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2.5 py-1 text-xs font-semibold text-gold-800 ring-1 ring-inset ring-gold-600/30">
@@ -141,25 +149,25 @@ export default function FormationsIndex({
                                                         </span>
                                                     )}
                                                     {formation.diploma && (
-                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-700 ring-1 ring-inset ring-leaf-600/20">
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-800 ring-1 ring-inset ring-leaf-600/20">
                                                             <GraduationCap className="h-3.5 w-3.5" />
                                                             {formation.diploma}
                                                         </span>
                                                     )}
                                                     {formation.duration && (
-                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-700 ring-1 ring-inset ring-leaf-600/20">
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-800 ring-1 ring-inset ring-leaf-600/20">
                                                             <Clock className="h-3.5 w-3.5" />
                                                             {formation.duration}
                                                         </span>
                                                     )}
                                                     {formation.level && (
-                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-700 ring-1 ring-inset ring-leaf-600/20">
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-800 ring-1 ring-inset ring-leaf-600/20">
                                                             <BarChart3 className="h-3.5 w-3.5" />
                                                             {formation.level}
                                                         </span>
                                                     )}
                                                     {formation.capacity && (
-                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-700 ring-1 ring-inset ring-leaf-600/20">
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-800 ring-1 ring-inset ring-leaf-600/20">
                                                             <Users className="h-3.5 w-3.5" />
                                                             {formation.capacity} places
                                                         </span>
@@ -201,7 +209,7 @@ export default function FormationsIndex({
                 </div>
             </section>
 
-            <section className="relative overflow-hidden bg-ink-950 py-20 sm:py-24">
+            <section className="relative overflow-hidden bg-ink-950 py-12 sm:py-24">
                 <PatternOverlay />
                 <div
                     className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-gold-500/10 blur-3xl"

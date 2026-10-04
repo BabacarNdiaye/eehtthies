@@ -23,7 +23,7 @@ export default function Testimonials({
                 subtitle="Découvrez les parcours et les retours de nos étudiants, diplômés et partenaires sur leur expérience à l'EEHT de Thiès."
             />
 
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                     {testimonials.length === 0 ? (
                         <p className="text-center text-ink-500">

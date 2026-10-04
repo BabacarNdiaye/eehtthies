@@ -41,7 +41,7 @@ export default function EventsIndex({
                 subtitle="Journées portes ouvertes, salons professionnels, concours culinaires, remises de diplômes... Suivez l'actualité événementielle de l'EEHT de Thiès."
             />
 
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                     <Reveal className="mb-6 flex items-center gap-2">
                         <PartyPopper className="h-5 w-5 text-gold-500" />
@@ -100,7 +100,7 @@ export default function EventsIndex({
                 </div>
             </section>
 
-            <section className="bg-ink-50 py-20 sm:py-24">
+            <section className="bg-ink-50 py-12 sm:py-24">
                 <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                     <Reveal className="mb-6 flex items-center gap-2">
                         <CalendarDays className="h-5 w-5 text-ink-400" />

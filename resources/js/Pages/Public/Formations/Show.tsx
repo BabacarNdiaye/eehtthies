@@ -5,6 +5,7 @@ import Reveal from '@/Components/Public/Reveal';
 import { Formation, PageProps, Testimonial } from '@/types';
 import { formatDateLong, formatFcfa, initials, storageUrl } from '@/lib/publicFormat';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import {
     ArrowRight,
     Award,
@@ -71,6 +72,48 @@ function feeLabel(value: string | number | null | undefined): string {
     return numeric ? formatFcfa(value) : 'Nous consulter';
 }
 
+/**
+ * Présentation de la formation dans le hero. Sur téléphone, le texte complet repoussait « Candidater » sous la ligne de
+ * flottaison : on n'en montre que quatre lignes, avec « Lire la suite » quand il y en a davantage. (Pas de `block` avec
+ * line-clamp : il annulerait la troncature.)
+ */
+function ClampedText({ text }: { text: string }) {
+    const ref = useRef<HTMLParagraphElement>(null);
+    const [open, setOpen] = useState(false);
+    const [overflowing, setOverflowing] = useState(false);
+
+    useLayoutEffect(() => {
+        const el = ref.current;
+
+        if (!el || open) return;
+
+        const measure = () => setOverflowing(el.scrollHeight > el.clientHeight + 1);
+
+        measure();
+        window.addEventListener('resize', measure);
+
+        return () => window.removeEventListener('resize', measure);
+    }, [text, open]);
+
+    return (
+        <>
+            <p ref={ref} className={`mt-5 max-w-xl text-base leading-relaxed text-ink-200 ${open ? '' : 'line-clamp-4 sm:line-clamp-none'}`}>
+                {text}
+            </p>
+            {(overflowing || open) && (
+                <button
+                    type="button"
+                    onClick={() => setOpen((value) => !value)}
+                    aria-expanded={open}
+                    className="mt-2 text-sm font-semibold text-gold-300 underline underline-offset-4 sm:hidden"
+                >
+                    {open ? 'Réduire' : 'Lire la suite'}
+                </button>
+            )}
+        </>
+    );
+}
+
 function StatBox({ label, value }: { label: string; value: string }) {
     return (
         <div>
@@ -112,7 +155,7 @@ export default function FormationsShow({
         <PublicLayout>
             <Head title={`${formation.name} - EEHT de Thiès`} />
 
-            <section className="relative overflow-hidden bg-ink-900 pb-16 pt-14 sm:pb-20 sm:pt-16">
+            <section className="relative overflow-hidden bg-ink-900 pb-10 pt-8 sm:pb-20 sm:pt-16">
                 <div
                     className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-gold-500/10 blur-3xl"
                     aria-hidden
@@ -138,11 +181,7 @@ export default function FormationsShow({
                             <h1 className="font-serif text-3xl font-bold leading-tight text-white sm:text-4xl">
                                 {formation.name}
                             </h1>
-                            {formation.description && (
-                                <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-200">
-                                    {formation.description}
-                                </p>
-                            )}
+                            {formation.description && <ClampedText text={formation.description} />}
                             <div className="mt-6 flex flex-wrap gap-3">
                                 {formation.diploma_recognition && (
                                     <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-3 py-1.5 text-sm font-semibold text-ink-900">
@@ -169,17 +208,17 @@ export default function FormationsShow({
                                     </span>
                                 )}
                             </div>
-                            <div className="mt-8 flex flex-wrap gap-3">
+                            <div className="mt-6 flex flex-wrap gap-3 sm:mt-8">
                                 <Link
                                     href={route('candidature.create', { formation: formation.slug })}
-                                    className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-6 py-3 text-sm font-semibold text-ink-900 shadow-soft transition-colors duration-150 hover:bg-gold-400"
+                                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-500 px-6 py-3 text-sm font-semibold text-ink-900 shadow-soft transition-colors duration-150 hover:bg-gold-400 sm:w-auto"
                                 >
                                     Candidater pour cette formation
                                 </Link>
                                 {visibleTabs.length > 0 && (
                                     <a
                                         href={`#${visibleTabs[0].id}`}
-                                        className="inline-flex items-center gap-2 rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-white/10"
+                                        className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-white/10 sm:w-auto"
                                     >
                                         Découvrir le programme
                                     </a>
@@ -196,11 +235,11 @@ export default function FormationsShow({
                                     <img
                                         src={image}
                                         alt={formation.name}
-                                        className="h-56 w-full object-cover sm:h-64 lg:h-72"
+                                        className="h-44 w-full object-cover sm:h-64 lg:h-72"
                                     />
                                 ) : (
                                     <ImagePlaceholder
-                                        className="h-56 w-full sm:h-64 lg:h-72"
+                                        className="h-44 w-full sm:h-64 lg:h-72"
                                         icon={ChefHat}
                                     />
                                 )}
@@ -231,8 +270,8 @@ export default function FormationsShow({
             </section>
 
             {visibleTabs.length > 1 && (
-                <div className="z-30 border-b border-ink-100 bg-white/95 lg:sticky lg:top-[105px] lg:backdrop-blur">
-                    <div className="mx-auto max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8">
+                <div className="sticky top-[65px] z-30 border-b border-ink-100 bg-white/95 backdrop-blur lg:top-[105px]">
+                    <div className="scrollbar-none mx-auto max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex gap-8 whitespace-nowrap">
                             {visibleTabs.map((tab) => (
                                 <a
@@ -249,7 +288,7 @@ export default function FormationsShow({
             )}
 
             {hasPresentation && (
-                <section id="presentation" className="scroll-mt-[160px] py-16 sm:py-20">
+                <section id="presentation" className="scroll-mt-[160px] py-10 sm:py-20">
                     <Reveal className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                         <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
                             Présentation
@@ -304,7 +343,7 @@ export default function FormationsShow({
             )}
 
             {hasAdmission && (
-                <section id="admission" className="scroll-mt-[160px] bg-ink-50/70 py-16 sm:py-20">
+                <section id="admission" className="scroll-mt-[160px] bg-ink-50/70 py-10 sm:py-20">
                     <Reveal className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                         <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
                             Rejoindre la promotion
@@ -343,7 +382,7 @@ export default function FormationsShow({
             )}
 
             {hasProgramme && (
-                <section id="programme" className="scroll-mt-[160px] py-16 sm:py-20">
+                <section id="programme" className="scroll-mt-[160px] py-10 sm:py-20">
                     <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                         <Reveal>
                             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
@@ -363,7 +402,7 @@ export default function FormationsShow({
                                             <Reveal key={i} delay={(i % 4) * 80}>
                                                 <div className="h-full rounded-2xl border border-ink-100 bg-white p-6 shadow-sm transition-shadow duration-200 hover:shadow-soft">
                                                     {section.heading && (
-                                                        <h3 className="text-xs font-bold uppercase tracking-widest text-gold-600">
+                                                        <h3 className="text-xs font-bold uppercase tracking-widest text-gold-700">
                                                             {section.heading}
                                                         </h3>
                                                     )}
@@ -416,7 +455,7 @@ export default function FormationsShow({
             )}
 
             {hasDebouches && (
-                <section id="debouches" className="scroll-mt-[160px] bg-ink-50/70 py-16 sm:py-20">
+                <section id="debouches" className="scroll-mt-[160px] bg-ink-50/70 py-10 sm:py-20">
                     <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                         <Reveal>
                             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
@@ -455,7 +494,7 @@ export default function FormationsShow({
             )}
 
             {hasTemoignages && (
-                <section id="temoignages" className="scroll-mt-[160px] py-16 sm:py-20">
+                <section id="temoignages" className="scroll-mt-[160px] py-10 sm:py-20">
                     <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                         <Reveal>
                             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
@@ -500,7 +539,7 @@ export default function FormationsShow({
                 </section>
             )}
 
-            <section id="rentree-contact" className="scroll-mt-[160px] bg-ink-50/70 py-16 sm:py-20">
+            <section id="rentree-contact" className="scroll-mt-[160px] bg-ink-50/70 py-10 sm:py-20">
                 <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
@@ -611,7 +650,7 @@ export default function FormationsShow({
             </section>
 
             {others.length > 0 && (
-                <section className="bg-ink-50/70 py-16 sm:py-20">
+                <section className="bg-ink-50/70 py-10 sm:py-20">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <Reveal className="mb-8 flex items-end justify-between">
                             <h2 className="font-serif text-2xl font-bold text-ink-900">
@@ -660,13 +699,13 @@ export default function FormationsShow({
                                                 </h3>
                                                 <div className="mt-3 flex flex-wrap gap-2">
                                                     {other.diploma && (
-                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-700 ring-1 ring-inset ring-leaf-600/20">
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-800 ring-1 ring-inset ring-leaf-600/20">
                                                             <GraduationCap className="h-3.5 w-3.5" />
                                                             {other.diploma}
                                                         </span>
                                                     )}
                                                     {other.duration && (
-                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-700 ring-1 ring-inset ring-leaf-600/20">
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-800 ring-1 ring-inset ring-leaf-600/20">
                                                             <Clock className="h-3.5 w-3.5" />
                                                             {other.duration}
                                                         </span>

@@ -32,7 +32,7 @@ export default function Index({ offers }: { offers: JobOffer[] }) {
                 subtitle="Retrouvez les opportunités d'emploi proposées par les entreprises partenaires de l'EEHT de Thiès."
             />
 
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                     {offers.length === 0 ? (
                         <p className="text-center text-ink-500">Aucune offre d'emploi disponible pour le moment.</p>
@@ -52,7 +52,7 @@ export default function Index({ offers }: { offers: JobOffer[] }) {
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex flex-wrap items-center gap-3">
-                                                <h3 className="font-serif text-lg font-bold text-ink-900">{offer.title}</h3>
+                                                <h2 className="font-serif text-lg font-bold text-ink-900">{offer.title}</h2>
                                                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${contractStyles[offer.contract_type]}`}>
                                                     {contractLabels[offer.contract_type]}
                                                 </span>
@@ -73,7 +73,7 @@ export default function Index({ offers }: { offers: JobOffer[] }) {
                     )}
 
                     <Reveal className="mt-16 rounded-2xl bg-ink-50 px-8 py-10 text-center">
-                        <h3 className="font-serif text-lg font-bold text-ink-900">Vous recrutez ?</h3>
+                        <h2 className="font-serif text-lg font-bold text-ink-900">Vous recrutez ?</h2>
                         <p className="mx-auto mt-2 max-w-xl text-sm text-ink-500">
                             Confiez-nous vos offres d'emploi et accédez à un vivier de jeunes professionnels formés aux
                             métiers de l'hôtellerie, de la restauration et du tourisme.

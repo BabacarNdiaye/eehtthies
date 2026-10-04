@@ -17,7 +17,7 @@ export default function PageHero({
     children?: ReactNode;
 }) {
     return (
-        <section className="relative overflow-hidden bg-ink-900 py-24 sm:py-28">
+        <section className="relative overflow-hidden bg-ink-900 py-12 sm:py-28">
             <PatternOverlay />
             <div
                 className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-gold-500/10 blur-3xl"
@@ -29,11 +29,11 @@ export default function PageHero({
                         {eyebrow}
                     </span>
                 )}
-                <h1 className="font-serif text-4xl font-bold text-white sm:text-5xl">
+                <h1 className="font-serif text-3xl font-bold text-white sm:text-5xl">
                     {title}
                 </h1>
                 {subtitle && (
-                    <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-ink-300">
+                    <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-ink-300 sm:mt-5 sm:text-lg">
                         {subtitle}
                     </p>
                 )}

@@ -22,7 +22,7 @@ export default function NewsIndex({
                 subtitle="Toute l'actualité de l'EEHT de Thiès : événements, réussites de nos étudiants, partenariats et vie pédagogique."
             />
 
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {articles.data.length === 0 ? (
                         <p className="text-center text-ink-500">
@@ -62,9 +62,9 @@ export default function NewsIndex({
                                                     {article.category}
                                                 </span>
                                             )}
-                                            <h3 className="font-serif text-lg font-bold text-ink-900 transition group-hover:text-gold-600">
+                                            <h2 className="font-serif text-lg font-bold text-ink-900 transition group-hover:text-gold-600">
                                                 {article.title}
-                                            </h3>
+                                            </h2>
                                             {article.excerpt && (
                                                 <p className="mt-2 line-clamp-3 flex-1 text-sm leading-relaxed text-ink-500">
                                                     {article.excerpt}

@@ -30,7 +30,7 @@ export default function Index({ alumni }: { alumni: Alumnus[] }) {
                 subtitle="Découvrez le parcours de nos diplômés, aujourd'hui en poste dans l'hôtellerie, la restauration et le tourisme."
             />
 
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                     {alumni.length === 0 ? (
                         <p className="text-center text-ink-500">L'annuaire des anciens élèves sera bientôt disponible.</p>
@@ -50,9 +50,9 @@ export default function Index({ alumni }: { alumni: Alumnus[] }) {
                                                 )}
                                             </div>
                                             <div>
-                                                <h3 className="font-serif text-base font-bold text-ink-900">
+                                                <h2 className="font-serif text-base font-bold text-ink-900">
                                                     {alumnus.first_name} {alumnus.last_name}
-                                                </h3>
+                                                </h2>
                                                 {alumnus.formation && (
                                                     <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-ink-500">
                                                         <GraduationCap className="h-3.5 w-3.5 text-gold-600" />

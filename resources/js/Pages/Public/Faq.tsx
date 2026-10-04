@@ -20,7 +20,7 @@ export default function Faq({ faqs }: { faqs: Record<string, FaqType[]> }) {
                 subtitle="Retrouvez les réponses aux questions les plus fréquemment posées sur nos formations, l'admission et la vie à l'EEHT de Thiès."
             />
 
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                     {categories.length === 0 && (
                         <p className="text-center text-ink-500">

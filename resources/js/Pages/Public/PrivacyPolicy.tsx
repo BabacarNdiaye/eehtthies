@@ -25,7 +25,7 @@ export default function PrivacyPolicy() {
                 subtitle="Comment l'EEHT de Thiès collecte, utilise et protège vos données personnelles."
             />
 
-            <section className="bg-white py-16 sm:py-20">
+            <section className="bg-white py-10 sm:py-20">
                 <Reveal className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                     <p className="mb-8 text-sm leading-relaxed text-ink-500">
                         Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}.

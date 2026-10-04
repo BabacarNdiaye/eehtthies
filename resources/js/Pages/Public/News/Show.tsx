@@ -58,7 +58,7 @@ export default function NewsShow({
                 </div>
             </section>
 
-            <section className="py-16 sm:py-20">
+            <section className="py-10 sm:py-20">
                 <Reveal className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                     <div className="whitespace-pre-line text-base leading-relaxed text-ink-700">
                         {article.content}
@@ -104,7 +104,7 @@ export default function NewsShow({
             </section>
 
             {others.length > 0 && (
-                <section className="bg-ink-50 py-16 sm:py-20">
+                <section className="bg-ink-50 py-10 sm:py-20">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <Reveal>
                             <h2 className="mb-8 font-serif text-2xl font-bold text-ink-900">

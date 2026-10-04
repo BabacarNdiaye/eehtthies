@@ -1,11 +1,15 @@
-import PublicLayout from '@/Layouts/PublicLayout';
+import { Field, TextInput } from '@/Components/Admin/Field';
 import PageHero from '@/Components/Public/PageHero';
 import Reveal from '@/Components/Public/Reveal';
-import { Candidature } from '@/types';
+import PublicLayout from '@/Layouts/PublicLayout';
 import { formatDateLong } from '@/lib/publicFormat';
+import { Candidature } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { AlertCircle, Search, User } from 'lucide-react';
 import { FormEvent } from 'react';
+
+/** Champs de saisie : 16 px sur téléphone (le navigateur ne zoome pas à la saisie), 14 px ensuite. */
+const input = 'text-base sm:text-sm';
 
 const statusPalette: Record<string, string> = {
     brouillon: 'bg-ink-100 text-ink-600',
@@ -70,56 +74,44 @@ export default function Track({
                 subtitle="Renseignez votre référence de candidature et votre adresse e-mail pour connaître l'état d'avancement de votre dossier."
             />
 
-            <section className="py-20 sm:py-24">
+            <section className="py-10 sm:py-24">
                 <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
                     <Reveal>
                     <form
                         onSubmit={submit}
-                        className="rounded-2xl border border-ink-100 bg-white p-8 shadow-soft"
+                        className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft sm:p-8"
                     >
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                            <div>
-                                <label className="mb-1.5 block text-sm font-medium text-ink-700">
-                                    Référence de candidature *
-                                </label>
-                                <input
+                            <Field label="Référence de candidature" required error={errors.reference}>
+                                <TextInput
                                     type="text"
                                     placeholder="Ex : CAND-2026-0001"
                                     value={data.reference}
-                                    onChange={(e) =>
-                                        setData('reference', e.target.value)
-                                    }
-                                    className="w-full rounded-lg border-ink-200 text-sm focus:border-gold-500 focus:ring-gold-500"
+                                    onChange={(e) => setData('reference', e.target.value)}
+                                    autoCapitalize="characters"
+                                    autoComplete="off"
+                                    aria-invalid={!!errors.reference}
+                                    aria-required
+                                    className={input}
                                 />
-                                {errors.reference && (
-                                    <p className="mt-1.5 text-xs text-red-600">
-                                        {errors.reference}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="mb-1.5 block text-sm font-medium text-ink-700">
-                                    Adresse email *
-                                </label>
-                                <input
+                            </Field>
+                            <Field label="Adresse email" required error={errors.email}>
+                                <TextInput
                                     type="email"
+                                    inputMode="email"
                                     value={data.email}
-                                    onChange={(e) =>
-                                        setData('email', e.target.value)
-                                    }
-                                    className="w-full rounded-lg border-ink-200 text-sm focus:border-gold-500 focus:ring-gold-500"
+                                    onChange={(e) => setData('email', e.target.value)}
+                                    autoComplete="email"
+                                    aria-invalid={!!errors.email}
+                                    aria-required
+                                    className={input}
                                 />
-                                {errors.email && (
-                                    <p className="mt-1.5 text-xs text-red-600">
-                                        {errors.email}
-                                    </p>
-                                )}
-                            </div>
+                            </Field>
                         </div>
                         <button
                             type="submit"
                             disabled={processing}
-                            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-500 px-6 py-3 text-sm font-semibold text-ink-900 shadow-soft transition hover:-translate-y-0.5 hover:bg-gold-400 disabled:opacity-60 disabled:hover:translate-y-0 sm:w-auto"
+                            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-500 px-6 py-3.5 text-sm font-semibold text-ink-900 shadow-soft transition hover:-translate-y-0.5 hover:bg-gold-400 disabled:opacity-60 disabled:hover:translate-y-0 sm:w-auto sm:py-3"
                         >
                             <Search className="h-4 w-4" />
                             {processing ? 'Recherche...' : 'Rechercher'}
@@ -128,19 +120,19 @@ export default function Track({
                     </Reveal>
 
                     {searched && (
-                        <div className="mt-8 animate-fade-in-up">
+                        <div className="mt-8 animate-fade-in-up" role="status">
                             {result ? (
-                                <div className="rounded-2xl border border-ink-100 bg-white p-8 shadow-sm">
+                                <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm sm:p-8">
                                     <div className="flex flex-wrap items-center justify-between gap-4">
                                         <div className="flex items-center gap-3">
                                             <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-900">
                                                 <User className="h-5 w-5 text-gold-400" />
                                             </span>
                                             <div>
-                                                <h3 className="font-serif text-lg font-bold text-ink-900">
+                                                <h2 className="font-serif text-lg font-bold text-ink-900">
                                                     {result.first_name}{' '}
                                                     {result.last_name}
-                                                </h3>
+                                                </h2>
                                                 <p className="text-sm text-ink-500">
                                                     Réf. {result.reference}
                                                 </p>
@@ -151,7 +143,7 @@ export default function Track({
 
                                     <dl className="mt-6 grid grid-cols-1 gap-4 border-t border-ink-100 pt-6 text-sm sm:grid-cols-2">
                                         <div>
-                                            <dt className="text-ink-400">
+                                            <dt className="text-ink-500">
                                                 Formation demandée
                                             </dt>
                                             <dd className="mt-1 font-medium text-ink-800">
@@ -160,7 +152,7 @@ export default function Track({
                                             </dd>
                                         </div>
                                         <div>
-                                            <dt className="text-ink-400">
+                                            <dt className="text-ink-500">
                                                 Date de soumission
                                             </dt>
                                             <dd className="mt-1 font-medium text-ink-800">

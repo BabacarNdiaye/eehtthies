@@ -18,7 +18,7 @@ export default function Index({ offers }: { offers: InternshipOffer[] }) {
                 subtitle="Découvrez les opportunités de stage proposées par nos entreprises partenaires dans l'hôtellerie, la restauration et le tourisme."
             />
 
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                     {offers.length === 0 ? (
                         <p className="text-center text-ink-500">Aucune offre de stage disponible pour le moment. Revenez bientôt !</p>
@@ -37,7 +37,7 @@ export default function Index({ offers }: { offers: InternshipOffer[] }) {
                                             )}
                                         </div>
                                         <div className="flex-1">
-                                            <h3 className="font-serif text-lg font-bold text-ink-900">{offer.title}</h3>
+                                            <h2 className="font-serif text-lg font-bold text-ink-900">{offer.title}</h2>
                                             <p className="text-sm font-medium text-gold-700">{offer.partner?.name}</p>
                                             {offer.description && <p className="mt-3 text-sm leading-relaxed text-ink-500">{offer.description}</p>}
                                             <div className="mt-4 flex flex-wrap gap-4 text-xs text-ink-500">
@@ -68,7 +68,7 @@ export default function Index({ offers }: { offers: InternshipOffer[] }) {
                     )}
 
                     <Reveal className="mt-16 rounded-2xl bg-ink-50 px-8 py-10 text-center">
-                        <h3 className="font-serif text-lg font-bold text-ink-900">Intéressé(e) par une offre ?</h3>
+                        <h2 className="font-serif text-lg font-bold text-ink-900">Intéressé(e) par une offre ?</h2>
                         <p className="mx-auto mt-2 max-w-xl text-sm text-ink-500">
                             Contactez le service des stages de l'EEHT ou rendez-vous dans votre espace élève pour candidater.
                         </p>

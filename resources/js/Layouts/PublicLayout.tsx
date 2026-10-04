@@ -45,15 +45,16 @@ export default function PublicLayout({ children, hideBar = false }: PropsWithChi
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    // <body data-site-bar> : le CSS réserve alors la place de la barre du bas (variable --portal-bar-h) aux éléments
-    // flottants — bouton EEHT Connect, bannière d'installation.
+    // <body data-site-bar> : le CSS réserve la place de la barre du bas (variable --portal-bar-h) aux éléments
+    // flottants — bouton EEHT Connect, bannière d'installation. Sans barre (page de saisie en étapes), c'est
+    // <body data-site-form> : la place de la barre de l'assistant, et le bouton EEHT Connect est masqué.
     useEffect(() => {
-        if (hideBar) return;
+        const attribute = hideBar ? 'siteForm' : 'siteBar';
 
-        document.body.dataset.siteBar = '';
+        document.body.dataset[attribute] = '';
 
         return () => {
-            delete document.body.dataset.siteBar;
+            delete document.body.dataset[attribute];
         };
     }, [hideBar]);
 

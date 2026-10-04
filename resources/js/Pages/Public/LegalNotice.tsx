@@ -21,7 +21,7 @@ export default function LegalNotice() {
             <Head title="Mentions légales" />
             <PageHero eyebrow="Informations légales" title="Mentions légales" />
 
-            <section className="bg-white py-16 sm:py-20">
+            <section className="bg-white py-10 sm:py-20">
                 <Reveal className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                     <Section title="Éditeur du site">
                         <p>

@@ -18,7 +18,7 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
                 subtitle="Des enseignants expérimentés, issus des métiers de l'hôtellerie, de la restauration et du tourisme, engagés à transmettre leur savoir-faire à nos étudiants."
             />
 
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {teachers.length === 0 ? (
                         <p className="text-center text-ink-500">
@@ -53,10 +53,10 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
                                             )}
                                         </div>
                                         <div className="p-6">
-                                            <h3 className="font-serif text-lg font-bold text-ink-900">
+                                            <h2 className="font-serif text-lg font-bold text-ink-900">
                                                 {teacher.first_name}{' '}
                                                 {teacher.last_name}
-                                            </h3>
+                                            </h2>
                                             {teacher.specialty && (
                                                 <p className="mt-1 text-sm font-medium text-gold-700">
                                                     {teacher.specialty}

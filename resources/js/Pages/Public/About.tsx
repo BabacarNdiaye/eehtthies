@@ -82,7 +82,7 @@ Je vous invite à découvrir notre école, nos formations et notre engagement po
             />
 
             {/* Mot de la direction */}
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <SectionHeading
@@ -116,7 +116,7 @@ Je vous invite à découvrir notre école, nos formations et notre engagement po
             </section>
 
             {/* Mission / Vision / Valeurs */}
-            <section className="bg-ink-50 py-20 sm:py-24">
+            <section className="bg-ink-50 py-12 sm:py-24">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <SectionHeading
@@ -145,7 +145,7 @@ Je vous invite à découvrir notre école, nos formations et notre engagement po
             </section>
 
             {/* Notre histoire */}
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <SectionHeading
@@ -183,7 +183,7 @@ Je vous invite à découvrir notre école, nos formations et notre engagement po
             </section>
 
             {/* Infrastructures */}
-            <section className="bg-ink-900 py-20 sm:py-24">
+            <section className="bg-ink-900 py-12 sm:py-24">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <SectionHeading
@@ -214,7 +214,7 @@ Je vous invite à découvrir notre école, nos formations et notre engagement po
             </section>
 
             {/* CTA */}
-            <section className="py-20 sm:py-24">
+            <section className="py-12 sm:py-24">
                 <Reveal className="mx-auto flex max-w-4xl flex-col items-center gap-6 rounded-2xl bg-gold-50 px-8 py-14 text-center">
                     <Sparkles className="h-8 w-8 text-gold-600" />
                     <h2 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
