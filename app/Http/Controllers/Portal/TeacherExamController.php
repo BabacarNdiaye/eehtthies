@@ -11,6 +11,7 @@ use App\Models\Teacher;
 use App\Models\TimetableEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -187,6 +188,7 @@ class TeacherExamController extends Controller
             'exam' => $exam->load('schoolClass:id,name', 'subject:id,name'),
             'students' => $students,
             'grades' => $grades,
+            'statuses' => Grade::STATUSES,
         ]);
     }
 
@@ -199,19 +201,15 @@ class TeacherExamController extends Controller
             'grades' => ['required', 'array'],
             'grades.*.student_id' => ['required', 'exists:students,id'],
             'grades.*.score' => ['nullable', 'numeric', 'min:0', 'max:'.$exam->max_score],
-            'grades.*.is_absent' => ['boolean'],
+            'grades.*.status' => ['nullable', Rule::in(array_keys(Grade::STATUSES))],
+            'grades.*.is_absent' => ['boolean'], // ancien format, avant les statuts
             'grades.*.comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
         foreach ($data['grades'] as $entry) {
             Grade::updateOrCreate(
                 ['exam_id' => $exam->id, 'student_id' => $entry['student_id']],
-                [
-                    'score' => $entry['is_absent'] ?? false ? null : ($entry['score'] ?? null),
-                    'is_absent' => $entry['is_absent'] ?? false,
-                    'comment' => $entry['comment'] ?? null,
-                    'entered_by' => $request->user()->id,
-                ]
+                Grade::entryAttributes($entry, $request->user()->id)
             );
         }
 

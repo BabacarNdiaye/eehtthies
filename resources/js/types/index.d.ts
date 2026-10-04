@@ -438,11 +438,15 @@ export interface Exam {
     can_grade?: boolean;
 }
 
+/** Statut de l'élève à une épreuve : il décide de ce qu'une note manquante vaut au bulletin. */
+export type GradeStatus = 'present' | 'absent_justifie' | 'absent_non_justifie';
+
 export interface Grade {
     id: number;
     exam_id: number;
     student_id: number;
     score?: string | number | null;
+    status?: GradeStatus;
     is_absent: boolean;
     comment?: string | null;
 }
@@ -485,6 +489,10 @@ export interface SubjectBreakdown {
     appreciation: string | null;
     rank?: number | null;
     class_size?: number | null;
+    /** Faux quand rien ne compte pour l'élève dans cette matière : voir `status`. */
+    evaluated?: boolean;
+    /** evaluated · absence_justifiee (toutes les épreuves justifiées) · no_evaluation (aucune épreuve publiée). */
+    status?: 'evaluated' | 'absence_justifiee' | 'no_evaluation';
 }
 
 export interface Payment {

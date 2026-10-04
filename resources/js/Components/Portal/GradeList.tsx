@@ -1,3 +1,4 @@
+import { absenceLabel, gradeStatusOf } from '@/lib/gradeStatus';
 import { subjectStyle } from '@/lib/portal';
 import { Exam, Grade } from '@/types';
 import { ClipboardList } from 'lucide-react';
@@ -37,6 +38,8 @@ export default function GradeList({ exams, grades, limit }: { exams: GradedExam[
         <ul className="space-y-2.5">
             {rows.map((exam) => {
                 const grade = grades[exam.id];
+                const status = gradeStatusOf(grade);
+                const absence = absenceLabel(status);
                 const { icon: Icon, gradient } = subjectStyle(exam.subject?.name ?? '');
                 const max = Number(exam.max_score);
 
@@ -51,8 +54,14 @@ export default function GradeList({ exams, grades, limit }: { exams: GradedExam[
                                 {exam.subject?.name ?? 'Matière'} · {new Date(exam.exam_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
                             </p>
                         </div>
-                        {grade?.is_absent ? (
-                            <span className="shrink-0 rounded-full bg-ink-100 px-3 py-1.5 text-xs font-semibold text-ink-500">Absent(e)</span>
+                        {absence ? (
+                            <span
+                                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                                    status === 'absent_justifie' ? 'bg-ink-100 text-ink-600' : 'bg-red-100 text-red-700'
+                                }`}
+                            >
+                                {absence}
+                            </span>
                         ) : grade?.score != null ? (
                             <span className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-bold ${tone(Number(grade.score), max)}`}>
                                 {formatScore(grade.score)}

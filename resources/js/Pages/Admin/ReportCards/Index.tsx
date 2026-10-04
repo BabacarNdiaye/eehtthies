@@ -120,10 +120,22 @@ export default function Index({ reportCards, schoolClasses, academicYears, terms
                         <Award className="h-4 w-4" /> Générer
                     </button>
                 </form>
-                <p className="mt-3 text-xs text-ink-500">
-                    Le calcul se base sur les notes des épreuves publiées pour la classe, l'année et la période sélectionnées.
-                    Relancer la génération met à jour les bulletins existants.
-                </p>
+                <div className="mt-3 space-y-1.5 text-xs text-ink-500">
+                    <p>
+                        Le calcul se base sur les épreuves publiées pour la classe, l'année et la période sélectionnées. Toutes les matières de
+                        la classe figurent au bulletin ; une matière sans épreuve publiée, ou dont toutes les épreuves ont une absence
+                        justifiée, est « non évaluée » et n'entre pas dans la moyenne.
+                    </p>
+                    <p>
+                        Une absence non justifiée ou une note manquante compte 0 ; une absence justifiée est ignorée. Moyenne du semestre =
+                        Σ(moyenne de la matière × coefficient) ÷ Σ(coefficients). Au dernier semestre, la moyenne annuelle est (semestre 1 +
+                        semestre 2) ÷ 2 et décide du passage (seuil du niveau de la classe, 10/20 par défaut).
+                    </p>
+                    <p>
+                        Relancer la génération met à jour les bulletins existants — y compris leur décision et leur mention. Après un
+                        changement de notes ou de statuts, régénérez d'abord le semestre 1, puis le semestre 2.
+                    </p>
+                </div>
             </Card>
 
             <Card className="mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">

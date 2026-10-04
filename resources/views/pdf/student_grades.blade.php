@@ -38,7 +38,7 @@
                         <td>{{ $exam->title }}</td>
                         <td>{{ $exam->subject->name ?? '' }}</td>
                         <td>{{ optional($exam->exam_date)->format('d/m/Y') }}</td>
-                        <td>{{ $grade?->is_absent ? 'Absent(e)' : ($grade?->score !== null ? $grade->score.' / '.$exam->max_score : '—') }}</td>
+                        <td>{{ $grade?->is_absent ? ($grade->resolvedStatus() === \App\Models\Grade::ABSENT_JUSTIFIED ? 'Absent(e) justifié(e)' : 'Absent(e)') : ($grade?->score !== null ? $grade->score.' / '.$exam->max_score : '—') }}</td>
                     </tr>
                 @endforeach
             </tbody>

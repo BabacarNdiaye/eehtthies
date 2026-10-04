@@ -122,7 +122,10 @@
             @php($totalCoef = 0)
             @php($totalMoyX = 0)
             @forelse($subjects as $s)
-                @if($s['moy20'] !== null)
+                {{-- Toutes les matières de la classe figurent ici ; celles où rien ne compte pour l'élève (absence
+                     justifiée à toutes les épreuves, ou aucune épreuve publiée) sont « Non évalué » et hors des totaux. --}}
+                @php($evaluated = $s['moy20'] !== null)
+                @if($evaluated)
                     @php($totalCoef += $s['coefficient'])
                     @php($totalMoyX += $s['moyx'])
                 @endif
@@ -130,11 +133,17 @@
                     <td class="subject">{{ $s['subject'] }}</td>
                     <td class="num">{{ $s['devoir'] !== null ? number_format($s['devoir'], 2) : '—' }}</td>
                     <td class="num">{{ $s['composition'] !== null ? number_format($s['composition'], 2) : '—' }}</td>
-                    <td class="num">{{ $s['moy20'] !== null ? number_format($s['moy20'], 2) : '—' }}</td>
+                    <td class="num">{{ $evaluated ? number_format($s['moy20'], 2) : 'Non évalué' }}</td>
                     <td class="num">{{ $s['coefficient'] }}</td>
                     <td class="num">{{ $s['moyx'] !== null ? number_format($s['moyx'], 2) : '—' }}</td>
                     <td class="num">{{ $s['rank'] ? $s['rank'].'/'.$s['class_size'] : '—' }}</td>
-                    <td>{{ $s['appreciation'] ?? '—' }}</td>
+                    <td>
+                        @if($evaluated)
+                            {{ $s['appreciation'] ?? '—' }}
+                        @else
+                            {{ ($s['status'] ?? null) === 'absence_justifiee' ? 'Absence justifiée' : 'Aucune épreuve' }}
+                        @endif
+                    </td>
                 </tr>
             @empty
                 <tr><td colspan="8" style="text-align:center;">Aucune note enregistrée pour cette période.</td></tr>

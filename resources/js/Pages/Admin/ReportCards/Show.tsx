@@ -16,6 +16,12 @@ interface Props {
 
 const fmt = (v: number | string | null | undefined) => (v != null ? Number(v).toFixed(2) : '—');
 
+/** Pourquoi une matière ne compte pas dans la moyenne générale de l'élève. */
+const notEvaluatedReasons: Record<'absence_justifiee' | 'no_evaluation', string> = {
+    absence_justifiee: 'Absence justifiée à toutes les épreuves',
+    no_evaluation: 'Aucune épreuve publiée',
+};
+
 export default function Show({ reportCard, subjects, decisions, mentions }: Props) {
     const { data, setData, patch, processing, errors } = useForm({
         decision: reportCard.decision,
@@ -86,10 +92,17 @@ export default function Show({ reportCard, subjects, decisions, mentions }: Prop
                                 <tbody className="divide-y divide-ink-100">
                                     {subjects.map((s) => (
                                         <tr key={s.subject_id}>
-                                            <td className="px-4 py-2.5 font-medium text-ink-900">{s.subject}</td>
+                                            <td className="px-4 py-2.5 font-medium text-ink-900">
+                                                {s.subject}
+                                                {s.evaluated === false && s.status && s.status !== 'evaluated' && (
+                                                    <span className="block text-xs font-normal text-ink-500">{notEvaluatedReasons[s.status]}</span>
+                                                )}
+                                            </td>
                                             <td className="px-3 py-2.5 text-center text-ink-600">{fmt(s.devoir)}</td>
                                             <td className="px-3 py-2.5 text-center text-ink-600">{fmt(s.composition)}</td>
-                                            <td className="px-3 py-2.5 text-center font-semibold text-ink-900">{fmt(s.moy20)}</td>
+                                            <td className="px-3 py-2.5 text-center font-semibold text-ink-900">
+                                                {s.evaluated === false ? <span className="text-xs font-semibold text-ink-500">Non évalué</span> : fmt(s.moy20)}
+                                            </td>
                                             <td className="px-3 py-2.5 text-center text-ink-600">{s.coefficient}</td>
                                             <td className="px-3 py-2.5 text-center text-ink-600">{fmt(s.moyx)}</td>
                                             <td className="px-3 py-2.5 text-center text-ink-600">

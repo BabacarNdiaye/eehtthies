@@ -13,6 +13,7 @@ use App\Models\Subject;
 use App\Models\Teacher;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -129,6 +130,7 @@ class ExamController extends Controller
             'exam' => $exam->load('schoolClass:id,name', 'subject:id,name'),
             'students' => $students,
             'grades' => $grades,
+            'statuses' => Grade::STATUSES,
         ]);
     }
 
@@ -138,19 +140,15 @@ class ExamController extends Controller
             'grades' => ['required', 'array'],
             'grades.*.student_id' => ['required', 'exists:students,id'],
             'grades.*.score' => ['nullable', 'numeric', 'min:0', 'max:'.$exam->max_score],
-            'grades.*.is_absent' => ['boolean'],
+            'grades.*.status' => ['nullable', Rule::in(array_keys(Grade::STATUSES))],
+            'grades.*.is_absent' => ['boolean'], // ancien format, avant les statuts
             'grades.*.comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
         foreach ($data['grades'] as $entry) {
             Grade::updateOrCreate(
                 ['exam_id' => $exam->id, 'student_id' => $entry['student_id']],
-                [
-                    'score' => $entry['is_absent'] ?? false ? null : ($entry['score'] ?? null),
-                    'is_absent' => $entry['is_absent'] ?? false,
-                    'comment' => $entry['comment'] ?? null,
-                    'entered_by' => $request->user()->id,
-                ]
+                Grade::entryAttributes($entry, $request->user()->id)
             );
         }
 
@@ -161,7 +159,26 @@ class ExamController extends Controller
     {
         $exam->update(['is_published' => ! $exam->is_published]);
 
-        return back()->with('success', $exam->is_published ? 'Résultats publiés.' : 'Résultats dépubliés.');
+        if (! $exam->is_published) {
+            return back()->with('success', 'Résultats dépubliés.');
+        }
+
+        // Au bulletin, un élève sans note ni statut d'absence compte 0 : on le dit au moment de publier.
+        $withEntry = $exam->grades()->where(fn ($query) => $query->where('is_absent', true)->orWhereNotNull('score'))->pluck('student_id');
+        $missing = Student::where('school_class_id', $exam->school_class_id)
+            ->where('status', 'actif')
+            ->whereNotIn('id', $withEntry)
+            ->count();
+
+        $message = 'Résultats publiés.';
+
+        if ($missing > 0) {
+            $message .= $missing === 1
+                ? " Attention : 1 élève n'a ni note ni statut d'absence ; il comptera 0 au bulletin."
+                : " Attention : {$missing} élèves n'ont ni note ni statut d'absence ; ils compteront 0 au bulletin.";
+        }
+
+        return back()->with('success', $message);
     }
 
     /**

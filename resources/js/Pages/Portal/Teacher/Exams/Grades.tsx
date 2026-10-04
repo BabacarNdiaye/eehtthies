@@ -1,25 +1,34 @@
 import Card from '@/Components/Admin/Card';
-import { Checkbox, TextInput } from '@/Components/Admin/Field';
+import { Select, TextInput } from '@/Components/Admin/Field';
 import Avatar from '@/Components/Connect/Avatar';
 import useMediaQuery from '@/hooks/useMediaQuery';
 import PortalLayout from '@/Layouts/PortalLayout';
+import { gradeStatusHint, gradeStatusOf } from '@/lib/gradeStatus';
 import { haptic } from '@/lib/portal';
-import { Exam, Grade } from '@/types';
+import { Exam, Grade, GradeStatus } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Check } from 'lucide-react';
 import { useState } from 'react';
 import { teacherNav } from '../Dashboard';
 
 type StudentRow = { id: number; matricule: string; first_name: string; last_name: string };
-type Entry = { score: string; is_absent: boolean; comment: string };
+type Entry = { score: string; status: GradeStatus; comment: string };
 
 interface Props {
     exam: Exam;
     students: StudentRow[];
     grades: Record<number, Grade>;
+    statuses: Record<GradeStatus, string>;
 }
 
-export default function Grades({ exam, students, grades }: Props) {
+/** Teinte de la liste des statuts : neutre si présent, grise si justifiée, rouge si la note vaut 0. */
+const statusTone: Record<GradeStatus, string> = {
+    present: 'border-ink-200 text-ink-700',
+    absent_justifie: 'border-ink-300 bg-ink-100 text-ink-700',
+    absent_non_justifie: 'border-red-200 bg-red-50 text-red-700',
+};
+
+export default function Grades({ exam, students, grades, statuses }: Props) {
     const isWide = useMediaQuery('(min-width: 768px)');
     const max = Number(exam.max_score);
 
@@ -30,7 +39,7 @@ export default function Grades({ exam, students, grades }: Props) {
             const g = grades[s.id];
             initial[s.id] = {
                 score: g?.score != null ? String(g.score) : '',
-                is_absent: g?.is_absent ?? false,
+                status: gradeStatusOf(g),
                 comment: g?.comment ?? '',
             };
         });
@@ -40,8 +49,15 @@ export default function Grades({ exam, students, grades }: Props) {
     const [processing, setProcessing] = useState(false);
     const [saved, setSaved] = useState(false);
 
-    const setField = (studentId: number, field: keyof Entry, value: string | boolean) => {
-        setEntries((prev) => ({ ...prev, [studentId]: { ...prev[studentId], [field]: value } }));
+    const setField = (studentId: number, field: keyof Entry, value: string) => {
+        setEntries((prev) => {
+            const next = { ...prev[studentId], [field]: value } as Entry;
+
+            // Une absence n'a pas de note : passer à « absent » efface celle qu'on avait tapée.
+            if (field === 'status' && value !== 'present') next.score = '';
+
+            return { ...prev, [studentId]: next };
+        });
     };
 
     // Clavier décimal du téléphone : la virgule française est acceptée et convertie en point.
@@ -51,9 +67,9 @@ export default function Grades({ exam, students, grades }: Props) {
         if (value === '' || /^\d{0,3}(\.\d{0,2})?$/.test(value)) setField(studentId, 'score', value);
     };
 
-    const invalid = (entry?: Entry) => !!entry && !entry.is_absent && entry.score !== '' && (Number.isNaN(Number(entry.score)) || Number(entry.score) < 0 || Number(entry.score) > max);
+    const invalid = (entry?: Entry) => !!entry && entry.status === 'present' && entry.score !== '' && (Number.isNaN(Number(entry.score)) || Number(entry.score) < 0 || Number(entry.score) > max);
     const hasInvalid = students.some((s) => invalid(entries[s.id]));
-    const filled = students.filter((s) => entries[s.id]?.is_absent || entries[s.id]?.score !== '').length;
+    const filled = students.filter((s) => entries[s.id]?.status !== 'present' || entries[s.id]?.score !== '').length;
     const progress = students.length > 0 ? filled / students.length : 0;
 
     const save = () => {
@@ -61,12 +77,16 @@ export default function Grades({ exam, students, grades }: Props) {
         router.post(
             route('teacher.exams.grades.store', exam.id),
             {
-                grades: students.map((s) => ({
-                    student_id: s.id,
-                    score: entries[s.id]?.is_absent ? null : entries[s.id]?.score || null,
-                    is_absent: entries[s.id]?.is_absent ?? false,
-                    comment: entries[s.id]?.comment || null,
-                })),
+                grades: students.map((s) => {
+                    const entry = entries[s.id];
+
+                    return {
+                        student_id: s.id,
+                        score: entry?.status === 'present' ? entry.score || null : null,
+                        status: entry?.status ?? 'present',
+                        comment: entry?.comment || null,
+                    };
+                }),
             },
             {
                 preserveScroll: true,
@@ -80,6 +100,12 @@ export default function Grades({ exam, students, grades }: Props) {
         );
     };
 
+    const statusOptions = Object.entries(statuses).map(([value, label]) => (
+        <option key={value} value={value}>
+            {label}
+        </option>
+    ));
+
     return (
         <PortalLayout title="Espace Enseignant" nav={teacherNav}>
             <Head title={`Notes — ${exam.title}`} />
@@ -89,6 +115,7 @@ export default function Grades({ exam, students, grades }: Props) {
                 <p className="mt-1 text-sm text-ink-500">
                     {[exam.school_class?.name, exam.subject?.name].filter(Boolean).join(' · ')} · Barème /{exam.max_score}
                 </p>
+                <p className="mt-2 text-xs leading-relaxed text-ink-500">{gradeStatusHint}</p>
             </div>
 
             {students.length === 0 ? (
@@ -99,6 +126,7 @@ export default function Grades({ exam, students, grades }: Props) {
                         {students.map((s) => {
                             const entry = entries[s.id];
                             const bad = invalid(entry);
+                            const present = entry?.status === 'present';
 
                             return (
                                 <li key={s.id} className={`rounded-2xl bg-white p-3.5 shadow-soft ring-1 ${bad ? 'ring-red-300' : 'ring-ink-100'}`}>
@@ -117,7 +145,7 @@ export default function Grades({ exam, students, grades }: Props) {
                                                 autoComplete="off"
                                                 aria-label={`Note de ${s.first_name} ${s.last_name} sur ${exam.max_score}`}
                                                 aria-invalid={bad}
-                                                disabled={entry?.is_absent}
+                                                disabled={!present}
                                                 placeholder="—"
                                                 value={entry?.score ?? ''}
                                                 onChange={(e) => setScore(s.id, e.target.value)}
@@ -128,27 +156,29 @@ export default function Grades({ exam, students, grades }: Props) {
                                             <span className="text-sm text-ink-400">/{exam.max_score}</span>
                                         </div>
                                     </div>
-                                    <div className="mt-3 flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            aria-pressed={entry?.is_absent}
-                                            onClick={() => {
+                                    {/* Téléphone : le statut a toute la largeur de la carte (« Absent(e) non justifié(e) » ne tient pas
+                                        dans la moitié) et l'appréciation passe dessous ; côte à côte dès sm. */}
+                                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                                        <select
+                                            aria-label={`Statut de ${s.first_name} ${s.last_name}`}
+                                            value={entry?.status ?? 'present'}
+                                            onChange={(e) => {
                                                 haptic();
-                                                setField(s.id, 'is_absent', !entry?.is_absent);
+                                                setField(s.id, 'status', e.target.value);
                                             }}
-                                            className={`inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl border px-3.5 text-sm font-semibold transition-colors ${
-                                                entry?.is_absent ? 'border-red-200 bg-red-100 text-red-700' : 'border-ink-200 text-ink-500 active:bg-ink-50'
-                                            }`}
+                                            className={`h-11 w-full rounded-xl py-0 pl-3 pr-8 text-sm font-semibold focus:border-gold-500 focus:ring-gold-500 sm:w-[52%] sm:shrink-0 ${statusTone[entry?.status ?? 'present']}`}
                                         >
-                                            Absent(e)
-                                        </button>
-                                        <TextInput
-                                            value={entry?.comment ?? ''}
-                                            onChange={(e) => setField(s.id, 'comment', e.target.value)}
-                                            placeholder="Appréciation (optionnel)"
-                                            aria-label={`Appréciation pour ${s.first_name} ${s.last_name}`}
-                                            className="h-11"
-                                        />
+                                            {statusOptions}
+                                        </select>
+                                        <div className="min-w-0 sm:flex-1">
+                                            <TextInput
+                                                value={entry?.comment ?? ''}
+                                                onChange={(e) => setField(s.id, 'comment', e.target.value)}
+                                                placeholder="Appréciation"
+                                                aria-label={`Appréciation pour ${s.first_name} ${s.last_name}`}
+                                                className="h-11"
+                                            />
+                                        </div>
                                     </div>
                                     {bad && <p className="mt-2 text-xs font-medium text-red-600">La note doit être comprise entre 0 et {exam.max_score}.</p>}
                                 </li>
@@ -191,7 +221,7 @@ export default function Grades({ exam, students, grades }: Props) {
                                 <tr>
                                     <th className="px-5 py-3">Élève</th>
                                     <th className="px-5 py-3">Note / {exam.max_score}</th>
-                                    <th className="px-5 py-3">Absent</th>
+                                    <th className="px-5 py-3">Statut</th>
                                     <th className="px-5 py-3">Commentaire</th>
                                 </tr>
                             </thead>
@@ -206,21 +236,30 @@ export default function Grades({ exam, students, grades }: Props) {
                                         </td>
                                         <td className="px-5 py-3">
                                             <TextInput
+                                                aria-label={`Note de ${s.first_name} ${s.last_name}`}
                                                 type="number"
                                                 step="0.25"
                                                 min={0}
                                                 max={max}
-                                                disabled={entries[s.id]?.is_absent}
+                                                disabled={entries[s.id]?.status !== 'present'}
                                                 value={entries[s.id]?.score ?? ''}
                                                 onChange={(e) => setField(s.id, 'score', e.target.value)}
                                                 className="w-24"
                                             />
                                         </td>
                                         <td className="px-5 py-3">
-                                            <Checkbox checked={entries[s.id]?.is_absent ?? false} onChange={(e) => setField(s.id, 'is_absent', e.target.checked)} />
+                                            <Select
+                                                aria-label={`Statut de ${s.first_name} ${s.last_name}`}
+                                                value={entries[s.id]?.status ?? 'present'}
+                                                onChange={(e) => setField(s.id, 'status', e.target.value)}
+                                                className="min-w-48 max-w-[15rem]"
+                                            >
+                                                {statusOptions}
+                                            </Select>
                                         </td>
                                         <td className="px-5 py-3">
                                             <TextInput
+                                                aria-label={`Commentaire pour ${s.first_name} ${s.last_name}`}
                                                 value={entries[s.id]?.comment ?? ''}
                                                 onChange={(e) => setField(s.id, 'comment', e.target.value)}
                                                 placeholder="Appréciation (optionnel)"

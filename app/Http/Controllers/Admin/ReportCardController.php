@@ -50,6 +50,7 @@ class ReportCardController extends Controller
         $results = $calculator->computeForClass($schoolClass, $data['academic_year_id'], $data['term']);
 
         $isFinalTerm = $calculator->isFinalTerm($data['term']);
+        $passAverage = $calculator->passAverageFor($schoolClass);
         $withAnnual = [];
 
         foreach ($results as $result) {
@@ -57,11 +58,12 @@ class ReportCardController extends Controller
             $previousAverage = $calculator->previousTermAverage($student, $data['academic_year_id'], $data['term']);
             $attendance = $calculator->attendanceStatsForTerm($student, $academicYear, $data['term']);
 
-            $annualAverage = null;
-            if ($isFinalTerm) {
-                $terms = array_filter([$previousAverage, $result['average']], fn ($v) => $v !== null);
-                $annualAverage = count($terms) > 0 ? round(array_sum($terms) / count($terms), 2) : null;
-            }
+            // Moyenne annuelle = (semestre 1 + semestre 2) ÷ 2, au dernier semestre seulement.
+            $annualAverage = $isFinalTerm ? $calculator->annualAverage([$previousAverage, $result['average']]) : null;
+
+            // Au dernier semestre, c'est la moyenne annuelle qui décide du passage (et non celle du seul semestre) ;
+            // avant, la moyenne du semestre donne une indication. Seuil : celui du niveau de la classe, 10/20 sinon.
+            $decidingAverage = $isFinalTerm ? ($annualAverage ?? $result['average']) : $result['average'];
 
             $reportCard = ReportCard::updateOrCreate(
                 [
@@ -77,7 +79,7 @@ class ReportCardController extends Controller
                     'class_average' => $result['class_average'],
                     'previous_term_average' => $previousAverage,
                     'annual_average' => $annualAverage,
-                    'decision' => $calculator->decisionFor($result['average']),
+                    'decision' => $calculator->decisionFor($decidingAverage, $passAverage),
                     'mention' => $calculator->mentionFor($result['average']),
                     'retard_count' => $attendance['retard'],
                     'absence_count' => $attendance['absence'],

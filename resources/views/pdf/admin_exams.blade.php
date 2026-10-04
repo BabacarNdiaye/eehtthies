@@ -44,7 +44,7 @@
                                 <td>{{ $i + 1 }}</td>
                                 <td>{{ $student->matricule ?? '' }}</td>
                                 <td>{{ $student->first_name }} {{ $student->last_name }}</td>
-                                <td>{{ ($grade && $grade->is_absent) ? 'Absent(e)' : (($grade && $grade->score !== null) ? $grade->score : '—') }}</td>
+                                <td>{{ ($grade && $grade->is_absent) ? (\App\Models\Grade::STATUSES[$grade->resolvedStatus()] ?? 'Absent(e)') : (($grade && $grade->score !== null) ? $grade->score : '—') }}</td>
                             </tr>
                         @empty
                             <tr>

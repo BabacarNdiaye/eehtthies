@@ -4,6 +4,7 @@ import PortalPageHeader from '@/Components/Portal/PortalPageHeader';
 import ReportCardList from '@/Components/Portal/ReportCardList';
 import SectionTitle from '@/Components/Portal/SectionTitle';
 import PortalLayout from '@/Layouts/PortalLayout';
+import { absenceLabel, gradeStatusOf } from '@/lib/gradeStatus';
 import { studentNav } from '@/Pages/Portal/Student/Dashboard';
 import { Grade, ReportCard } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -66,7 +67,7 @@ export default function Grades({ exams, grades, reportCards, schoolClassId }: Pr
                                             <td className="px-5 py-3 text-ink-600">{exam.subject?.name}</td>
                                             <td className="px-5 py-3 text-ink-600">{new Date(exam.exam_date).toLocaleDateString('fr-FR')}</td>
                                             <td className="px-5 py-3 font-semibold text-ink-900">
-                                                {grade?.is_absent ? 'Absent(e)' : grade?.score != null ? `${grade.score} / ${exam.max_score}` : '—'}
+                                                {absenceLabel(gradeStatusOf(grade)) ?? (grade?.score != null ? `${grade.score} / ${exam.max_score}` : '—')}
                                             </td>
                                         </tr>
                                     );

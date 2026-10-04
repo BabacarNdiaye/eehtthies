@@ -118,16 +118,15 @@ class ProgressionEngine
         ];
     }
 
-    /** Moyenne des moyennes générales des deux périodes, même convention que l'annual_average de ReportCardController::generate(). */
+    /** Moyenne des moyennes générales des deux périodes : la même formule que l'annual_average du bulletin. */
     private function annualAverage(Student $student, SchoolClass $class): ?float
     {
         $averages = ReportCard::where('student_id', $student->id)
             ->where('academic_year_id', $class->academic_year_id)
             ->pluck('average')
-            ->filter(fn ($v) => $v !== null)
-            ->map(fn ($v) => (float) $v);
+            ->map(fn ($v) => $v !== null ? (float) $v : null);
 
-        return $averages->isNotEmpty() ? round($averages->avg(), 2) : null;
+        return app(ReportCardCalculator::class)->annualAverage($averages->all());
     }
 
     private function annualUnjustifiedAbsences(Student $student, SchoolClass $class): int

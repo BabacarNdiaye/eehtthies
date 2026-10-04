@@ -1,40 +1,60 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
-import { Checkbox, TextInput } from '@/Components/Admin/Field';
+import { Select, TextInput } from '@/Components/Admin/Field';
 import FormActions from '@/Components/Admin/FormActions';
-import { Exam, Grade } from '@/types';
+import useMediaQuery from '@/hooks/useMediaQuery';
+import { gradeStatusHint, gradeStatusOf } from '@/lib/gradeStatus';
+import { Exam, Grade, GradeStatus } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Inbox } from 'lucide-react';
 import { useState } from 'react';
 
 type StudentRow = { id: number; matricule: string; first_name: string; last_name: string };
+type Entry = { score: string; status: GradeStatus; comment: string };
 
 interface Props {
     exam: Exam;
     students: StudentRow[];
     grades: Record<number, Grade>;
+    statuses: Record<GradeStatus, string>;
 }
 
-export default function Grades({ exam, students, grades }: Props) {
-    const [entries, setEntries] = useState<Record<number, { score: string; is_absent: boolean; comment: string }>>(
-        () => {
-            const initial: Record<number, { score: string; is_absent: boolean; comment: string }> = {};
-            students.forEach((s) => {
-                const g = grades[s.id];
-                initial[s.id] = {
-                    score: g?.score != null ? String(g.score) : '',
-                    is_absent: g?.is_absent ?? false,
-                    comment: g?.comment ?? '',
-                };
-            });
-            return initial;
-        },
-    );
+/**
+ * Sous 768 px le tableau devient une liste de cartes (voir useResponsiveTables) : la valeur n'y dispose que d'environ
+ * 190 px, où « Absent(e) non justifié(e) » est tronqué. On y met des libellés courts ; ils se lisent en entier.
+ */
+const shortLabels: Partial<Record<GradeStatus, string>> = {
+    present: 'Présent(e)',
+    absent_justifie: 'Abs. justifiée',
+    absent_non_justifie: 'Abs. non justifiée',
+};
+
+export default function Grades({ exam, students, grades, statuses }: Props) {
+    const cards = useMediaQuery('(max-width: 767px)');
+    const [entries, setEntries] = useState<Record<number, Entry>>(() => {
+        const initial: Record<number, Entry> = {};
+        students.forEach((s) => {
+            const g = grades[s.id];
+            initial[s.id] = {
+                score: g?.score != null ? String(g.score) : '',
+                status: gradeStatusOf(g),
+                comment: g?.comment ?? '',
+            };
+        });
+        return initial;
+    });
     const [processing, setProcessing] = useState(false);
 
-    const setField = (studentId: number, field: 'score' | 'is_absent' | 'comment', value: string | boolean) => {
-        setEntries((prev) => ({ ...prev, [studentId]: { ...prev[studentId], [field]: value } }));
+    const setField = (studentId: number, field: keyof Entry, value: string) => {
+        setEntries((prev) => {
+            const next = { ...prev[studentId], [field]: value } as Entry;
+
+            // Une absence n'a pas de note : passer à « absent » efface celle qu'on avait tapée.
+            if (field === 'status' && value !== 'present') next.score = '';
+
+            return { ...prev, [studentId]: next };
+        });
     };
 
     const save = () => {
@@ -42,12 +62,16 @@ export default function Grades({ exam, students, grades }: Props) {
         router.post(
             route('admin.exams.grades.store', exam.id),
             {
-                grades: students.map((s) => ({
-                    student_id: s.id,
-                    score: entries[s.id]?.is_absent ? null : entries[s.id]?.score || null,
-                    is_absent: entries[s.id]?.is_absent ?? false,
-                    comment: entries[s.id]?.comment || null,
-                })),
+                grades: students.map((s) => {
+                    const entry = entries[s.id];
+
+                    return {
+                        student_id: s.id,
+                        score: entry?.status === 'present' ? entry.score || null : null,
+                        status: entry?.status ?? 'present',
+                        comment: entry?.comment || null,
+                    };
+                }),
             },
             { preserveScroll: true, onFinish: () => setProcessing(false) },
         );
@@ -61,6 +85,8 @@ export default function Grades({ exam, students, grades }: Props) {
                 subtitle={`${exam.school_class?.name ?? ''} · ${exam.subject?.name ?? ''} · Barème /${exam.max_score}`}
             />
 
+            <p className="mb-4 text-sm text-ink-500">{gradeStatusHint}</p>
+
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
@@ -68,7 +94,7 @@ export default function Grades({ exam, students, grades }: Props) {
                             <tr>
                                 <th className="px-5 py-3">Élève</th>
                                 <th className="px-5 py-3">Note / {exam.max_score}</th>
-                                <th className="px-5 py-3">Absent</th>
+                                <th className="px-5 py-3">Statut</th>
                                 <th className="px-5 py-3">Commentaire</th>
                             </tr>
                         </thead>
@@ -88,24 +114,32 @@ export default function Grades({ exam, students, grades }: Props) {
                                             step="0.25"
                                             min={0}
                                             max={Number(exam.max_score)}
-                                            disabled={entries[s.id]?.is_absent}
+                                            disabled={entries[s.id]?.status !== 'present'}
                                             value={entries[s.id]?.score ?? ''}
                                             onChange={(e) => setField(s.id, 'score', e.target.value)}
                                             className="w-24"
                                         />
                                     </td>
                                     <td className="px-5 py-3">
-                                        <Checkbox
-                                            aria-label={`Absent : ${s.first_name} ${s.last_name}`}
-                                            checked={entries[s.id]?.is_absent ?? false}
-                                            onChange={(e) => setField(s.id, 'is_absent', e.target.checked)}
-                                        />
+                                        <Select
+                                            aria-label={`Statut de ${s.first_name} ${s.last_name}`}
+                                            value={entries[s.id]?.status ?? 'present'}
+                                            onChange={(e) => setField(s.id, 'status', e.target.value)}
+                                            className="max-w-[15rem] md:min-w-48"
+                                        >
+                                            {Object.entries(statuses).map(([value, label]) => (
+                                                <option key={value} value={value}>
+                                                    {cards ? (shortLabels[value as GradeStatus] ?? label) : label}
+                                                </option>
+                                            ))}
+                                        </Select>
                                     </td>
                                     <td className="px-5 py-3">
                                         <TextInput
+                                            aria-label={`Commentaire pour ${s.first_name} ${s.last_name}`}
                                             value={entries[s.id]?.comment ?? ''}
                                             onChange={(e) => setField(s.id, 'comment', e.target.value)}
-                                            placeholder="Appréciation (optionnel)"
+                                            placeholder={cards ? 'Appréciation' : 'Appréciation (optionnel)'}
                                         />
                                     </td>
                                 </tr>
