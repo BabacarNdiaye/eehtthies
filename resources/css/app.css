@@ -34,18 +34,22 @@
    à réserver (marge de sécurité iOS comprise) aux éléments flottants — bannière d'installation, appel entrant —
    et le bouton EEHT Connect, remplacé par l'onglet « Messages », est masqué.
    Le site public a la même barre (attribut data-site-bar, posé par PublicLayout) : le bouton EEHT Connect y reste
-   visible, simplement décalé au-dessus d'elle. */
+   visible, simplement décalé au-dessus d'elle.
+   L'administration (attribut data-admin, posé par AdminLayout) a la sienne, avec l'onglet « Messages » : comme
+   dans les espaces, le bouton EEHT Connect est masqué sur téléphone. */
 :root {
     --portal-bar-h: 0px;
 }
 
 @media (max-width: 1023px) {
     body[data-portal],
-    body[data-site-bar] {
+    body[data-site-bar],
+    body[data-admin] {
         --portal-bar-h: calc(5.75rem + env(safe-area-inset-bottom, 0px));
     }
 
-    body[data-portal] .connect-fab {
+    body[data-portal] .connect-fab,
+    body[data-admin] .connect-fab {
         display: none;
     }
 
@@ -61,9 +65,16 @@
 
 /* Application installée : le navigateur n'offre plus « tirer pour actualiser », l'application le fait elle-même. */
 @media (display-mode: standalone) {
-    body[data-portal] {
+    body[data-portal],
+    body[data-admin] {
         overscroll-behavior-y: contain;
     }
+}
+
+/* Administration : chiffres « de ligne » dans les titres en Playfair Display, dont les chiffres elzéviriens
+   donnaient « 7o ooo FCFA » (le 0 y ressemble à un o). Réservé à l'administration : le site public garde son style. */
+body[data-admin] .font-serif {
+    font-variant-numeric: lining-nums;
 }
 
 .scrollbar-none {
