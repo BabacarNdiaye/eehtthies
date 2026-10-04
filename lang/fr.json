@@ -72,5 +72,9 @@
     "Sorry, you are forbidden from accessing this page.": "Désolé, l'accès à cette page vous est interdit.",
     "Sorry, we are doing some maintenance. Please check back soon.": "Le site est en maintenance. Revenez dans quelques instants.",
     "Whoops, something went wrong on our servers.": "Oups, une erreur est survenue sur le serveur.",
-    "Go Home": "Retour à l'accueil"
+    "Go Home": "Retour à l'accueil",
+    "User does not have the right permissions.": "Votre rôle ne vous donne pas accès à cette page.",
+    "User does not have the right roles.": "Votre rôle ne vous donne pas accès à cette page.",
+    "User does not have any of the necessary access rights.": "Votre rôle ne vous donne pas accès à cette page.",
+    "User is not logged in.": "Vous devez être connecté(e) pour accéder à cette page."
 }
