@@ -21,7 +21,7 @@ const sourceColors = ['#243a52', '#c8942a', '#059669', '#7c3aed', '#dc2626'];
 
 export default function Marketing({ monthly, bySource, byFormation, totalCandidatures, enrolled, conversionRate }: Props) {
     const compact = useCompactChart();
-    const sourceData = Object.entries(bySource).map(([key, total]) => ({ name: key, total }));
+    const sourceData = Object.entries(bySource).map(([key, total]) => ({ name: key || 'Non renseignée', total }));
 
     return (
         <AdminLayout>
@@ -86,9 +86,9 @@ export default function Marketing({ monthly, bySource, byFormation, totalCandida
                     ) : (
                         <ResponsiveContainer width="100%" height={260}>
                             <PieChart>
-                                <Pie data={sourceData} dataKey="total" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
-                                    {sourceData.map((_, i) => (
-                                        <Cell key={i} fill={sourceColors[i % sourceColors.length]} />
+                                <Pie data={sourceData} dataKey="total" nameKey="name" cx="50%" cy="50%" outerRadius={90} label labelLine={false}>
+                                    {sourceData.map((slice, i) => (
+                                        <Cell key={i} fill={sourceColors[i % sourceColors.length]} aria-label={`${slice.name} : ${slice.total}`} />
                                     ))}
                                 </Pie>
                                 <Tooltip />

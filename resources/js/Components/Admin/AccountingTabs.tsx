@@ -21,7 +21,7 @@ export default function AccountingTabs({ current }: { current: TabKey }) {
                     className={`rounded-t-lg px-4 py-2.5 text-sm font-medium transition ${
                         current === tab.key
                             ? 'border-b-2 border-gold-500 text-ink-900'
-                            : 'text-ink-400 hover:text-ink-700'
+                            : 'text-ink-500 hover:text-ink-800'
                     }`}
                 >
                     {tab.label}

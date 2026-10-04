@@ -94,6 +94,22 @@ class AdminMarkupGuardTest extends TestCase
         $this->assertSame([], $violations, "Tableaux ni en cartes ni en défilement :\n".implode("\n", $violations));
     }
 
+    public function test_no_table_header_cell_is_left_empty(): void
+    {
+        $violations = [];
+
+        foreach ($this->adminSources() as $path => $source) {
+            preg_match_all('/<th\b[^>]*>\s*<\/th>|<th\b[^>]*\/>/', $source, $matches, PREG_OFFSET_CAPTURE);
+
+            foreach ($matches[0] as $match) {
+                $line = substr_count(substr($source, 0, $match[1]), "\n") + 1;
+                $violations[] = "{$path}:{$line} : <th> vide (y mettre un <span className=\"sr-only\">, « Actions » pour la colonne des boutons)";
+            }
+        }
+
+        $this->assertSame([], $violations, "En-têtes de colonne vides (lecteurs d'écran, libellés des cartes) :\n".implode("\n", $violations));
+    }
+
     public function test_no_native_browser_dialog_is_left_in_the_admin(): void
     {
         $violations = [];

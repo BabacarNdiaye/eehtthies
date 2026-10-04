@@ -28,7 +28,9 @@ export default function Index({ messages }: { messages: Paginated<ContactMessage
                     <table className="w-full text-left text-sm">
                         <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
                             <tr>
-                                <th className="px-5 py-3"></th>
+                                <th className="px-5 py-3">
+                                    <span className="sr-only">Statut</span>
+                                </th>
                                 <th className="px-5 py-3">Expéditeur</th>
                                 <th className="px-5 py-3">Sujet</th>
                                 <th className="px-5 py-3">Date</th>
@@ -42,8 +44,13 @@ export default function Index({ messages }: { messages: Paginated<ContactMessage
                                     className={`transition-colors duration-150 hover:bg-ink-50/60 ${!m.is_read ? 'bg-gold-50/40' : ''}`}
                                 >
                                     <td className="px-5 py-3">
-                                        {!m.is_read && (
-                                            <span className="block h-2 w-2 rounded-full bg-gold-500" title="Non lu" />
+                                        {m.is_read ? (
+                                            <span className="sr-only max-md:not-sr-only max-md:text-xs max-md:text-ink-500">Lu</span>
+                                        ) : (
+                                            <span className="flex items-center gap-2">
+                                                <span className="block h-2 w-2 rounded-full bg-gold-500" aria-hidden="true" />
+                                                <span className="sr-only max-md:not-sr-only max-md:text-xs max-md:font-semibold max-md:text-ink-900">Non lu</span>
+                                            </span>
                                         )}
                                     </td>
                                     <td className="px-5 py-3">

@@ -213,8 +213,8 @@ function Body({ onClose, groups, permissions }: Omit<Props, 'open'>) {
                 <input
                     type="text"
                     role="combobox"
-                    aria-expanded="true"
-                    aria-controls={listId}
+                    aria-expanded={flat.length > 0}
+                    aria-controls={flat.length > 0 ? listId : undefined}
                     aria-activedescendant={flat[active] ? optionId(active) : undefined}
                     aria-autocomplete="list"
                     aria-label="Rechercher dans l'administration"
@@ -243,7 +243,14 @@ function Body({ onClose, groups, permissions }: Omit<Props, 'open'>) {
                 <kbd className="hidden rounded border border-ink-200 bg-ink-50 px-1.5 py-0.5 font-sans text-[11px] font-medium text-ink-500 sm:block">Échap</kbd>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-2 sm:max-h-[50vh]">
+            {/* Le conteneur qui défile est lui-même la liste que le champ commande (aria-controls) : c'est ce lien qui
+                dispense le défilement d'être atteignable au Tab — les flèches suffisent, le focus reste dans le champ. */}
+            <div
+                id={listId}
+                role={flat.length > 0 ? 'listbox' : undefined}
+                aria-label={flat.length > 0 ? 'Résultats' : undefined}
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-2 sm:max-h-[50vh]"
+            >
                 {flat.length === 0 ? (
                     <p className="px-3 py-8 text-center text-sm text-ink-500">
                         {searching
@@ -253,7 +260,7 @@ function Body({ onClose, groups, permissions }: Omit<Props, 'open'>) {
                               : "Tapez le nom d'une rubrique ou d'une action."}
                     </p>
                 ) : (
-                    <ul id={listId} role="listbox" aria-label="Résultats">
+                    <ul role="presentation">
                         {sections.map((section, sectionIndex) => (
                             <li key={section.title} role="presentation">
                                 <div
@@ -323,7 +330,7 @@ function Body({ onClose, groups, permissions }: Omit<Props, 'open'>) {
 export default function CommandPalette({ open, onClose, groups, permissions }: Props) {
     return (
         <Transition show={open}>
-            <Dialog as="div" className="relative z-[60]" onClose={onClose}>
+            <Dialog as="div" className="relative z-[60]" onClose={onClose} aria-label="Rechercher dans l'administration">
                 <TransitionChild
                     enter="ease-out duration-200"
                     enterFrom="opacity-0"

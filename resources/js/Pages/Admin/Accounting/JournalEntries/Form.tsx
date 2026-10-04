@@ -87,7 +87,9 @@ export default function Form({ journals, accounts }: Props) {
                                     <th className="px-4 py-3">Libellé</th>
                                     <th className="px-4 py-3 text-right">Débit</th>
                                     <th className="px-4 py-3 text-right">Crédit</th>
-                                    <th className="px-4 py-3"></th>
+                                    <th className="px-4 py-3">
+                                        <span className="sr-only">Actions</span>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-ink-100">
@@ -154,7 +156,7 @@ export default function Form({ journals, accounts }: Props) {
 
                 {errors.lines && <p className="text-sm text-red-600">{errors.lines}</p>}
                 {!balanced && (
-                    <p className="text-sm text-amber-600">
+                    <p className="text-sm text-amber-800">
                         L'écriture doit être équilibrée : le total débit doit être égal au total crédit et supérieur à zéro.
                     </p>
                 )}

@@ -133,7 +133,7 @@ export default function Index({ schoolClasses, sourceClass, students, decisions,
                 {sourceClass && (
                     <p className="mt-3 text-xs text-ink-500">
                         {!sourceClass.formation_level ? (
-                            <span className="italic text-amber-600">
+                            <span className="italic text-amber-700">
                                 Aucune règle de passage configurée pour cette classe — configurez un niveau depuis
                                 "Formations → Niveaux & règles" pour activer les suggestions automatiques.
                             </span>

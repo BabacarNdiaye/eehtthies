@@ -48,6 +48,7 @@ export default function DocumentFileField({
             <div className="flex items-center gap-3">
                 <input
                     type="file"
+                    aria-label="Fichier"
                     onChange={(e) => handleChange(e.target.files?.[0] ?? null)}
                     className="block w-full text-sm text-ink-600 file:mr-4 file:rounded-lg file:border-0 file:bg-ink-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink-700 hover:file:bg-ink-200"
                 />

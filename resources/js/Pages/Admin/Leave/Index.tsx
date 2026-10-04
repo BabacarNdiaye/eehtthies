@@ -77,7 +77,7 @@ export default function Index({ requests, types, statuses, canReview }: Props) {
             />
 
             <Card className="mb-6 p-6">
-                <h3 className="mb-4 text-base font-semibold text-ink-900">Nouvelle demande</h3>
+                <h2 className="mb-4 text-base font-semibold text-ink-900">Nouvelle demande</h2>
                 <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-4">
                     <Field label="Type" error={errors.type}>
                         <Select value={data.type} onChange={(e) => setData('type', e.target.value)}>

@@ -214,7 +214,7 @@ export default function Index({
             </Card>
 
             {!selectedClassId && (
-                <Card className="p-10 text-center text-ink-400">
+                <Card className="p-10 text-center text-ink-500">
                     Sélectionnez une classe pour commencer l'appel.
                 </Card>
             )}
@@ -299,7 +299,7 @@ export default function Index({
                                                             className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 max-md:min-h-10 max-md:px-4 max-md:text-sm ${
                                                                 records[s.id]?.status === value
                                                                     ? statusStyles[value]
-                                                                    : 'border-ink-200 text-ink-400 hover:bg-ink-50'
+                                                                    : 'border-ink-200 text-ink-500 hover:bg-ink-50'
                                                             }`}
                                                         >
                                                             {label}

@@ -251,7 +251,9 @@ export default function Form({ teacher, subjects, salaryPayments, monthLabels, p
                                             <th className="px-3 py-2 text-right">Heures</th>
                                             <th className="px-3 py-2">Date de paiement</th>
                                             <th className="px-3 py-2">Mode</th>
-                                            <th className="px-3 py-2"></th>
+                                            <th className="px-3 py-2">
+                                                <span className="sr-only">Actions</span>
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-ink-100">

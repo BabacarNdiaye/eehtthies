@@ -213,7 +213,7 @@ export default function Index({ reportCards, schoolClasses, academicYears, terms
                                             onClick={() => togglePublish(rc)}
                                             title={rc.is_published ? 'Dépublier' : 'Publier'}
                                             className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-                                                rc.is_published ? 'text-emerald-600' : 'text-ink-400'
+                                                rc.is_published ? 'text-emerald-700' : 'text-ink-500'
                                             }`}
                                         >
                                             {rc.is_published ? (

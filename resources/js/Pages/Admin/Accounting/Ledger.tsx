@@ -64,7 +64,7 @@ export default function Ledger({ accounts, account, openingBalance, lines, filte
             </Card>
 
             {!account ? (
-                <Card className="p-10 text-center text-ink-400">Choisissez un compte pour afficher son grand livre.</Card>
+                <Card className="p-10 text-center text-ink-500">Choisissez un compte pour afficher son grand livre.</Card>
             ) : (
                 <>
                     <Card className="mb-6 flex flex-col gap-3 p-4 text-sm text-ink-600 sm:flex-row sm:items-center sm:justify-between">

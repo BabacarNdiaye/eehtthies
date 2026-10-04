@@ -52,7 +52,7 @@ export default function Academic({
     teacherPerformance,
 }: Props) {
     const compact = useCompactChart();
-    const genderData = Object.entries(genderSplit).map(([key, total]) => ({ name: genderLabels[key] ?? key, total }));
+    const genderData = Object.entries(genderSplit).map(([key, total]) => ({ name: genderLabels[key] ?? (key || 'Non renseigné'), total }));
 
     return (
         <AdminLayout>
@@ -80,9 +80,9 @@ export default function Academic({
                     <h2 className="mb-4 font-serif text-lg font-semibold text-ink-900">Répartition par sexe</h2>
                     <ResponsiveContainer width="100%" height={260}>
                         <PieChart>
-                            <Pie data={genderData} dataKey="total" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
-                                {genderData.map((_, i) => (
-                                    <Cell key={i} fill={genderColors[i % genderColors.length]} />
+                            <Pie data={genderData} dataKey="total" nameKey="name" cx="50%" cy="50%" outerRadius={90} label labelLine={false}>
+                                {genderData.map((slice, i) => (
+                                    <Cell key={i} fill={genderColors[i % genderColors.length]} aria-label={`${slice.name} : ${slice.total}`} />
                                 ))}
                             </Pie>
                             <Tooltip />

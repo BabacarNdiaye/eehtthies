@@ -48,6 +48,7 @@ export default function CsvImport({ title, columns, postRoute, templateRoute }: 
                     </p>
                     <input
                         type="file"
+                        aria-label="Fichier CSV"
                         accept=".csv,text/csv"
                         onChange={(e) => form.setData('file', e.target.files?.[0] ?? null)}
                         className="block w-full text-sm text-ink-600 file:mr-4 file:rounded-lg file:border-0 file:bg-ink-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-ink-800"

@@ -180,7 +180,7 @@ export default function Reset({ groups, confirmationWord }: Props) {
                                                         <span className="text-sm font-semibold text-ink-900">{category.label}</span>
                                                         <span
                                                             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                                                                category.count === 0 ? 'bg-ink-100 text-ink-400' : 'bg-ink-800 text-white'
+                                                                category.count === 0 ? 'bg-ink-100 text-ink-600' : 'bg-ink-800 text-white'
                                                             }`}
                                                         >
                                                             {category.count === 0 ? 'Vide' : plural(category.count, unitOf(category))}

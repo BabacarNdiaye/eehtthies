@@ -72,7 +72,7 @@ export default function Report({ schoolClasses, summary, selectedClassId, from, 
             </Card>
 
             {!selectedClassId && (
-                <Card className="p-10 text-center text-ink-400">
+                <Card className="p-10 text-center text-ink-500">
                     Sélectionnez une classe pour afficher les statistiques de présence.
                 </Card>
             )}
@@ -105,7 +105,7 @@ export default function Report({ schoolClasses, summary, selectedClassId, from, 
                                         <td className="px-5 py-3 text-center font-medium text-red-600">
                                             {row.absent}
                                         </td>
-                                        <td className="px-5 py-3 text-center font-medium text-amber-600">
+                                        <td className="px-5 py-3 text-center font-medium text-amber-700">
                                             {row.retard}
                                         </td>
                                         <td className="px-5 py-3 text-center font-medium text-blue-600">

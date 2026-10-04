@@ -176,6 +176,7 @@ export default function Index({ students, formations, schoolClasses, classCounts
                     </p>
                     <input
                         type="file"
+                        aria-label="Fichier CSV"
                         accept=".csv,text/csv"
                         onChange={onImportFileChange}
                         className="block w-full text-sm text-ink-600 file:mr-4 file:rounded-lg file:border-0 file:bg-ink-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-ink-800"

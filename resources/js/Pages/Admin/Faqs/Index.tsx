@@ -32,7 +32,7 @@ export default function Index({ faqs }: { faqs: Faq[] }) {
             />
 
             {categories.length === 0 && (
-                <Card className="p-10 text-center text-ink-400">
+                <Card className="p-10 text-center text-ink-500">
                     Aucune question enregistrée pour le moment.
                 </Card>
             )}

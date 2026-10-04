@@ -87,7 +87,7 @@ export default function Monthly({ students, formations, academicYears, schoolMon
             </Card>
 
             {!filters.formation_id || !filters.academic_year_id ? (
-                <Card className="p-10 text-center text-ink-400">
+                <Card className="p-10 text-center text-ink-500">
                     Choisissez une formation et une année académique pour afficher le suivi des mensualités.
                 </Card>
             ) : (

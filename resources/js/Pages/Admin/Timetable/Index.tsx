@@ -143,7 +143,7 @@ export default function Index({ schoolClasses, subjects, teachers, rooms, entrie
             </Card>
 
             {!selectedClassId && (
-                <Card className="p-10 text-center text-ink-400">
+                <Card className="p-10 text-center text-ink-500">
                     Sélectionnez une classe ci-dessus pour consulter ou construire son emploi du temps.
                 </Card>
             )}

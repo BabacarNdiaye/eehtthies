@@ -117,7 +117,7 @@ export default function Index({ exams, schoolClasses, types, filters }: Props) {
                                         <button
                                             onClick={() => togglePublish(exam)}
                                             className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-                                                exam.is_published ? 'text-emerald-600' : 'text-ink-400'
+                                                exam.is_published ? 'text-emerald-700' : 'text-ink-500'
                                             }`}
                                         >
                                             {exam.is_published ? (

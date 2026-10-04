@@ -167,7 +167,9 @@ export default function Index({ activities, logNames, staff, filters }: Props) {
                                 <th className="px-5 py-3">Module</th>
                                 <th className="px-5 py-3">Action</th>
                                 <th className="px-5 py-3">Auteur</th>
-                                <th className="px-5 py-3"></th>
+                                <th className="px-5 py-3">
+                                    <span className="sr-only">Détail</span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-ink-100">

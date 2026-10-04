@@ -34,7 +34,7 @@ function YoyCard({ label, current, previous }: { label: string; current: number;
             <p className="mt-1 text-xs text-ink-500">
                 Année précédente : {fcfa(previous)}
                 {diff !== null && (
-                    <span className={`ml-2 inline-flex items-center gap-0.5 font-medium ${isUp ? 'text-emerald-600' : 'text-red-600'}`}>
+                    <span className={`ml-2 inline-flex items-center gap-0.5 font-medium ${isUp ? 'text-emerald-700' : 'text-red-600'}`}>
                         {isUp ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
                         {Math.abs(diff).toFixed(1)}%
                     </span>

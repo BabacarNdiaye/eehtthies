@@ -23,7 +23,7 @@ export function Field({
         <div>
             <label htmlFor={control ? controlId : undefined} className="mb-1.5 block text-sm font-medium text-ink-700">
                 {label}
-                {required && <span className="text-red-500"> *</span>}
+                {required && <span className="text-red-600"> *</span>}
             </label>
             {control ? cloneElement(control, { id: controlId }) : children}
             {hint && <p className="mt-1 text-xs text-ink-500">{hint}</p>}

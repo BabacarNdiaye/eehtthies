@@ -75,7 +75,7 @@ export default function CashJournal({ entries, from, to, totalIn, totalOut }: Pr
                                     </td>
                                     <td
                                         className={`px-5 py-3 text-right font-medium ${
-                                            entry.type === 'recette' ? 'text-emerald-600' : 'text-red-600'
+                                            entry.type === 'recette' ? 'text-emerald-700' : 'text-red-600'
                                         }`}
                                     >
                                         {entry.type === 'recette' ? '+' : '-'}

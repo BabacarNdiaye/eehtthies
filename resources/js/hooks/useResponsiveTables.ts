@@ -22,14 +22,40 @@ function isOptedOut(table: HTMLTableElement): boolean {
 }
 
 /**
+ * Un tableau « matrice » défile en largeur sur téléphone. S'il ne contient rien de focalisable (un relevé de notes),
+ * le clavier ne peut pas le faire défiler : son conteneur reçoit donc le focus et un nom — le titre de la carte qui
+ * l'entoure, sinon celui de la page.
+ */
+function makeScrollerFocusable(table: HTMLTableElement) {
+    const scroller = table.parentElement;
+
+    if (!scroller?.classList.contains('overflow-x-auto')) return;
+
+    setAttr(scroller, 'tabindex', '0');
+    setAttr(scroller, 'role', 'region');
+
+    if (!scroller.hasAttribute('aria-label')) {
+        const heading = scroller.parentElement?.querySelector('h2, h3') ?? document.querySelector('main h1');
+
+        setAttr(scroller, 'aria-label', heading?.textContent?.replace(/\s+/g, ' ').trim() || 'Tableau');
+    }
+}
+
+/**
  * Prépare un tableau à devenir une liste de cartes sous 768 px : chaque cellule reçoit le libellé de sa colonne
  * (`data-label`), la cellule titre (`data-title`) et la cellule des boutons (`data-actions`) sont repérées. Seuls des
  * attributs sont posés — jamais de nœud ajouté ni déplacé — pour ne pas gêner React ; le CSS fait le reste.
  */
 function enhance(table: HTMLTableElement, cardMode: boolean) {
+    if (isOptedOut(table)) {
+        makeScrollerFocusable(table);
+
+        return;
+    }
+
     const headRow = table.tHead?.rows[0];
 
-    if (!headRow || isOptedOut(table)) return;
+    if (!headRow) return;
 
     const labels: string[] = [];
     const hiddenColumns = new Set<number>();

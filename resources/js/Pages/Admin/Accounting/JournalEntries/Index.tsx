@@ -75,7 +75,9 @@ export default function Index({ entries, journals, filters }: Props) {
                                 <th className="px-5 py-3">Référence</th>
                                 <th className="px-5 py-3">Libellé</th>
                                 <th className="px-5 py-3 text-right">Montant</th>
-                                <th className="px-5 py-3"></th>
+                                <th className="px-5 py-3">
+                                    <span className="sr-only">Actions</span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-ink-100">

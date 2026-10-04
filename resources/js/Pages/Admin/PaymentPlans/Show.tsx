@@ -95,7 +95,9 @@ export default function Show({ plan, paidAmount, balance, progressPercent }: Pro
                                 <th className="px-5 py-3">Échéance</th>
                                 <th className="px-5 py-3">Montant</th>
                                 <th className="px-5 py-3">Statut</th>
-                                <th className="px-5 py-3"></th>
+                                <th className="px-5 py-3">
+                                    <span className="sr-only">Actions</span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-ink-100">

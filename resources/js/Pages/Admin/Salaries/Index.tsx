@@ -249,7 +249,7 @@ export default function Index({ staff, year, months, monthLabels, paymentMethods
                             activeTab === group.key ? 'bg-ink-900 text-white' : 'text-ink-500 hover:bg-ink-50'
                         }`}
                     >
-                        {group.label} <span className="ml-1 opacity-70">({group.rows.length})</span>
+                        {group.label} <span className="ml-1 opacity-90">({group.rows.length})</span>
                     </button>
                 ))}
             </div>

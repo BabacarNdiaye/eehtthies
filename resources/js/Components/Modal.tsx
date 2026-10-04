@@ -4,11 +4,12 @@ import {
     Transition,
     TransitionChild,
 } from '@headlessui/react';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useCallback, useState } from 'react';
 
 /**
  * Fenêtre modale. À partir de sm : carte centrée. Sur téléphone : feuille qui monte du bas de l'écran, pleine
  * largeur, avec une poignée — le pouce l'atteint sans lâcher le téléphone, et le clavier virtuel ne la masque pas.
+ * Son nom pour les lecteurs d'écran est `label` s'il est donné, sinon le premier titre qu'elle affiche.
  */
 export default function Modal({
     children,
@@ -16,12 +17,24 @@ export default function Modal({
     maxWidth = '2xl',
     closeable = true,
     onClose = () => {},
+    label,
 }: PropsWithChildren<{
     show: boolean;
     maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
     closeable?: boolean;
     onClose: CallableFunction;
+    label?: string;
 }>) {
+    const [heading, setHeading] = useState<string>();
+
+    // Les neuf fenêtres de l'application s'ouvrent sur un <h2> : son texte nomme la boîte sans que chacune ait à le
+    // répéter. (Headless UI pose lui-même `aria-labelledby` et écraserait le nôtre : on passe par `aria-label`.)
+    const panelRef = useCallback((panel: HTMLDivElement | null) => {
+        const title = panel?.querySelector<HTMLElement>('h1, h2, h3')?.textContent?.trim();
+
+        if (title) setHeading(title);
+    }, []);
+
     const close = () => {
         if (closeable) {
             onClose();
@@ -43,6 +56,7 @@ export default function Modal({
                 id="modal"
                 className="fixed inset-0 z-[60] flex transform items-end overflow-y-auto transition-all sm:items-center sm:px-0 sm:py-6"
                 onClose={close}
+                aria-label={label ?? heading}
             >
                 <TransitionChild
                     enter="ease-out duration-300"
@@ -64,6 +78,7 @@ export default function Modal({
                     leaveTo="opacity-0 translate-y-full sm:translate-y-0 sm:scale-95"
                 >
                     <DialogPanel
+                        ref={panelRef}
                         className={`relative w-full transform overflow-hidden rounded-t-3xl bg-white shadow-elevated transition-all max-sm:max-h-[92vh] max-sm:overflow-y-auto sm:mx-auto sm:mb-6 sm:rounded-xl ${maxWidthClass}`}
                         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
                     >

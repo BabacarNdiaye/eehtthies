@@ -105,7 +105,7 @@ export default function BalanceSheet({ asOf, fiscalYearStart, actif, passif, res
                 />
             </div>
 
-            <p className={`mt-4 text-sm ${equilibrated ? 'text-emerald-600' : 'text-red-600'}`}>
+            <p className={`mt-4 text-sm ${equilibrated ? 'text-emerald-700' : 'text-red-600'}`}>
                 {equilibrated ? '✓ Le bilan est équilibré.' : `⚠ Écart de ${formatFcfa(totalActif - totalPassif)} entre actif et passif.`}
             </p>
         </AdminLayout>
