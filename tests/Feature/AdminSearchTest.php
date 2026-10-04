@@ -102,6 +102,23 @@ class AdminSearchTest extends TestCase
         $this->search($admin, 'diop')->assertJsonPath('invoices.0.href', "/admin/invoices/{$invoice->id}");
     }
 
+    public function test_invoices_are_filtered_by_the_words_typed(): void
+    {
+        $awa = $this->student('Awa', 'Diop', 'EEHT-001');
+        $fatou = $this->student('Fatou', 'Sarr', 'EEHT-002');
+        $awaInvoice = Invoice::create(['student_id' => $awa->id, 'type' => 'mensualite', 'label' => 'Mensualité octobre', 'amount' => 35000, 'discount' => 0]);
+        Invoice::create(['student_id' => $fatou->id, 'type' => 'inscription', 'label' => 'Frais de dossier', 'amount' => 20000, 'discount' => 0]);
+        $admin = $this->staff('super-admin');
+
+        // Un mot qui ne figure nulle part ne ramène aucune facture (la recherche par élève ne doit pas tout laisser passer).
+        $this->search($admin, 'zzzz')->assertOk()->assertJsonCount(0, 'invoices');
+        // Le nom d'un élève ne ramène que les factures de cet élève.
+        $this->search($admin, 'diop')->assertJsonCount(1, 'invoices')->assertJsonPath('invoices.0.href', "/admin/invoices/{$awaInvoice->id}");
+        // Chaque mot doit se retrouver, ici l'un dans le nom de l'élève et l'autre dans le libellé.
+        $this->search($admin, 'diop octobre')->assertJsonCount(1, 'invoices');
+        $this->search($admin, 'sarr octobre')->assertJsonCount(0, 'invoices');
+    }
+
     public function test_each_family_follows_the_permission_of_its_list(): void
     {
         $student = $this->student('Awa', 'Diop', 'EEHT-001');

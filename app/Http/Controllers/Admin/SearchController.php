@@ -111,7 +111,11 @@ class SearchController extends Controller
         foreach ($terms as $term) {
             $query->where(function (Builder $where) use ($term) {
                 $this->orLike($where, ['reference', 'label'], $term);
-                $where->orWhereHas('student', fn (Builder $student) => $this->orLike($student, ['first_name', 'last_name', 'matricule'], $term));
+                // Les « OU » des noms vont dans leur propre groupe : posés à plat dans la requête de la relation, ils
+                // se joindraient au lien facture-élève par un OU et feraient passer toutes les factures.
+                $where->orWhereHas('student', fn (Builder $student) => $student->where(
+                    fn (Builder $name) => $this->orLike($name, ['first_name', 'last_name', 'matricule'], $term)
+                ));
             });
         }
 
