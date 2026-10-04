@@ -22,7 +22,10 @@ class PageController extends Controller
     public function teachers(): Response
     {
         return Inertia::render('Public/Page/Teachers', [
-            'teachers' => Teacher::where('status', 'actif')->orderBy('last_name')->get(),
+            // Visiteurs anonymes : seulement ce que la page affiche (jamais salaire, taux horaire, contacts, compte de versement).
+            'teachers' => Teacher::where('status', 'actif')
+                ->orderBy('last_name')
+                ->get(['id', 'first_name', 'last_name', 'photo', 'specialty', 'experience_years', 'diplomas']),
         ]);
     }
 
