@@ -4,8 +4,38 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-        <title inertia>{{ config('app.name', 'EEHT de Thiès') }}</title>
-        <meta name="description" content="Elite École Hôtelière et Touristique de Thiès - Formations professionnalisantes en hôtellerie, restauration et tourisme.">
+        {{-- Titre, description, aperçu de partage (WhatsApp, Facebook, X), adresse canonique et données structurées :
+             écrits ici, côté serveur, car les robots de partage n'exécutent pas le JavaScript. Voir App\Support\Seo. --}}
+        @php($seo = \App\Support\Seo::forRequest(request()))
+        <title inertia>{{ $seo['title'] }}</title>
+        <meta name="description" content="{{ $seo['description'] }}">
+        <meta name="robots" content="{{ $seo['robots'] }}">
+        @if ($seo['canonical'])
+        <link rel="canonical" href="{{ $seo['canonical'] }}">
+        @endif
+        <meta property="og:site_name" content="{{ $seo['site_name'] }}">
+        <meta property="og:locale" content="{{ $seo['locale'] }}">
+        <meta property="og:type" content="{{ $seo['type'] }}">
+        <meta property="og:title" content="{{ $seo['title'] }}">
+        <meta property="og:description" content="{{ $seo['description'] }}">
+        @if ($seo['url'])
+        <meta property="og:url" content="{{ $seo['url'] }}">
+        @endif
+        @if ($seo['image'])
+        <meta property="og:image" content="{{ $seo['image'] }}">
+        @endif
+        @if ($seo['published_time'])
+        <meta property="article:published_time" content="{{ $seo['published_time'] }}">
+        @endif
+        <meta name="twitter:card" content="{{ $seo['card'] }}">
+        <meta name="twitter:title" content="{{ $seo['title'] }}">
+        <meta name="twitter:description" content="{{ $seo['description'] }}">
+        @if ($seo['image'])
+        <meta name="twitter:image" content="{{ $seo['image'] }}">
+        @endif
+        @if ($seo['json_ld'])
+        <script type="application/ld+json">{!! $seo['json_ld'] !!}</script>
+        @endif
 
         {{-- PWA : installable sur Android (manifest) et iOS (balises meta apple-*) --}}
         <link rel="manifest" href="{{ route('pwa.manifest') }}">

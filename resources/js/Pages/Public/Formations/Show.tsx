@@ -2,6 +2,7 @@ import PublicLayout from '@/Layouts/PublicLayout';
 import ImagePlaceholder from '@/Components/Public/ImagePlaceholder';
 import StarRating from '@/Components/Public/StarRating';
 import Reveal from '@/Components/Public/Reveal';
+import ShareButton from '@/Components/Public/ShareButton';
 import { Formation, PageProps, Testimonial } from '@/types';
 import { formatDateLong, formatFcfa, initials, storageUrl } from '@/lib/publicFormat';
 import { Head, Link, usePage } from '@inertiajs/react';
@@ -171,6 +172,7 @@ export default function FormationsShow({
                         </Link>
                         <span aria-hidden>/</span>
                         <span className="text-ink-100">{formation.name}</span>
+                        <ShareButton title={`${formation.name} - EEHT de Thiès`} className="ml-auto bg-white/10 text-white hover:bg-white/20" />
                     </nav>
 
                     <div className="grid grid-cols-1 gap-10 lg:grid-cols-5 lg:items-center">

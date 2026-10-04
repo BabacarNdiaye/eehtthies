@@ -1,6 +1,7 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import ImagePlaceholder from '@/Components/Public/ImagePlaceholder';
 import Reveal from '@/Components/Public/Reveal';
+import ShareButton from '@/Components/Public/ShareButton';
 import { NewsArticle } from '@/types';
 import { formatDateLong, storageUrl } from '@/lib/publicFormat';
 import { Head, Link } from '@inertiajs/react';
@@ -24,7 +25,7 @@ export default function NewsShow({
                 {image ? (
                     <img
                         src={image}
-                        alt={article.title}
+                        alt=""
                         className="h-full w-full object-cover"
                     />
                 ) : (
@@ -54,6 +55,7 @@ export default function NewsShow({
                                 {article.author.name}
                             </span>
                         )}
+                        <ShareButton title={article.title} className="bg-white/10 text-white hover:bg-white/20" />
                     </div>
                 </div>
             </section>
@@ -70,7 +72,7 @@ export default function NewsShow({
                                 href={article.facebook_post_url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#1877F2] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:opacity-90"
+                                className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#1565d8] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:opacity-90"
                             >
                                 <Facebook className="h-4 w-4" />
                                 Voir la publication originale sur Facebook

@@ -84,6 +84,7 @@ use App\Http\Controllers\Site\JobOfferController;
 use App\Http\Controllers\Site\NewsController;
 use App\Http\Controllers\Site\PageController;
 use App\Http\Controllers\Site\ReportCardVerificationController;
+use App\Http\Controllers\Site\SitemapController;
 use App\Support\PermissionRouting;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -95,6 +96,7 @@ use Inertia\Inertia;
 */
 
 Route::get('/manifest.webmanifest', PwaManifestController::class)->name('pwa.manifest');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('/a-propos', [PageController::class, 'about'])->name('pages.about');
