@@ -3,6 +3,8 @@ import AccountingTabs from '@/Components/Admin/AccountingTabs';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, TextInput } from '@/Components/Admin/Field';
+import { IconButton } from '@/Components/Admin/IconButton';
+import FormActions from '@/Components/Admin/FormActions';
 import { Head, useForm } from '@inertiajs/react';
 import { Plus, Trash2 } from 'lucide-react';
 
@@ -92,7 +94,7 @@ export default function Form({ journals, accounts }: Props) {
                                 {data.lines.map((line, index) => (
                                     <tr key={index}>
                                         <td className="px-4 py-2">
-                                            <Select value={line.account_id} onChange={(e) => updateLine(index, 'account_id', e.target.value)}>
+                                            <Select aria-label={`Compte, ligne ${index + 1}`} value={line.account_id} onChange={(e) => updateLine(index, 'account_id', e.target.value)}>
                                                 <option value="">Sélectionner...</option>
                                                 {accounts.map((a) => (
                                                     <option key={a.id} value={a.id}>{a.code} — {a.name}</option>
@@ -100,7 +102,7 @@ export default function Form({ journals, accounts }: Props) {
                                             </Select>
                                         </td>
                                         <td className="px-4 py-2">
-                                            <TextInput value={line.label} onChange={(e) => updateLine(index, 'label', e.target.value)} />
+                                            <TextInput aria-label={`Libellé, ligne ${index + 1}`} value={line.label} onChange={(e) => updateLine(index, 'label', e.target.value)} />
                                         </td>
                                         <td className="px-4 py-2">
                                             <TextInput
@@ -108,6 +110,7 @@ export default function Form({ journals, accounts }: Props) {
                                                 min="0"
                                                 step="1"
                                                 className="text-right"
+                                                aria-label={`Débit, ligne ${index + 1}`}
                                                 value={line.debit}
                                                 onChange={(e) => updateLine(index, 'debit', e.target.value)}
                                             />
@@ -118,15 +121,16 @@ export default function Form({ journals, accounts }: Props) {
                                                 min="0"
                                                 step="1"
                                                 className="text-right"
+                                                aria-label={`Crédit, ligne ${index + 1}`}
                                                 value={line.credit}
                                                 onChange={(e) => updateLine(index, 'credit', e.target.value)}
                                             />
                                         </td>
                                         <td className="px-4 py-2 text-right">
                                             {data.lines.length > 2 && (
-                                                <button type="button" onClick={() => removeLine(index)} className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50">
+                                                <IconButton type="button" onClick={() => removeLine(index)} label="Supprimer" tone="danger">
                                                     <Trash2 className="h-4 w-4" />
-                                                </button>
+                                                </IconButton>
                                             )}
                                         </td>
                                     </tr>
@@ -155,7 +159,7 @@ export default function Form({ journals, accounts }: Props) {
                     </p>
                 )}
 
-                <div className="flex justify-end">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing || !balanced}
@@ -163,7 +167,7 @@ export default function Form({ journals, accounts }: Props) {
                     >
                         Enregistrer l'écriture
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

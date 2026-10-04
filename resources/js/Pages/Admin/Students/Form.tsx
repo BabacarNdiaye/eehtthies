@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Checkbox, Field, Select, TextInput, Textarea } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { ReportCard, Student, StudentDocument } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Archive, Download, FileCheck, GraduationCap, IdCard, KeyRound, Trash2 } from 'lucide-react';
@@ -132,7 +133,7 @@ export default function Form({
                             type="checkbox"
                             checked={data.is_repeating}
                             onChange={(e) => setData('is_repeating', e.target.checked)}
-                            className="rounded border-ink-300 text-gold-600 focus:ring-gold-500"
+                            className="rounded border-ink-300 text-gold-700 focus:ring-gold-500"
                         />
                         Élève redoublant(e) cette année
                     </label>
@@ -415,7 +416,7 @@ export default function Form({
                     </Card>
                 )}
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -425,7 +426,7 @@ export default function Form({
                             ? 'Enregistrer les modifications'
                             : "Créer l'élève"}
                     </button>
-                </div>
+                </FormActions>
             </form>
 
             {isEdit && (
@@ -464,7 +465,7 @@ export default function Form({
                         </button>
                     </div>
                     {!data.email && (
-                        <p className="mt-2 text-xs text-ink-400">
+                        <p className="mt-2 text-xs text-ink-500">
                             Renseignez l'e-mail de l'élève ci-dessus pour activer son accès.
                         </p>
                     )}
@@ -600,7 +601,7 @@ function IdCardCard({ student }: { student: Student }) {
                     {student.photo ? (
                         <img src={`/storage/${student.photo}`} alt="Photo de l'élève" className="h-full w-full object-cover" />
                     ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-ink-400">Aucune photo</div>
+                        <div className="flex h-full items-center justify-center text-xs text-ink-500">Aucune photo</div>
                     )}
                 </div>
 
@@ -705,14 +706,14 @@ function DocumentsCard({
             </form>
 
             {documents.length === 0 ? (
-                <p className="text-sm text-ink-400">Aucun document enregistré pour cet élève.</p>
+                <p className="text-sm text-ink-500">Aucun document enregistré pour cet élève.</p>
             ) : (
                 <ul className="divide-y divide-ink-100">
                     {documents.map((doc) => (
                         <li key={doc.id} className="flex items-center justify-between py-3">
                             <div>
                                 <p className="text-sm font-medium text-ink-800">{doc.title}</p>
-                                <p className="text-xs text-ink-400">
+                                <p className="text-xs text-ink-500">
                                     {documentTypes[doc.type] ?? doc.type}
                                     {doc.uploader ? ` · Ajouté par ${doc.uploader.name}` : ''}
                                     {' · '}
@@ -738,7 +739,7 @@ function DocumentsCard({
                                             );
                                         }
                                     }}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
                                 >
                                     <Trash2 className="h-3.5 w-3.5" /> Supprimer
                                 </button>

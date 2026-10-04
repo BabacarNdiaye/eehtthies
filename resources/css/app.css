@@ -53,6 +53,12 @@
         display: none;
     }
 
+    /* Écran de saisie de l'administration (création, modification) : la barre Enregistrer collante (FormActions)
+       prend la place de la barre du bas ; --portal-bar-h réserve sa hauteur aux bannières flottantes. */
+    body[data-admin-form] {
+        --portal-bar-h: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+    }
+
     /* Page de saisie en étapes du site public : barre Précédent / Continuer à la place de la barre du bas. */
     body[data-site-form] {
         --portal-bar-h: calc(4.75rem + env(safe-area-inset-bottom, 0px));

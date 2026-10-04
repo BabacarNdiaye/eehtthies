@@ -120,7 +120,7 @@ export default function AtRisk({ students, summary }: Props) {
             <Card className="overflow-hidden">
                 <div className="border-b border-ink-100 p-5">
                     <h2 className="font-serif text-lg font-semibold text-ink-900">Élèves à surveiller</h2>
-                    <p className="mt-1 text-xs text-ink-400">
+                    <p className="mt-1 text-xs text-ink-500">
                         Score basé sur : absences non justifiées (30 derniers jours), moyenne générale de l'année, factures en retard de paiement.
                     </p>
                 </div>
@@ -136,7 +136,7 @@ export default function AtRisk({ students, summary }: Props) {
                                         <Link href={route('admin.students.edit', s.id)} className="font-semibold text-ink-900 hover:underline">
                                             {s.name}
                                         </Link>
-                                        {s.matricule && <span className="text-xs text-ink-400">#{s.matricule}</span>}
+                                        {s.matricule && <span className="text-xs text-ink-500">#{s.matricule}</span>}
                                         <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${LEVEL_STYLES[s.level].badge}`}>
                                             {LEVEL_STYLES[s.level].label}
                                         </span>

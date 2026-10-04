@@ -4,6 +4,7 @@ import { Field, Select, TextInput, Textarea } from '@/Components/Admin/Field';
 import Modal from '@/Components/Modal';
 import LibraryBrowser, { LibraryResourceRow } from '@/Components/Library/LibraryBrowser';
 import DocumentFileField from '@/Components/Library/DocumentFileField';
+import { IconButton } from '@/Components/Admin/IconButton';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -81,12 +82,12 @@ export default function Index({ resources }: { resources: LibraryResourceRow[] }
                 resources={resources}
                 renderActions={(r) => (
                     <>
-                        <button onClick={() => openEdit(r)} className="rounded-lg p-1.5 text-ink-500 hover:bg-ink-100">
+                        <IconButton onClick={() => openEdit(r)} label="Modifier">
                             <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button onClick={() => destroy(r)} className="rounded-lg p-1.5 text-red-500 hover:bg-red-50">
+                        </IconButton>
+                        <IconButton onClick={() => destroy(r)} label="Supprimer" tone="danger">
                             <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        </IconButton>
                     </>
                 )}
             />

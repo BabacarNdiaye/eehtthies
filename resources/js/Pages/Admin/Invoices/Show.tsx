@@ -3,6 +3,7 @@ import AttachmentsPanel from '@/Components/Admin/AttachmentsPanel';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
+import { IconButton } from '@/Components/Admin/IconButton';
 import { Invoice } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Download, Inbox, Trash2 } from 'lucide-react';
@@ -68,7 +69,7 @@ export default function Show({ invoice, methods }: Props) {
         <AdminLayout>
             <Head title={`Facture ${invoice.reference}`} />
             <PageHeader title={`Facture ${invoice.reference}`} subtitle={`${invoice.student?.first_name} ${invoice.student?.last_name} (${invoice.student?.matricule})`}>
-                <button onClick={deleteInvoice} className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50">
+                <button onClick={deleteInvoice} className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50">
                     <Trash2 className="h-4 w-4" /> Supprimer
                 </button>
             </PageHeader>
@@ -79,7 +80,7 @@ export default function Show({ invoice, methods }: Props) {
                     <p className="text-xs text-ink-500">Montant net</p>
                 </Card>
                 <Card className="p-4 text-center">
-                    <p className="text-xl font-bold text-emerald-600">{fcfa(paid)}</p>
+                    <p className="text-xl font-bold text-emerald-700">{fcfa(paid)}</p>
                     <p className="text-xs text-ink-500">Payé</p>
                 </Card>
                 <Card className="p-4 text-center">
@@ -129,9 +130,9 @@ export default function Show({ invoice, methods }: Props) {
                                                     >
                                                         <Download className="h-4 w-4" />
                                                     </a>
-                                                    <button onClick={() => deletePayment(p.id)} className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50">
+                                                    <IconButton onClick={() => deletePayment(p.id)} label="Supprimer" tone="danger">
                                                         <Trash2 className="h-4 w-4" />
-                                                    </button>
+                                                    </IconButton>
                                                 </div>
                                             </td>
                                         </tr>
@@ -139,7 +140,7 @@ export default function Show({ invoice, methods }: Props) {
                                     {(invoice.payments ?? []).length === 0 && (
                                         <tr>
                                             <td colSpan={5} className="px-5 py-8 text-center">
-                                                <div className="flex flex-col items-center gap-3 text-ink-400">
+                                                <div className="flex flex-col items-center gap-3 text-ink-500">
                                                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                         <Inbox className="h-6 w-6" />
                                                     </span>
@@ -192,7 +193,7 @@ export default function Show({ invoice, methods }: Props) {
                     <Card className="p-6">
                         <h2 className="mb-4 font-serif text-lg font-semibold text-ink-900">Enregistrer un paiement</h2>
                         {balance <= 0 ? (
-                            <p className="text-sm text-emerald-600">Cette facture est entièrement payée.</p>
+                            <p className="text-sm text-emerald-700">Cette facture est entièrement payée.</p>
                         ) : (
                             <form onSubmit={submitPayment} className="space-y-4">
                                 <Field label="Montant (FCFA)" required error={paymentForm.errors.amount}>

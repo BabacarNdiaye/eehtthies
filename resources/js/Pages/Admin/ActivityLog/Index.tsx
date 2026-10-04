@@ -3,6 +3,7 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { Field, Select, TextInput } from '@/Components/Admin/Field';
+import { IconButton } from '@/Components/Admin/IconButton';
 import { Paginated } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { ChevronDown, ChevronUp, Inbox } from 'lucide-react';
@@ -77,7 +78,7 @@ function ActivityDetails({
         );
     }
 
-    if (!attributes) return <p className="text-xs text-ink-400">Aucun détail disponible.</p>;
+    if (!attributes) return <p className="text-xs text-ink-500">Aucun détail disponible.</p>;
 
     const keys = Object.keys(attributes);
 
@@ -191,16 +192,17 @@ export default function Index({ activities, logNames, staff, filters }: Props) {
                                         </td>
                                         <td className="px-5 py-3 text-ink-600">{a.causer_name}</td>
                                         <td className="px-5 py-3 text-right">
-                                            <button
+                                            <IconButton
                                                 onClick={() => setExpanded(expanded === a.id ? null : a.id)}
-                                                className="rounded-lg p-2 text-ink-400 transition-colors duration-150 hover:bg-ink-100"
+                                                label={expanded === a.id ? 'Masquer le détail' : 'Voir le détail'}
+                                                aria-expanded={expanded === a.id}
                                             >
                                                 {expanded === a.id ? (
                                                     <ChevronUp className="h-4 w-4" />
                                                 ) : (
                                                     <ChevronDown className="h-4 w-4" />
                                                 )}
-                                            </button>
+                                            </IconButton>
                                         </td>
                                     </tr>
                                     {expanded === a.id && (
@@ -215,7 +217,7 @@ export default function Index({ activities, logNames, staff, filters }: Props) {
                             {activities.data.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

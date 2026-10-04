@@ -1,8 +1,9 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
+import { IconLink } from '@/Components/Admin/IconButton';
 import { Invoice } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { Eye, Inbox } from 'lucide-react';
 
 const fcfa = (v: number | string) => `${new Intl.NumberFormat('fr-FR').format(Math.round(Number(v)))} FCFA`;
@@ -42,7 +43,7 @@ export default function Overdue({ invoices, totalOutstanding }: { invoices: Over
                                     <td className="px-5 py-3 font-medium text-ink-900">{inv.reference}</td>
                                     <td className="px-5 py-3 text-ink-600">
                                         {inv.student.first_name} {inv.student.last_name}
-                                        <p className="text-xs text-ink-400">{inv.student.matricule}</p>
+                                        <p className="text-xs text-ink-500">{inv.student.matricule}</p>
                                     </td>
                                     <td className="px-5 py-3 text-ink-500">
                                         {inv.student.phone ?? inv.student.email ?? '—'}
@@ -53,9 +54,9 @@ export default function Overdue({ invoices, totalOutstanding }: { invoices: Over
                                     <td className="px-5 py-3 font-semibold text-red-600">{fcfa(inv.computed_balance)}</td>
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end">
-                                            <Link href={route('admin.invoices.show', inv.id)} className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100">
+                                            <IconLink href={route('admin.invoices.show', inv.id)} label="Consulter">
                                                 <Eye className="h-4 w-4" />
-                                            </Link>
+                                            </IconLink>
                                         </div>
                                     </td>
                                 </tr>
@@ -63,7 +64,7 @@ export default function Overdue({ invoices, totalOutstanding }: { invoices: Over
                             {invoices.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

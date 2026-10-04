@@ -149,7 +149,7 @@ export default function Dashboard({ kpis, monthly, expensesByCategory, categoryL
                         </li>
                     ))}
                     {lowStockProducts.length === 0 && (
-                        <li className="px-5 py-8 text-center text-ink-400">Aucune alerte de stock pour le moment.</li>
+                        <li className="px-5 py-8 text-center text-ink-500">Aucune alerte de stock pour le moment.</li>
                     )}
                 </ul>
             </Card>

@@ -95,7 +95,7 @@ export default function Ledger({ accounts, account, openingBalance, lines, filte
                                 </thead>
                                 <tbody className="divide-y divide-ink-100">
                                     <tr className="bg-ink-50/40">
-                                        <td className="px-5 py-2 text-ink-400" colSpan={6}>Solde d'ouverture</td>
+                                        <td className="px-5 py-2 text-ink-500" colSpan={6}>Solde d'ouverture</td>
                                         <td className="px-5 py-2 text-right font-medium text-ink-900">{formatFcfa(openingBalance)}</td>
                                     </tr>
                                     {lines.map((line, i) => (
@@ -114,7 +114,7 @@ export default function Ledger({ accounts, account, openingBalance, lines, filte
                                     {lines.length === 0 && (
                                         <tr>
                                             <td colSpan={7} className="px-5 py-10 text-center">
-                                                <div className="flex flex-col items-center gap-3 text-ink-400">
+                                                <div className="flex flex-col items-center gap-3 text-ink-500">
                                                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                         <Inbox className="h-6 w-6" />
                                                     </span>

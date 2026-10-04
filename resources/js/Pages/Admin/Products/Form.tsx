@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Checkbox, Field, Select, TextInput } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Product } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 
@@ -80,13 +81,13 @@ export default function Form({ product, suppliers, categories }: Props) {
                 </Card>
 
                 {!isEdit && (
-                    <p className="text-xs text-ink-400">
+                    <p className="text-xs text-ink-500">
                         Le stock initial est à 0. Utilisez « Mouvements de stock » après création pour enregistrer une
                         entrée.
                     </p>
                 )}
                 {isEdit && (
-                    <p className="text-xs text-ink-400">
+                    <p className="text-xs text-ink-500">
                         Stock actuel : {product!.quantity_in_stock} {product!.unit}. Utilisez{' '}
                         <Link href={route('admin.products.movements', { product_id: product!.id })} className="text-gold-700 hover:underline">
                             les mouvements de stock
@@ -95,7 +96,7 @@ export default function Form({ product, suppliers, categories }: Props) {
                     </p>
                 )}
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -103,7 +104,7 @@ export default function Form({ product, suppliers, categories }: Props) {
                     >
                         {isEdit ? 'Enregistrer les modifications' : 'Créer le produit'}
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

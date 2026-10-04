@@ -42,7 +42,7 @@ export default function Show({ entry }: { entry: Entry }) {
             <Head title={`Écriture ${entry.reference}`} />
             <PageHeader title={`Écriture ${entry.reference}`} subtitle={entry.description}>
                 {!entry.is_auto && (
-                    <button onClick={destroy} className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50">
+                    <button onClick={destroy} className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50">
                         <Trash2 className="h-4 w-4" /> Supprimer
                     </button>
                 )}
@@ -50,15 +50,15 @@ export default function Show({ entry }: { entry: Entry }) {
 
             <Card className="mb-6 grid grid-cols-2 gap-4 p-6 sm:grid-cols-4">
                 <div>
-                    <p className="text-xs uppercase tracking-wide text-ink-400">Journal</p>
+                    <p className="text-xs uppercase tracking-wide text-ink-500">Journal</p>
                     <p className="font-medium text-ink-900">{entry.journal.code} — {entry.journal.name}</p>
                 </div>
                 <div>
-                    <p className="text-xs uppercase tracking-wide text-ink-400">Date</p>
+                    <p className="text-xs uppercase tracking-wide text-ink-500">Date</p>
                     <p className="font-medium text-ink-900">{new Date(entry.entry_date).toLocaleDateString('fr-FR')}</p>
                 </div>
                 <div>
-                    <p className="text-xs uppercase tracking-wide text-ink-400">Origine</p>
+                    <p className="text-xs uppercase tracking-wide text-ink-500">Origine</p>
                     <p className="font-medium text-ink-900">
                         {entry.is_auto ? (
                             <span className="inline-flex items-center gap-1"><Lock className="h-3.5 w-3.5" /> Automatique</span>
@@ -68,7 +68,7 @@ export default function Show({ entry }: { entry: Entry }) {
                     </p>
                 </div>
                 <div>
-                    <p className="text-xs uppercase tracking-wide text-ink-400">Saisie par</p>
+                    <p className="text-xs uppercase tracking-wide text-ink-500">Saisie par</p>
                     <p className="font-medium text-ink-900">{entry.created_by?.name ?? '—'}</p>
                 </div>
             </Card>

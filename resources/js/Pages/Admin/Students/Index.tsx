@@ -1,14 +1,16 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import FilterBar, { SearchField } from '@/Components/Admin/FilterBar';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import ExportButtons from '@/Components/Admin/ExportButtons';
 import Modal from '@/Components/Modal';
-import { Select, TextInput } from '@/Components/Admin/Field';
+import { Select } from '@/Components/Admin/Field';
+import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, Student } from '@/types';
-import { Head, Link, router, useForm } from '@inertiajs/react';
-import { IdCard, Mail, Pencil, Search, Trash2, Upload, UserRound, Users } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { IdCard, Mail, Pencil, Trash2, Upload, UserRound, Users } from 'lucide-react';
 import { ChangeEvent, Fragment, useEffect, useRef, useState } from 'react';
 
 interface Props {
@@ -105,6 +107,7 @@ export default function Index({ students, formations, schoolClasses, classCounts
                 <ExportButtons csvHref={route('admin.students.export.csv')} pdfHref={route('admin.students.export.pdf')} />
                 <div className="inline-flex items-center gap-2">
                     <Select
+                        aria-label="Classe des cartes"
                         value={cardsClassId}
                         onChange={(e) => setCardsClassId(e.target.value)}
                         className="!w-auto"
@@ -116,19 +119,26 @@ export default function Index({ students, formations, schoolClasses, classCounts
                             </option>
                         ))}
                     </Select>
-                    <a
-                        href={cardsClassId ? route('admin.students.cards.export', { school_class_id: cardsClassId }) : undefined}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-disabled={!cardsClassId}
-                        onClick={(e) => {
-                            if (!cardsClassId) e.preventDefault();
-                        }}
-                        className="inline-flex items-center gap-2 rounded-lg border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-600 transition-colors duration-150 hover:bg-ink-50 active:scale-[0.98] aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
-                    >
-                        <IdCard className="h-4 w-4" />
-                        Cartes de la classe
-                    </a>
+                    {cardsClassId ? (
+                        <a
+                            href={route('admin.students.cards.export', { school_class_id: cardsClassId })}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-600 transition-colors duration-150 hover:bg-ink-50 active:scale-[0.98]"
+                        >
+                            <IdCard className="h-4 w-4" />
+                            Cartes de la classe
+                        </a>
+                    ) : (
+                        <button
+                            type="button"
+                            disabled
+                            className="inline-flex cursor-not-allowed items-center gap-2 whitespace-nowrap rounded-lg border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-600 opacity-40"
+                        >
+                            <IdCard className="h-4 w-4" />
+                            Cartes de la classe
+                        </button>
+                    )}
                 </div>
                 <button
                     type="button"
@@ -189,22 +199,22 @@ export default function Index({ students, formations, schoolClasses, classCounts
                 </form>
             </Modal>
 
-            <Card className="mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-                    <TextInput
+            <FilterBar
+                search={
+                    <SearchField
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Rechercher un élève, un matricule..."
-                        className="pl-9"
                     />
-                </div>
+                }
+                activeCount={[filters.formation_id, filters.school_class_id, filters.status].filter(Boolean).length}
+            >
                 <Select
+                    aria-label="Filtrer par formation"
                     value={filters.formation_id ?? ''}
                     onChange={(e) =>
                         applyFilters({ formation_id: e.target.value })
                     }
-                    className="sm:w-56"
                 >
                     <option value="">Toutes les formations</option>
                     {formations.map((f) => (
@@ -214,11 +224,11 @@ export default function Index({ students, formations, schoolClasses, classCounts
                     ))}
                 </Select>
                 <Select
+                    aria-label="Filtrer par classe"
                     value={filters.school_class_id ?? ''}
                     onChange={(e) =>
                         applyFilters({ school_class_id: e.target.value })
                     }
-                    className="sm:w-48"
                 >
                     <option value="">Toutes les classes</option>
                     {schoolClasses.map((c) => (
@@ -228,11 +238,11 @@ export default function Index({ students, formations, schoolClasses, classCounts
                     ))}
                 </Select>
                 <Select
+                    aria-label="Filtrer par statut"
                     value={filters.status ?? ''}
                     onChange={(e) =>
                         applyFilters({ status: e.target.value })
                     }
-                    className="sm:w-48"
                 >
                     <option value="">Tous les statuts</option>
                     {Object.entries(statusLabels).map(([key, label]) => (
@@ -241,7 +251,7 @@ export default function Index({ students, formations, schoolClasses, classCounts
                         </option>
                     ))}
                 </Select>
-            </Card>
+            </FilterBar>
 
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
@@ -269,7 +279,7 @@ export default function Index({ students, formations, schoolClasses, classCounts
                                     <tr className="bg-ink-50">
                                         <td colSpan={5} className="px-5 py-2 text-xs font-semibold uppercase tracking-wide text-ink-600">
                                             {s.school_class?.name ?? 'Sans classe'}
-                                            <span className="ml-2 font-normal normal-case text-ink-400">
+                                            <span className="ml-2 font-normal normal-case text-ink-500">
                                                 {classCounts[classKey] ?? 0} élève{(classCounts[classKey] ?? 0) > 1 ? 's' : ''}
                                             </span>
                                         </td>
@@ -285,7 +295,7 @@ export default function Index({ students, formations, schoolClasses, classCounts
                                                     className="h-9 w-9 rounded-full object-cover"
                                                 />
                                             ) : (
-                                                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-100 text-ink-400">
+                                                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-100 text-ink-500">
                                                     <UserRound className="h-5 w-5" />
                                                 </span>
                                             )}
@@ -313,21 +323,22 @@ export default function Index({ students, formations, schoolClasses, classCounts
                                     </td>
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end gap-2">
-                                            <Link
+                                            <IconLink
                                                 href={route(
                                                     'admin.students.edit',
                                                     s.id,
                                                 )}
-                                                className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
+                                                label="Modifier"
                                             >
                                                 <Pencil className="h-4 w-4" />
-                                            </Link>
-                                            <button
+                                            </IconLink>
+                                            <IconButton
                                                 onClick={() => destroy(s)}
-                                                className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50"
+                                                label="Supprimer"
+                                                tone="danger"
                                             >
                                                 <Trash2 className="h-4 w-4" />
-                                            </button>
+                                            </IconButton>
                                         </div>
                                     </td>
                                 </tr>
@@ -337,7 +348,7 @@ export default function Index({ students, formations, schoolClasses, classCounts
                             {students.data.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="px-5 py-16 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Users className="h-6 w-6" />
                                             </span>

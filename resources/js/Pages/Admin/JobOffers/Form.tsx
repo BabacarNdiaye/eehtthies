@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Checkbox, Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { JobOffer } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 
@@ -84,11 +85,11 @@ export default function Form({ offer, partners, contractTypes }: Props) {
                     </label>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button type="submit" disabled={processing} className="rounded-lg bg-ink-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-ink-800 disabled:opacity-50">
                         {isEdit ? 'Enregistrer les modifications' : "Créer l'offre"}
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

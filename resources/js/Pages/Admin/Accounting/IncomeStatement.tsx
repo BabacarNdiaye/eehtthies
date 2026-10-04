@@ -47,7 +47,7 @@ function Column({ title, rows, total }: { title: string; rows: Row[]; total: num
                     {rows.length === 0 && (
                         <tr>
                             <td colSpan={2} className="px-5 py-8 text-center">
-                                <div className="flex flex-col items-center gap-3 text-ink-400">
+                                <div className="flex flex-col items-center gap-3 text-ink-500">
                                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                         <Inbox className="h-6 w-6" />
                                     </span>

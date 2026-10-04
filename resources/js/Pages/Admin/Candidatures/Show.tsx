@@ -28,7 +28,7 @@ interface Props {
 function InfoRow({ label, value }: { label: string; value?: React.ReactNode }) {
     return (
         <div>
-            <dt className="text-xs uppercase tracking-wide text-ink-400">
+            <dt className="text-xs uppercase tracking-wide text-ink-500">
                 {label}
             </dt>
             <dd className="mt-0.5 text-sm text-ink-800">{value ?? '—'}</dd>
@@ -180,7 +180,7 @@ export default function Show({ candidature, documents, statuses }: Props) {
                         </dl>
                         {candidature.motivation && (
                             <div className="mt-4">
-                                <dt className="text-xs uppercase tracking-wide text-ink-400">
+                                <dt className="text-xs uppercase tracking-wide text-ink-500">
                                     Lettre de motivation
                                 </dt>
                                 <dd className="mt-1 whitespace-pre-line rounded-lg bg-ink-50 p-4 text-sm text-ink-700">
@@ -207,7 +207,7 @@ export default function Show({ candidature, documents, statuses }: Props) {
                                                 <p className="text-sm font-medium text-ink-800">
                                                     {doc.name}
                                                 </p>
-                                                <p className="text-xs text-ink-400">
+                                                <p className="text-xs text-ink-500">
                                                     {doc.size}
                                                 </p>
                                             </div>
@@ -225,7 +225,7 @@ export default function Show({ candidature, documents, statuses }: Props) {
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-sm text-ink-400">
+                            <p className="text-sm text-ink-500">
                                 Aucun document joint à cette candidature.
                             </p>
                         )}

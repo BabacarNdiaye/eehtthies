@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, TextInput, Textarea } from '@/Components/Admin/Field';
+import { IconButton } from '@/Components/Admin/IconButton';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -82,7 +83,7 @@ export default function Index({ formations, skills, selectedFormationId }: Props
             <Card className="mb-6 p-6">
                 <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">Filière</h2>
                 <div className="max-w-xs">
-                    <Select value={selectedFormationId ?? ''} onChange={(e) => changeFormation(e.target.value)}>
+                    <Select aria-label="Filière" value={selectedFormationId ?? ''} onChange={(e) => changeFormation(e.target.value)}>
                         <option value="">Sélectionner une filière</option>
                         {formations.map((f) => (
                             <option key={f.id} value={f.id}>
@@ -154,6 +155,7 @@ export default function Index({ formations, skills, selectedFormationId }: Props
                                                         className="grid grid-cols-1 gap-3 sm:grid-cols-4 sm:items-end"
                                                     >
                                                         <TextInput
+                                                            aria-label="Ordre"
                                                             type="number"
                                                             min="0"
                                                             value={editForm.data.order}
@@ -161,6 +163,7 @@ export default function Index({ formations, skills, selectedFormationId }: Props
                                                         />
                                                         <div className="sm:col-span-2">
                                                             <TextInput
+                                                                aria-label="Nom"
                                                                 value={editForm.data.name}
                                                                 onChange={(e) => editForm.setData('name', e.target.value)}
                                                             />
@@ -173,16 +176,17 @@ export default function Index({ formations, skills, selectedFormationId }: Props
                                                             >
                                                                 Enregistrer
                                                             </button>
-                                                            <button
+                                                            <IconButton
                                                                 type="button"
                                                                 onClick={() => setEditingId(null)}
-                                                                className="rounded-lg p-2 text-ink-500 hover:bg-ink-100"
+                                                                label="Annuler la modification"
                                                             >
                                                                 <X className="h-4 w-4" />
-                                                            </button>
+                                                            </IconButton>
                                                         </div>
                                                         <div className="sm:col-span-4">
                                                             <Textarea
+                                                                aria-label="Description"
                                                                 rows={2}
                                                                 value={editForm.data.description}
                                                                 onChange={(e) => editForm.setData('description', e.target.value)}
@@ -198,18 +202,19 @@ export default function Index({ formations, skills, selectedFormationId }: Props
                                                 <td className="max-w-md px-5 py-3 text-ink-500">{s.description || '—'}</td>
                                                 <td className="px-5 py-3">
                                                     <div className="flex justify-end gap-2">
-                                                        <button
+                                                        <IconButton
                                                             onClick={() => startEdit(s)}
-                                                            className="rounded-lg p-2 text-ink-500 hover:bg-ink-100"
+                                                            label="Modifier"
                                                         >
                                                             <Pencil className="h-4 w-4" />
-                                                        </button>
-                                                        <button
+                                                        </IconButton>
+                                                        <IconButton
                                                             onClick={() => destroy(s)}
-                                                            className="rounded-lg p-2 text-red-500 hover:bg-red-50"
+                                                            label="Supprimer"
+                                                            tone="danger"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
-                                                        </button>
+                                                        </IconButton>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -218,7 +223,7 @@ export default function Index({ formations, skills, selectedFormationId }: Props
                                     {skills.length === 0 && (
                                         <tr>
                                             <td colSpan={4} className="px-5 py-10 text-center">
-                                                <div className="flex flex-col items-center gap-3 text-ink-400">
+                                                <div className="flex flex-col items-center gap-3 text-ink-500">
                                                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                         <Inbox className="h-6 w-6" />
                                                     </span>

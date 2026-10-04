@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Textarea, Checkbox, Select } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Formation } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { ChangeEvent, useState } from 'react';
@@ -160,7 +161,7 @@ export default function Form({ formation }: { formation?: Formation }) {
                     </Field>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -168,7 +169,7 @@ export default function Form({ formation }: { formation?: Formation }) {
                     >
                         {isEdit ? 'Enregistrer les modifications' : 'Créer la formation'}
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

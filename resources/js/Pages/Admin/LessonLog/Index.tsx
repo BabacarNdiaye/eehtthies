@@ -130,7 +130,7 @@ export default function Index({ logs, schoolClasses, teachers, selectedClassId, 
                             {logs.data.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

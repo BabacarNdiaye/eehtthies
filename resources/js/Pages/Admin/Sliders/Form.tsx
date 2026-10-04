@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Textarea, Checkbox } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Slider } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { ChangeEvent, useState } from 'react';
@@ -111,7 +112,7 @@ export default function Form({ slider }: { slider?: Slider }) {
                     </label>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -119,7 +120,7 @@ export default function Form({ slider }: { slider?: Slider }) {
                     >
                         {isEdit ? 'Enregistrer les modifications' : 'Créer la slide'}
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

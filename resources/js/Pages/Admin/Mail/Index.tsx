@@ -178,7 +178,7 @@ export default function Index({
                                             e.target.checked,
                                         )
                                     }
-                                    className="rounded border-ink-300 text-gold-600 focus:ring-gold-500"
+                                    className="rounded border-ink-300 text-gold-700 focus:ring-gold-500"
                                 />
                                 Tout
                             </label>
@@ -194,7 +194,7 @@ export default function Index({
                         </div>
                         <div className="max-h-64 space-y-1 overflow-y-auto">
                             {filteredStudents.length === 0 && (
-                                <p className="py-2 text-center text-xs text-ink-400">Aucun élève avec e-mail.</p>
+                                <p className="py-2 text-center text-xs text-ink-500">Aucun élève avec e-mail.</p>
                             )}
                             {filteredStudents.map((s) => (
                                 <label
@@ -205,7 +205,7 @@ export default function Index({
                                         type="checkbox"
                                         checked={!!s.email && selectedEmails.has(s.email)}
                                         onChange={() => s.email && toggle(s.email, `${s.first_name} ${s.last_name}`)}
-                                        className="rounded border-ink-300 text-gold-600 focus:ring-gold-500"
+                                        className="rounded border-ink-300 text-gold-700 focus:ring-gold-500"
                                     />
                                     <span
                                         className={`h-1.5 w-1.5 shrink-0 rounded-full ${s.user_id ? 'bg-emerald-500' : 'bg-ink-200'}`}
@@ -214,7 +214,7 @@ export default function Index({
                                     <span className="min-w-0 flex-1 truncate">
                                         {s.first_name} {s.last_name}
                                         {s.school_class && (
-                                            <span className="ml-1 text-xs text-ink-400">({s.school_class.name})</span>
+                                            <span className="ml-1 text-xs text-ink-500">({s.school_class.name})</span>
                                         )}
                                     </span>
                                 </label>
@@ -242,7 +242,7 @@ export default function Index({
                                             e.target.checked,
                                         )
                                     }
-                                    className="rounded border-ink-300 text-gold-600 focus:ring-gold-500"
+                                    className="rounded border-ink-300 text-gold-700 focus:ring-gold-500"
                                 />
                                 Tout
                             </label>
@@ -258,7 +258,7 @@ export default function Index({
                         </div>
                         <div className="max-h-64 space-y-1 overflow-y-auto">
                             {filteredTeachers.length === 0 && (
-                                <p className="py-2 text-center text-xs text-ink-400">Aucun enseignant avec e-mail.</p>
+                                <p className="py-2 text-center text-xs text-ink-500">Aucun enseignant avec e-mail.</p>
                             )}
                             {filteredTeachers.map((t) => (
                                 <label
@@ -269,7 +269,7 @@ export default function Index({
                                         type="checkbox"
                                         checked={!!t.email && selectedEmails.has(t.email)}
                                         onChange={() => t.email && toggle(t.email, `${t.first_name} ${t.last_name}`)}
-                                        className="rounded border-ink-300 text-gold-600 focus:ring-gold-500"
+                                        className="rounded border-ink-300 text-gold-700 focus:ring-gold-500"
                                     />
                                     <span
                                         className={`h-1.5 w-1.5 shrink-0 rounded-full ${t.user_id ? 'bg-emerald-500' : 'bg-ink-200'}`}
@@ -281,7 +281,7 @@ export default function Index({
                                 </label>
                             ))}
                         </div>
-                        <p className="mt-3 text-xs text-ink-400">
+                        <p className="mt-3 text-xs text-ink-500">
                             <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 align-middle" />
                             Accès activé (message interne) &nbsp;
                             <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-ink-200 align-middle" />
@@ -314,7 +314,7 @@ export default function Index({
                 <div className="overflow-x-auto">
                     <table className="mt-4 w-full text-left text-sm">
                         <thead>
-                            <tr className="border-b border-ink-100 text-xs font-semibold uppercase tracking-wide text-ink-400">
+                            <tr className="border-b border-ink-100 text-xs font-semibold uppercase tracking-wide text-ink-500">
                                 <th className="px-6 py-3">Date</th>
                                 <th className="px-6 py-3">Objet</th>
                                 <th className="px-6 py-3">Destinataires</th>
@@ -325,7 +325,7 @@ export default function Index({
                             {history.data.length === 0 && (
                                 <tr>
                                     <td colSpan={4} className="px-6 py-8 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Mail className="h-6 w-6" />
                                             </span>

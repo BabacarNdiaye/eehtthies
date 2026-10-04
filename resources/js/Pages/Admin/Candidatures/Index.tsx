@@ -1,12 +1,14 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import FilterBar, { SearchField } from '@/Components/Admin/FilterBar';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import StatusBadge from '@/Components/Admin/StatusBadge';
-import { Select, TextInput } from '@/Components/Admin/Field';
+import { Select } from '@/Components/Admin/Field';
+import { IconLink } from '@/Components/Admin/IconButton';
 import { Candidature, Paginated } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Inbox, Search } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { Eye, Inbox } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface Props {
@@ -62,22 +64,22 @@ export default function Index({
                 subtitle="Suivez et traitez les candidatures reçues en ligne."
             />
 
-            <Card className="mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-                    <TextInput
+            <FilterBar
+                search={
+                    <SearchField
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Rechercher un candidat, une référence, un e-mail..."
-                        className="pl-9"
                     />
-                </div>
+                }
+                activeCount={[filters.status, filters.formation_id].filter(Boolean).length}
+            >
                 <Select
+                    aria-label="Filtrer par statut"
                     value={filters.status ?? ''}
                     onChange={(e) =>
                         applyFilters({ status: e.target.value })
                     }
-                    className="sm:w-56"
                 >
                     <option value="">Tous les statuts</option>
                     {Object.entries(statuses).map(([key, label]) => (
@@ -87,11 +89,11 @@ export default function Index({
                     ))}
                 </Select>
                 <Select
+                    aria-label="Filtrer par formation"
                     value={filters.formation_id ?? ''}
                     onChange={(e) =>
                         applyFilters({ formation_id: e.target.value })
                     }
-                    className="sm:w-56"
                 >
                     <option value="">Toutes les formations</option>
                     {formations.map((f) => (
@@ -100,7 +102,7 @@ export default function Index({
                         </option>
                     ))}
                 </Select>
-            </Card>
+            </FilterBar>
 
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
@@ -133,7 +135,7 @@ export default function Index({
                                     </td>
                                     <td className="px-5 py-3 text-ink-600">
                                         <p>{c.phone}</p>
-                                        <p className="text-xs text-ink-400">
+                                        <p className="text-xs text-ink-500">
                                             {c.email}
                                         </p>
                                     </td>
@@ -154,15 +156,15 @@ export default function Index({
                                     </td>
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end">
-                                            <Link
+                                            <IconLink
                                                 href={route(
                                                     'admin.candidatures.show',
                                                     c.id,
                                                 )}
-                                                className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
+                                                label="Consulter"
                                             >
                                                 <Eye className="h-4 w-4" />
-                                            </Link>
+                                            </IconLink>
                                         </div>
                                     </td>
                                 </tr>
@@ -173,7 +175,7 @@ export default function Index({
                                         colSpan={6}
                                         className="px-5 py-10 text-center"
                                     >
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

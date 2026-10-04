@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Textarea, Checkbox } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Faq } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 
@@ -63,7 +64,7 @@ export default function Form({ faq }: { faq?: Faq }) {
                     </label>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -71,7 +72,7 @@ export default function Form({ faq }: { faq?: Faq }) {
                     >
                         {isEdit ? 'Enregistrer les modifications' : 'Créer la question'}
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

@@ -3,8 +3,9 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { Select } from '@/Components/Admin/Field';
+import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Expense, Paginated } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2 } from 'lucide-react';
 
 interface Props {
@@ -32,7 +33,7 @@ export default function Index({ expenses, categories, filters }: Props) {
             <PageHeader title="Dépenses" subtitle="Suivez les charges et dépenses de l'établissement." action={{ label: 'Nouvelle dépense', href: route('admin.expenses.create') }} />
 
             <Card className="mb-6 p-4">
-                <Select value={filters.category ?? ''} onChange={(e) => applyFilters({ category: e.target.value })} className="sm:w-64">
+                <Select aria-label="Filtrer par catégorie" value={filters.category ?? ''} onChange={(e) => applyFilters({ category: e.target.value })} className="sm:w-64">
                     <option value="">Toutes les catégories</option>
                     {Object.entries(categories).map(([key, label]) => (
                         <option key={key} value={key}>
@@ -63,12 +64,12 @@ export default function Index({ expenses, categories, filters }: Props) {
                                     <td className="px-5 py-3 font-medium text-red-600">{fcfa(exp.amount)}</td>
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end gap-2">
-                                            <Link href={route('admin.expenses.edit', exp.id)} className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100">
+                                            <IconLink href={route('admin.expenses.edit', exp.id)} label="Modifier">
                                                 <Pencil className="h-4 w-4" />
-                                            </Link>
-                                            <button onClick={() => destroy(exp)} className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50">
+                                            </IconLink>
+                                            <IconButton onClick={() => destroy(exp)} label="Supprimer" tone="danger">
                                                 <Trash2 className="h-4 w-4" />
-                                            </button>
+                                            </IconButton>
                                         </div>
                                     </td>
                                 </tr>
@@ -76,7 +77,7 @@ export default function Index({ expenses, categories, filters }: Props) {
                             {expenses.data.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

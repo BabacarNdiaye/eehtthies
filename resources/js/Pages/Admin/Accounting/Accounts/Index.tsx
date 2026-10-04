@@ -1,10 +1,12 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import AccountingTabs from '@/Components/Admin/AccountingTabs';
 import Card from '@/Components/Admin/Card';
+import FilterBar, { SearchField } from '@/Components/Admin/FilterBar';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, TextInput, Checkbox } from '@/Components/Admin/Field';
+import { IconButton } from '@/Components/Admin/IconButton';
 import { Head, router, useForm } from '@inertiajs/react';
-import { Inbox, Pencil, Search, Trash2, X } from 'lucide-react';
+import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface AccountRow {
@@ -121,24 +123,24 @@ export default function Index({ accounts, natures, filters }: Props) {
                 </Card>
             )}
 
-            <Card className="mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-                    <TextInput
+            <FilterBar
+                search={
+                    <SearchField
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && applyFilters({ search })}
                         placeholder="Rechercher un code ou un intitulé..."
-                        className="pl-9"
                     />
-                </div>
-                <Select value={filters.class ?? ''} onChange={(e) => applyFilters({ class: e.target.value })} className="sm:w-48">
+                }
+                activeCount={[filters.class].filter(Boolean).length}
+            >
+                <Select aria-label="Filtrer par classe" value={filters.class ?? ''} onChange={(e) => applyFilters({ class: e.target.value })}>
                     <option value="">Toutes les classes</option>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((c) => (
                         <option key={c} value={c}>Classe {c}</option>
                     ))}
                 </Select>
-            </Card>
+            </FilterBar>
 
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
@@ -159,14 +161,14 @@ export default function Index({ accounts, natures, filters }: Props) {
                                     <tr key={account.id} className="bg-gold-50/40">
                                         <td className="px-5 py-3" colSpan={6}>
                                             <form onSubmit={(e) => submitEdit(e, account.id)} className="grid grid-cols-1 gap-3 sm:grid-cols-6 sm:items-end">
-                                                <TextInput value={editForm.data.code} onChange={(e) => editForm.setData('code', e.target.value)} />
-                                                <TextInput value={editForm.data.name} onChange={(e) => editForm.setData('name', e.target.value)} className="sm:col-span-2" />
-                                                <Select value={editForm.data.class} onChange={(e) => editForm.setData('class', Number(e.target.value))}>
+                                                <TextInput aria-label="Code" value={editForm.data.code} onChange={(e) => editForm.setData('code', e.target.value)} />
+                                                <TextInput aria-label="Nom" value={editForm.data.name} onChange={(e) => editForm.setData('name', e.target.value)} className="sm:col-span-2" />
+                                                <Select aria-label="Classe" value={editForm.data.class} onChange={(e) => editForm.setData('class', Number(e.target.value))}>
                                                     {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((c) => (
                                                         <option key={c} value={c}>Classe {c}</option>
                                                     ))}
                                                 </Select>
-                                                <Select value={editForm.data.nature} onChange={(e) => editForm.setData('nature', e.target.value)}>
+                                                <Select aria-label="Nature" value={editForm.data.nature} onChange={(e) => editForm.setData('nature', e.target.value)}>
                                                     {Object.entries(natures).map(([value, label]) => (
                                                         <option key={value} value={value}>{label}</option>
                                                     ))}
@@ -179,9 +181,9 @@ export default function Index({ accounts, natures, filters }: Props) {
                                                     <button type="submit" disabled={editForm.processing} className="rounded-lg bg-ink-900 px-3 py-2 text-xs font-semibold text-white hover:bg-ink-800 disabled:opacity-50">
                                                         OK
                                                     </button>
-                                                    <button type="button" onClick={() => setEditingId(null)} className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100">
+                                                    <IconButton type="button" onClick={() => setEditingId(null)} label="Annuler la modification">
                                                         <X className="h-4 w-4" />
-                                                    </button>
+                                                    </IconButton>
                                                 </div>
                                             </form>
                                         </td>
@@ -203,12 +205,12 @@ export default function Index({ accounts, natures, filters }: Props) {
                                         </td>
                                         <td className="px-5 py-3">
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => startEdit(account)} className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100">
+                                                <IconButton onClick={() => startEdit(account)} label="Modifier">
                                                     <Pencil className="h-4 w-4" />
-                                                </button>
-                                                <button onClick={() => destroy(account)} className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50">
+                                                </IconButton>
+                                                <IconButton onClick={() => destroy(account)} label="Supprimer" tone="danger">
                                                     <Trash2 className="h-4 w-4" />
-                                                </button>
+                                                </IconButton>
                                             </div>
                                         </td>
                                     </tr>
@@ -217,7 +219,7 @@ export default function Index({ accounts, natures, filters }: Props) {
                             {accounts.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

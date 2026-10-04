@@ -58,7 +58,7 @@ export default function Show({ plan, paidAmount, balance, progressPercent }: Pro
                 </Link>
                 <button
                     onClick={destroy}
-                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50"
                 >
                     <Trash2 className="h-4 w-4" /> Supprimer
                 </button>

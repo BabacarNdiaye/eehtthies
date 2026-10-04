@@ -3,6 +3,7 @@ import AttachmentsPanel from '@/Components/Admin/AttachmentsPanel';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Expense } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 
@@ -78,7 +79,7 @@ export default function Form({ expense, categories }: Props) {
                     </div>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -86,7 +87,7 @@ export default function Form({ expense, categories }: Props) {
                     >
                         {isEdit ? 'Enregistrer les modifications' : 'Créer la dépense'}
                     </button>
-                </div>
+                </FormActions>
             </form>
             {expense && (
                 <AttachmentsPanel target="expense" targetId={expense.id} attachments={expense.attachments} title="Justificatifs" hint="Facture, reçu ou bon de commande (PDF, JPG, PNG, DOC, 5 Mo maximum)." />

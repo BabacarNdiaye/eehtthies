@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, TextInput } from '@/Components/Admin/Field';
+import { IconButton } from '@/Components/Admin/IconButton';
 import { Room, SchoolClass, Subject, TimetableEntry } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Clock, MapPin, Pencil, Plus, Trash2, User, X } from 'lucide-react';
@@ -150,9 +151,9 @@ export default function Index({ schoolClasses, subjects, teachers, rooms, entrie
                 <Card className="mb-6 p-6">
                     <div className="mb-4 flex items-center justify-between">
                         <h2 className="font-serif text-lg font-bold text-ink-900">Nouveau créneau</h2>
-                        <button onClick={() => setShowAdd(false)} className="text-ink-400 hover:text-ink-700">
+                        <IconButton onClick={() => setShowAdd(false)} label="Fermer le formulaire">
                             <X className="h-5 w-5" />
-                        </button>
+                        </IconButton>
                     </div>
                     <form onSubmit={submitCreate} className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                         <Field label="Jour" required error={createForm.errors.day_of_week}>
@@ -248,7 +249,7 @@ export default function Index({ schoolClasses, subjects, teachers, rooms, entrie
                         <Card key={day} className="p-5">
                             <h3 className="mb-3 font-serif text-base font-bold text-ink-900">{label}</h3>
                             {items.length === 0 && (
-                                <p className="text-sm text-ink-400">Aucun cours programmé.</p>
+                                <p className="text-sm text-ink-500">Aucun cours programmé.</p>
                             )}
                             <ul className="space-y-2">
                                 {items.map((entry) =>
@@ -259,6 +260,7 @@ export default function Index({ schoolClasses, subjects, teachers, rooms, entrie
                                                 className="grid grid-cols-2 gap-2"
                                             >
                                                 <Select
+                                                    aria-label="Matière"
                                                     value={editForm.data.subject_id}
                                                     onChange={(e) =>
                                                         editForm.setData('subject_id', Number(e.target.value))
@@ -271,6 +273,7 @@ export default function Index({ schoolClasses, subjects, teachers, rooms, entrie
                                                     ))}
                                                 </Select>
                                                 <Select
+                                                    aria-label="Enseignant"
                                                     value={editForm.data.teacher_id}
                                                     onChange={(e) =>
                                                         editForm.setData(
@@ -287,6 +290,7 @@ export default function Index({ schoolClasses, subjects, teachers, rooms, entrie
                                                     ))}
                                                 </Select>
                                                 <Select
+                                                    aria-label="Salle"
                                                     value={editForm.data.room_id}
                                                     onChange={(e) =>
                                                         editForm.setData(
@@ -303,6 +307,7 @@ export default function Index({ schoolClasses, subjects, teachers, rooms, entrie
                                                     ))}
                                                 </Select>
                                                 <Select
+                                                    aria-label="Jour"
                                                     value={editForm.data.day_of_week}
                                                     onChange={(e) =>
                                                         editForm.setData('day_of_week', Number(e.target.value))
@@ -315,11 +320,13 @@ export default function Index({ schoolClasses, subjects, teachers, rooms, entrie
                                                     ))}
                                                 </Select>
                                                 <TextInput
+                                                    aria-label="Heure de début"
                                                     type="time"
                                                     value={editForm.data.start_time}
                                                     onChange={(e) => editForm.setData('start_time', e.target.value)}
                                                 />
                                                 <TextInput
+                                                    aria-label="Heure de fin"
                                                     type="time"
                                                     value={editForm.data.end_time}
                                                     onChange={(e) => editForm.setData('end_time', e.target.value)}
@@ -380,18 +387,19 @@ export default function Index({ schoolClasses, subjects, teachers, rooms, entrie
                                                 </div>
                                             </div>
                                             <div className="flex gap-1">
-                                                <button
+                                                <IconButton
                                                     onClick={() => startEdit(entry)}
-                                                    className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
+                                                    label="Modifier"
                                                 >
                                                     <Pencil className="h-4 w-4" />
-                                                </button>
-                                                <button
+                                                </IconButton>
+                                                <IconButton
                                                     onClick={() => destroy(entry)}
-                                                    className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50"
+                                                    label="Supprimer"
+                                                    tone="danger"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
-                                                </button>
+                                                </IconButton>
                                             </div>
                                         </li>
                                     ),

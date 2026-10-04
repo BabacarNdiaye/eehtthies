@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Textarea, Select, Checkbox } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { NewsArticle } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { ChangeEvent, useState } from 'react';
@@ -126,7 +127,7 @@ export default function Form({ article }: { article?: NewsArticle }) {
                     </label>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -134,7 +135,7 @@ export default function Form({ article }: { article?: NewsArticle }) {
                     >
                         {isEdit ? 'Enregistrer les modifications' : "Créer l'article"}
                     </button>
-                </div>
+                </FormActions>
             </form>
 
             {isEdit && <PhotosCard article={article!} />}
@@ -204,7 +205,7 @@ function PhotosCard({ article }: { article: NewsArticle }) {
             )}
 
             {photos.length === 0 ? (
-                <p className="text-sm text-ink-400">Aucune photo supplémentaire pour cet article.</p>
+                <p className="text-sm text-ink-500">Aucune photo supplémentaire pour cet article.</p>
             ) : (
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
                     {photos.map((photo) => (
@@ -220,7 +221,9 @@ function PhotosCard({ article }: { article: NewsArticle }) {
                                         );
                                     }
                                 }}
-                                className="absolute inset-0 flex items-center justify-center bg-ink-950/60 text-white opacity-0 transition group-hover:opacity-100"
+                                aria-label="Supprimer cette photo"
+                                title="Supprimer cette photo"
+                                className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-lg bg-ink-950/70 text-white outline-none focus-visible:opacity-100 md:inset-0 md:h-auto md:w-auto md:rounded-none md:bg-ink-950/60 md:opacity-0 md:transition md:group-hover:opacity-100"
                             >
                                 <Trash2 className="h-5 w-5" />
                             </button>

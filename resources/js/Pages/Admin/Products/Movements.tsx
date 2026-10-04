@@ -105,7 +105,7 @@ export default function Movements({ movements, products, types, filters }: Props
             )}
 
             <Card className="mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                <Select value={filters.product_id ?? ''} onChange={(e) => applyFilters({ product_id: e.target.value })} className="sm:w-64">
+                <Select aria-label="Filtrer par produit" value={filters.product_id ?? ''} onChange={(e) => applyFilters({ product_id: e.target.value })} className="sm:w-64">
                     <option value="">Tous les produits</option>
                     {products.map((p) => (
                         <option key={p.id} value={p.id}>
@@ -113,7 +113,7 @@ export default function Movements({ movements, products, types, filters }: Props
                         </option>
                     ))}
                 </Select>
-                <Select value={filters.type ?? ''} onChange={(e) => applyFilters({ type: e.target.value })} className="sm:w-56">
+                <Select aria-label="Filtrer par type" value={filters.type ?? ''} onChange={(e) => applyFilters({ type: e.target.value })} className="sm:w-56">
                     <option value="">Tous les types</option>
                     {Object.entries(types).map(([key, label]) => (
                         <option key={key} value={key}>
@@ -152,7 +152,7 @@ export default function Movements({ movements, products, types, filters }: Props
                             {movements.data.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

@@ -119,7 +119,7 @@ export default function Index({ schoolClasses, sourceClass, students, decisions,
 
             <Card className="mb-6 p-6">
                 <div className="max-w-sm">
-                    <Select value={selectedClassId ?? ''} onChange={(e) => changeSourceClass(e.target.value)}>
+                    <Select aria-label="Classe source" value={selectedClassId ?? ''} onChange={(e) => changeSourceClass(e.target.value)}>
                         <option value="">Sélectionner une classe source</option>
                         {schoolClasses.map((c) => (
                             <option key={c.id} value={c.id}>
@@ -179,7 +179,7 @@ export default function Index({ schoolClasses, sourceClass, students, decisions,
                                             </td>
                                             <td className="px-5 py-3 text-ink-600">
                                                 {s.suggestion.action === 'undetermined' ? (
-                                                    <span className="text-ink-400">
+                                                    <span className="text-ink-500">
                                                         {s.decision ? decisions[s.decision] ?? s.decision : '—'}
                                                     </span>
                                                 ) : (
@@ -206,6 +206,7 @@ export default function Index({ schoolClasses, sourceClass, students, decisions,
                                             </td>
                                             <td className="px-5 py-3">
                                                 <Select
+                                                    aria-label="Action"
                                                     value={row.action}
                                                     onChange={(e) => setRow(s.id, { action: e.target.value as Action })}
                                                     className="max-w-[180px]"
@@ -221,6 +222,7 @@ export default function Index({ schoolClasses, sourceClass, students, decisions,
                                             <td className="px-5 py-3">
                                                 {(row.action === 'promote' || row.action === 'stay') && (
                                                     <Select
+                                                        aria-label="Classe de destination"
                                                         value={row.targetClassId}
                                                         onChange={(e) =>
                                                             setRow(s.id, { targetClassId: e.target.value ? Number(e.target.value) : '' })
@@ -242,7 +244,7 @@ export default function Index({ schoolClasses, sourceClass, students, decisions,
                                 {students.length === 0 && (
                                     <tr>
                                         <td colSpan={4} className="px-5 py-10 text-center">
-                                            <div className="flex flex-col items-center gap-3 text-ink-400">
+                                            <div className="flex flex-col items-center gap-3 text-ink-500">
                                                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                     <Inbox className="h-6 w-6" />
                                                 </span>

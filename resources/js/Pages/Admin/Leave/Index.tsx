@@ -182,7 +182,7 @@ export default function Index({ requests, types, statuses, canReview }: Props) {
                                             </button>
                                         )}
                                         {r.status !== 'en_attente' && r.reviewed_by && (
-                                            <span className="text-xs text-ink-400">par {r.reviewed_by.name}</span>
+                                            <span className="text-xs text-ink-500">par {r.reviewed_by.name}</span>
                                         )}
                                     </td>
                                 </tr>
@@ -190,7 +190,7 @@ export default function Index({ requests, types, statuses, canReview }: Props) {
                             {requests.data.length === 0 && (
                                 <tr>
                                     <td colSpan={canReview ? 7 : 6} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

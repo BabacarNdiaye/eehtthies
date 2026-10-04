@@ -215,7 +215,7 @@ export default function Index({ staff, year, months, monthLabels, paymentMethods
                     <h2 className="flex items-center gap-2 font-serif text-lg font-semibold text-ink-900">
                         <Coins className="h-5 w-5 text-gold-600" /> Masse salariale par mois
                     </h2>
-                    <Select value={year} onChange={(e) => changeYear(e.target.value)} className="sm:w-32">
+                    <Select aria-label="Année" value={year} onChange={(e) => changeYear(e.target.value)} className="sm:w-32">
                         {yearOptions.map((y) => (
                             <option key={y} value={y}>
                                 {y}
@@ -285,7 +285,7 @@ export default function Index({ staff, year, months, monthLabels, paymentMethods
                                             </span>
                                             <div>
                                                 <p className="font-medium text-ink-900">{row.name}</p>
-                                                <span className="block text-xs font-normal text-ink-400">
+                                                <span className="block text-xs font-normal text-ink-500">
                                                     {row.position}
                                                     {' · '}
                                                     {row.payment_type === 'horaire'
@@ -316,7 +316,7 @@ export default function Index({ staff, year, months, monthLabels, paymentMethods
                                                                 <span className="text-[10px] font-normal">{formatFcfa(cell.amount)}</span>
                                                             )}
                                                             {cell.hours_worked != null && (
-                                                                <span className="text-[10px] font-normal text-emerald-600">{cell.hours_worked}h</span>
+                                                                <span className="text-[10px] font-normal text-emerald-700">{cell.hours_worked}h</span>
                                                             )}
                                                         </span>
                                                         <a
@@ -354,7 +354,7 @@ export default function Index({ staff, year, months, monthLabels, paymentMethods
                             {activeRows.length === 0 && (
                                 <tr>
                                     <td colSpan={months.length + 1} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Users className="h-6 w-6" />
                                             </span>

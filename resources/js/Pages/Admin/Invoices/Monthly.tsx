@@ -109,7 +109,7 @@ export default function Monthly({ students, formations, academicYears, schoolMon
                                     <tr key={student.id} className="transition-colors duration-150 hover:bg-ink-50/60">
                                         <td className="sticky left-0 z-10 bg-white px-5 py-3 font-medium text-ink-900">
                                             {student.name}
-                                            <span className="ml-1 text-xs font-normal text-ink-400">
+                                            <span className="ml-1 text-xs font-normal text-ink-500">
                                                 ({student.matricule})
                                             </span>
                                         </td>
@@ -139,7 +139,7 @@ export default function Monthly({ students, formations, academicYears, schoolMon
                                 {students.length === 0 && (
                                     <tr>
                                         <td colSpan={schoolMonths.length + 1} className="px-5 py-10 text-center">
-                                            <div className="flex flex-col items-center gap-3 text-ink-400">
+                                            <div className="flex flex-col items-center gap-3 text-ink-500">
                                                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                     <Inbox className="h-6 w-6" />
                                                 </span>

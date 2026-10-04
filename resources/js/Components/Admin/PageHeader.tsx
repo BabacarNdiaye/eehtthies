@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
-import { ReactNode } from 'react';
+import { ChevronDown, Plus } from 'lucide-react';
+import { Children, ReactNode, useId, useState } from 'react';
 
 export default function PageHeader({
     title,
@@ -13,9 +13,26 @@ export default function PageHeader({
     action?: { label: string; href: string };
     children?: ReactNode;
 }) {
+    const panelId = useId();
+    const [open, setOpen] = useState(false);
+    // À partir de trois contrôles secondaires, ils quittent la ligne du titre pour une barre d'outils en dessous ;
+    // sur téléphone elle se replie derrière « Actions ». Les contrôles restent dans la page (masqués, jamais
+    // démontés) : l'état d'un champ, comme la classe choisie pour les cartes, n'est pas perdu.
+    const toolbar = Children.toArray(children).length >= 3;
+
+    const primary = action && (
+        <Link
+            href={action.href}
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-800"
+        >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            {action.label}
+        </Link>
+    );
+
     return (
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+            <div className="min-w-0 flex-1 basis-64">
                 <h1 className="font-serif text-2xl font-bold text-ink-900">
                     {title}
                 </h1>
@@ -23,18 +40,40 @@ export default function PageHeader({
                     <p className="mt-1 text-sm text-ink-500">{subtitle}</p>
                 )}
             </div>
-            <div className="flex items-center gap-3">
-                {children}
-                {action && (
-                    <Link
-                        href={action.href}
-                        className="inline-flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-800"
+
+            {toolbar ? (
+                <>
+                    {primary}
+                    <button
+                        type="button"
+                        onClick={() => setOpen((value) => !value)}
+                        aria-expanded={open}
+                        aria-controls={panelId}
+                        className="inline-flex items-center gap-2 rounded-lg border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 outline-none transition-colors hover:bg-ink-50 focus-visible:ring-2 focus-visible:ring-gold-500 md:hidden"
                     >
-                        <Plus className="h-4 w-4" />
-                        {action.label}
-                    </Link>
-                )}
-            </div>
+                        Actions
+                        <ChevronDown
+                            className={`h-4 w-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+                            aria-hidden="true"
+                        />
+                    </button>
+                    <div
+                        id={panelId}
+                        className={`basis-full flex-wrap items-center gap-2 max-md:rounded-xl max-md:border max-md:border-ink-100 max-md:bg-white max-md:p-3 sm:gap-3 md:flex ${
+                            open ? 'flex' : 'hidden'
+                        }`}
+                    >
+                        {children}
+                    </div>
+                </>
+            ) : (
+                (children || primary) && (
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        {children}
+                        {primary}
+                    </div>
+                )
+            )}
         </div>
     );
 }

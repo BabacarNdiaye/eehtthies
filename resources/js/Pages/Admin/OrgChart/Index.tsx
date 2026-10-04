@@ -55,7 +55,7 @@ export default function Index({ tree }: { tree: OrgNode[] }) {
 
             <Card className="p-6">
                 {tree.length === 0 ? (
-                    <p className="py-10 text-center text-ink-400">
+                    <p className="py-10 text-center text-ink-500">
                         Aucun membre du personnel administratif pour le moment.
                     </p>
                 ) : (
@@ -69,7 +69,7 @@ export default function Index({ tree }: { tree: OrgNode[] }) {
                 )}
             </Card>
 
-            <p className="mt-4 text-xs text-ink-400">
+            <p className="mt-4 text-xs text-ink-500">
                 Astuce : définissez le « Supérieur hiérarchique » de chaque membre depuis sa fiche{' '}
                 <Link href={route('admin.users.index')} className="text-brand-600 underline">
                     Personnel administratif

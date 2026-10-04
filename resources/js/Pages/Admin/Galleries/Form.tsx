@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Checkbox } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Gallery, GalleryMediaItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Film, Trash2, UploadCloud } from 'lucide-react';
@@ -82,7 +83,7 @@ export default function Form({ gallery }: { gallery?: GalleryWithMedia }) {
                     </label>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -90,7 +91,7 @@ export default function Form({ gallery }: { gallery?: GalleryWithMedia }) {
                     >
                         {isEdit ? 'Enregistrer les modifications' : "Créer l'album"}
                     </button>
-                </div>
+                </FormActions>
             </form>
 
             {isEdit && gallery && (
@@ -136,14 +137,16 @@ export default function Form({ gallery }: { gallery?: GalleryWithMedia }) {
                                 <button
                                     type="button"
                                     onClick={() => deleteMedia(item)}
-                                    className="absolute right-2 top-2 rounded-lg bg-white/90 p-1.5 text-red-500 opacity-0 shadow transition group-hover:opacity-100"
+                                    aria-label="Supprimer ce média"
+                                    title="Supprimer ce média"
+                                    className="absolute right-2 top-2 rounded-lg bg-white/90 p-2 text-red-600 shadow outline-none transition focus-visible:opacity-100 max-md:p-3 md:opacity-0 md:group-hover:opacity-100"
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </button>
                             </div>
                         ))}
                         {gallery.media.length === 0 && (
-                            <p className="col-span-full py-6 text-center text-sm text-ink-400">
+                            <p className="col-span-full py-6 text-center text-sm text-ink-500">
                                 Aucun média ajouté pour le moment.
                             </p>
                         )}

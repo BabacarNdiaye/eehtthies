@@ -2,8 +2,9 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
+import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Gallery, Paginated } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Images, Pencil, Trash2 } from 'lucide-react';
 
 type GalleryRow = Gallery & { media_count: number };
@@ -64,18 +65,19 @@ export default function Index({ galleries }: { galleries: Paginated<GalleryRow> 
                                     </td>
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end gap-2">
-                                            <Link
+                                            <IconLink
                                                 href={route('admin.galleries.edit', g.id)}
-                                                className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
+                                                label="Modifier"
                                             >
                                                 <Pencil className="h-4 w-4" />
-                                            </Link>
-                                            <button
+                                            </IconLink>
+                                            <IconButton
                                                 onClick={() => destroy(g)}
-                                                className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50"
+                                                label="Supprimer"
+                                                tone="danger"
                                             >
                                                 <Trash2 className="h-4 w-4" />
-                                            </button>
+                                            </IconButton>
                                         </div>
                                     </td>
                                 </tr>
@@ -83,7 +85,7 @@ export default function Index({ galleries }: { galleries: Paginated<GalleryRow> 
                             {galleries.data.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Images className="h-6 w-6" />
                                             </span>

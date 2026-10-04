@@ -1,11 +1,13 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import FilterBar, { SearchField } from '@/Components/Admin/FilterBar';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
-import { Select, TextInput } from '@/Components/Admin/Field';
+import { Select } from '@/Components/Admin/Field';
+import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, Product } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { AlertTriangle, ArrowLeftRight, Inbox, Pencil, Search, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeftRight, Inbox, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
@@ -50,18 +52,18 @@ export default function Index({ products, categories, filters, lowStockCount }: 
                 </div>
             )}
 
-            <Card className="mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-                    <TextInput
+            <FilterBar
+                search={
+                    <SearchField
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && applyFilters({ search })}
                         placeholder="Rechercher un produit..."
-                        className="pl-9"
                     />
-                </div>
-                <Select value={filters.category ?? ''} onChange={(e) => applyFilters({ category: e.target.value })} className="sm:w-64">
+                }
+                activeCount={[filters.category, filters.low_stock].filter(Boolean).length}
+            >
+                <Select aria-label="Filtrer par catégorie" value={filters.category ?? ''} onChange={(e) => applyFilters({ category: e.target.value })}>
                     <option value="">Toutes les catégories</option>
                     {Object.entries(categories).map(([key, label]) => (
                         <option key={key} value={key}>
@@ -74,11 +76,11 @@ export default function Index({ products, categories, filters, lowStockCount }: 
                         type="checkbox"
                         checked={!!filters.low_stock}
                         onChange={(e) => applyFilters({ low_stock: e.target.checked ? '1' : '' })}
-                        className="rounded border-ink-300 text-gold-600 focus:ring-gold-500"
+                        className="rounded border-ink-300 text-gold-700 focus:ring-gold-500"
                     />
                     Stock faible uniquement
                 </label>
-            </Card>
+            </FilterBar>
 
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
@@ -111,12 +113,12 @@ export default function Index({ products, categories, filters, lowStockCount }: 
                                     <td className="px-5 py-3 text-ink-600">{fcfa(p.valuation ?? 0)}</td>
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end gap-2">
-                                            <Link href={route('admin.products.edit', p.id)} className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100">
+                                            <IconLink href={route('admin.products.edit', p.id)} label="Modifier">
                                                 <Pencil className="h-4 w-4" />
-                                            </Link>
-                                            <button onClick={() => destroy(p)} className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50">
+                                            </IconLink>
+                                            <IconButton onClick={() => destroy(p)} label="Supprimer" tone="danger">
                                                 <Trash2 className="h-4 w-4" />
-                                            </button>
+                                            </IconButton>
                                         </div>
                                     </td>
                                 </tr>
@@ -124,7 +126,7 @@ export default function Index({ products, categories, filters, lowStockCount }: 
                             {products.data.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

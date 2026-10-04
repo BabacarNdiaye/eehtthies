@@ -1,14 +1,16 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import FilterBar, { SearchField } from '@/Components/Admin/FilterBar';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import ExportButtons from '@/Components/Admin/ExportButtons';
 import Modal from '@/Components/Modal';
 import { TextInput } from '@/Components/Admin/Field';
+import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, Teacher } from '@/types';
-import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Mail, Pencil, Search, Trash2, Upload, UserRound } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { Mail, Pencil, Trash2, Upload, UserRound } from 'lucide-react';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 
 interface Props {
@@ -141,17 +143,16 @@ export default function Index({ teachers, filters }: Props) {
                 </form>
             </Modal>
 
-            <Card className="mb-6 p-4">
-                <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-                    <TextInput
+            <FilterBar
+                search={
+                    <SearchField
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Rechercher un enseignant, un matricule..."
-                        className="pl-9 sm:max-w-sm"
+                        className="md:max-w-sm"
                     />
-                </div>
-            </Card>
+                }
+            />
 
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
@@ -179,7 +180,7 @@ export default function Index({ teachers, filters }: Props) {
                                                     className="h-9 w-9 rounded-full object-cover"
                                                 />
                                             ) : (
-                                                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-100 text-ink-400">
+                                                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-100 text-ink-500">
                                                     <UserRound className="h-5 w-5" />
                                                 </span>
                                             )}
@@ -198,7 +199,7 @@ export default function Index({ teachers, filters }: Props) {
                                     </td>
                                     <td className="px-5 py-3 text-ink-600">
                                         <p>{t.phone ?? '—'}</p>
-                                        <p className="text-xs text-ink-400">
+                                        <p className="text-xs text-ink-500">
                                             {t.email ?? ''}
                                         </p>
                                     </td>
@@ -210,21 +211,22 @@ export default function Index({ teachers, filters }: Props) {
                                     </td>
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end gap-2">
-                                            <Link
+                                            <IconLink
                                                 href={route(
                                                     'admin.teachers.edit',
                                                     t.id,
                                                 )}
-                                                className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
+                                                label="Modifier"
                                             >
                                                 <Pencil className="h-4 w-4" />
-                                            </Link>
-                                            <button
+                                            </IconLink>
+                                            <IconButton
                                                 onClick={() => destroy(t)}
-                                                className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50"
+                                                label="Supprimer"
+                                                tone="danger"
                                             >
                                                 <Trash2 className="h-4 w-4" />
-                                            </button>
+                                            </IconButton>
                                         </div>
                                     </td>
                                 </tr>
@@ -235,7 +237,7 @@ export default function Index({ teachers, filters }: Props) {
                                         colSpan={5}
                                         className="px-5 py-10 text-center"
                                     >
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <UserRound className="h-6 w-6" />
                                             </span>

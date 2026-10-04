@@ -56,7 +56,7 @@ export default function Show({ reportCard, subjects, decisions, mentions }: Prop
                 </a>
                 <button
                     onClick={destroy}
-                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50"
                 >
                     <Trash2 className="h-4 w-4" /> Supprimer
                 </button>
@@ -100,7 +100,7 @@ export default function Show({ reportCard, subjects, decisions, mentions }: Prop
                                     {subjects.length === 0 && (
                                         <tr>
                                             <td colSpan={8} className="px-5 py-8 text-center">
-                                                <div className="flex flex-col items-center gap-3 text-ink-400">
+                                                <div className="flex flex-col items-center gap-3 text-ink-500">
                                                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                         <Inbox className="h-6 w-6" />
                                                     </span>
@@ -161,13 +161,13 @@ export default function Show({ reportCard, subjects, decisions, mentions }: Prop
 
                 <div className="space-y-6">
                     <Card className="p-6 text-center">
-                        <p className="text-xs uppercase tracking-wide text-ink-400">Moyenne générale</p>
+                        <p className="text-xs uppercase tracking-wide text-ink-500">Moyenne générale</p>
                         <p className="mt-1 font-serif text-4xl font-bold text-ink-900">{fmt(reportCard.average)}</p>
-                        <p className="mt-4 text-xs uppercase tracking-wide text-ink-400">Rang</p>
+                        <p className="mt-4 text-xs uppercase tracking-wide text-ink-500">Rang</p>
                         <p className="mt-1 text-lg font-semibold text-ink-700">
                             {reportCard.rank ? `${reportCard.rank} / ${reportCard.class_size}` : '—'}
                         </p>
-                        <p className="mt-4 text-xs uppercase tracking-wide text-ink-400">Moyenne de la classe</p>
+                        <p className="mt-4 text-xs uppercase tracking-wide text-ink-500">Moyenne de la classe</p>
                         <p className="mt-1 text-sm text-ink-600">{fmt(reportCard.class_average)}</p>
                     </Card>
 

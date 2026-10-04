@@ -135,7 +135,7 @@ export default function Index({ backups, healthy, error, totalSize }: Props) {
                             {backups.length === 0 && (
                                 <tr>
                                     <td colSpan={4} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <HardDrive className="h-6 w-6" />
                                             </span>
@@ -149,7 +149,7 @@ export default function Index({ backups, healthy, error, totalSize }: Props) {
                 </div>
             </Card>
 
-            <p className="mt-4 text-xs text-ink-400">
+            <p className="mt-4 text-xs text-ink-500">
                 Une sauvegarde automatique est créée chaque nuit à 2h. Pensez à télécharger régulièrement une copie sur un
                 autre appareil : ces sauvegardes sont stockées sur le même serveur que le site.
             </p>

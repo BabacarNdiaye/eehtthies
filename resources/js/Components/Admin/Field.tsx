@@ -26,7 +26,7 @@ export function Field({
                 {required && <span className="text-red-500"> *</span>}
             </label>
             {control ? cloneElement(control, { id: controlId }) : children}
-            {hint && <p className="mt-1 text-xs text-ink-400">{hint}</p>}
+            {hint && <p className="mt-1 text-xs text-ink-500">{hint}</p>}
             {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
         </div>
     );

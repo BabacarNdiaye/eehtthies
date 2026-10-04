@@ -1,8 +1,9 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
+import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Faq } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
 
 export default function Index({ faqs }: { faqs: Faq[] }) {
@@ -45,7 +46,7 @@ export default function Index({ faqs }: { faqs: Faq[] }) {
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm">
-                                <thead className="text-xs uppercase tracking-wide text-ink-400">
+                                <thead className="text-xs uppercase tracking-wide text-ink-500">
                                     <tr>
                                         <th className="px-5 py-2.5">Question</th>
                                         <th className="px-5 py-2.5">Ordre</th>
@@ -73,18 +74,19 @@ export default function Index({ faqs }: { faqs: Faq[] }) {
                                             </td>
                                             <td className="px-5 py-3">
                                                 <div className="flex justify-end gap-2">
-                                                    <Link
+                                                    <IconLink
                                                         href={route('admin.faqs.edit', faq.id)}
-                                                        className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
+                                                        label="Modifier"
                                                     >
                                                         <Pencil className="h-4 w-4" />
-                                                    </Link>
-                                                    <button
+                                                    </IconLink>
+                                                    <IconButton
                                                         onClick={() => destroy(faq)}
-                                                        className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50"
+                                                        label="Supprimer"
+                                                        tone="danger"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
-                                                    </button>
+                                                    </IconButton>
                                                 </div>
                                             </td>
                                         </tr>

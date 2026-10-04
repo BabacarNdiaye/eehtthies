@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Checkbox, Field, Select, TextInput } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Exam } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 
@@ -206,7 +207,7 @@ export default function Form({ exam, schoolClasses, subjects, rooms, teachers, a
                                 {t.first_name} {t.last_name}
                             </label>
                         ))}
-                        {teachers.length === 0 && <p className="text-sm text-ink-400">Aucun enseignant disponible.</p>}
+                        {teachers.length === 0 && <p className="text-sm text-ink-500">Aucun enseignant disponible.</p>}
                     </div>
                 </Card>
 
@@ -217,7 +218,7 @@ export default function Form({ exam, schoolClasses, subjects, rooms, teachers, a
                     </label>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -225,7 +226,7 @@ export default function Form({ exam, schoolClasses, subjects, rooms, teachers, a
                     >
                         {isEdit ? 'Enregistrer les modifications' : "Créer l'épreuve"}
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

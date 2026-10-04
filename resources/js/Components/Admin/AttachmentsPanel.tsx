@@ -88,7 +88,7 @@ export default function AttachmentsPanel({
                         <span className="truncate font-medium">{a.original_name}</span>
                     </a>
                     {variant === 'card' && (
-                        <span className="ml-3 hidden shrink-0 text-xs text-ink-400 sm:inline">
+                        <span className="ml-3 hidden shrink-0 text-xs text-ink-500 sm:inline">
                             {formatSize(a.size)}
                             {a.uploader ? ` · ${a.uploader.name}` : ''} · {new Date(a.created_at).toLocaleDateString('fr-FR')}
                         </span>
@@ -113,7 +113,7 @@ export default function AttachmentsPanel({
             <div>
                 {attachments.length > 0 && list}
                 {uploadButton}
-                {attachments.length === 0 && !canManage && <span className="text-ink-400">—</span>}
+                {attachments.length === 0 && !canManage && <span className="text-ink-500">—</span>}
                 {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
             </div>
         );
@@ -129,7 +129,7 @@ export default function AttachmentsPanel({
                 {uploadButton}
             </div>
             {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-            {attachments.length === 0 ? <p className="mt-4 text-sm text-ink-400">Aucun document importé.</p> : list}
+            {attachments.length === 0 ? <p className="mt-4 text-sm text-ink-500">Aucun document importé.</p> : list}
         </Card>
     );
 }

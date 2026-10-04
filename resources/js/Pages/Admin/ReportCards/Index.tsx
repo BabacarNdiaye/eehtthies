@@ -3,8 +3,9 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { Field, Select } from '@/Components/Admin/Field';
+import { IconLink } from '@/Components/Admin/IconButton';
 import { Paginated, ReportCard, SchoolClass } from '@/types';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Award, CheckSquare, Download, Eye, Square, Trash2 } from 'lucide-react';
 
 interface Props {
@@ -118,7 +119,7 @@ export default function Index({ reportCards, schoolClasses, academicYears, terms
                         <Award className="h-4 w-4" /> Générer
                     </button>
                 </form>
-                <p className="mt-3 text-xs text-ink-400">
+                <p className="mt-3 text-xs text-ink-500">
                     Le calcul se base sur les notes des épreuves publiées pour la classe, l'année et la période sélectionnées.
                     Relancer la génération met à jour les bulletins existants.
                 </p>
@@ -126,6 +127,7 @@ export default function Index({ reportCards, schoolClasses, academicYears, terms
 
             <Card className="mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
                 <Select
+                    aria-label="Filtrer par classe"
                     value={filters.school_class_id ?? ''}
                     onChange={(e) => applyFilters({ school_class_id: e.target.value })}
                     className="sm:w-64"
@@ -138,6 +140,7 @@ export default function Index({ reportCards, schoolClasses, academicYears, terms
                     ))}
                 </Select>
                 <Select
+                    aria-label="Filtrer par période"
                     value={filters.term ?? ''}
                     onChange={(e) => applyFilters({ term: e.target.value })}
                     className="sm:w-56"
@@ -159,7 +162,7 @@ export default function Index({ reportCards, schoolClasses, academicYears, terms
                         <Download className="h-4 w-4" /> Télécharger tout (ZIP)
                     </a>
                 ) : (
-                    <span className="text-xs text-ink-400 sm:ml-auto">
+                    <span className="text-xs text-ink-500 sm:ml-auto">
                         Sélectionnez une classe et une période pour télécharger tous les bulletins publiés en une fois.
                     </span>
                 )}
@@ -221,12 +224,12 @@ export default function Index({ reportCards, schoolClasses, academicYears, terms
                                     </td>
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end gap-1">
-                                            <Link
+                                            <IconLink
                                                 href={route('admin.report-cards.show', rc.id)}
-                                                className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
+                                                label="Consulter"
                                             >
                                                 <Eye className="h-4 w-4" />
-                                            </Link>
+                                            </IconLink>
                                             <button
                                                 onClick={() => destroy(rc)}
                                                 title="Supprimer"
@@ -241,7 +244,7 @@ export default function Index({ reportCards, schoolClasses, academicYears, terms
                             {reportCards.data.length === 0 && (
                                 <tr>
                                     <td colSpan={8} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Award className="h-6 w-6" />
                                             </span>

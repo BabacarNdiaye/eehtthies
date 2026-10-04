@@ -283,7 +283,7 @@ export default function Index({
                                                         className="h-16 w-16 rounded-md border border-ink-100 bg-white p-1"
                                                     />
                                                 ) : (
-                                                    <span className="text-ink-400">—</span>
+                                                    <span className="text-ink-500">—</span>
                                                 )}
                                             </td>
                                             <td className="px-5 py-3">
@@ -316,7 +316,7 @@ export default function Index({
                                     {students.length === 0 && (
                                         <tr>
                                             <td colSpan={4} className="px-5 py-10 text-center">
-                                                <div className="flex flex-col items-center gap-3 text-ink-400">
+                                                <div className="flex flex-col items-center gap-3 text-ink-500">
                                                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                         <Inbox className="h-6 w-6" />
                                                     </span>

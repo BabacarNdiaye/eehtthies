@@ -103,7 +103,7 @@ export default function Index({ directory, summary }: Props) {
                         href={route(q.href)}
                         className="group flex flex-col gap-2 rounded-xl border border-ink-100 bg-white p-4 shadow-sm transition hover:border-ink-300 hover:shadow-md"
                     >
-                        <q.icon className="h-5 w-5 text-gold-600" />
+                        <q.icon className="h-5 w-5 text-gold-700" />
                         <span className="flex items-center gap-1 text-sm font-semibold text-ink-900">
                             {q.label}
                             <ChevronRight className="h-3.5 w-3.5 text-ink-300 transition group-hover:translate-x-0.5" />
@@ -116,7 +116,7 @@ export default function Index({ directory, summary }: Props) {
             <Card className="overflow-hidden">
                 <div className="border-b border-ink-100 p-5">
                     <h2 className="font-serif text-lg font-semibold text-ink-900">Annuaire du personnel</h2>
-                    <p className="mt-1 text-xs text-ink-400">
+                    <p className="mt-1 text-xs text-ink-500">
                         {summary.active} actif(s), {summary.inactive} inactif(s) — personnel administratif et enseignants réunis.
                     </p>
                 </div>
@@ -154,11 +154,11 @@ export default function Index({ directory, summary }: Props) {
                                     </td>
                                     <td className="px-5 py-3">
                                         {person.active ? (
-                                            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
+                                            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
                                                 <CheckCircle2 className="h-3.5 w-3.5" /> Actif
                                             </span>
                                         ) : (
-                                            <span className="inline-flex items-center gap-1 text-xs font-medium text-ink-400">
+                                            <span className="inline-flex items-center gap-1 text-xs font-medium text-ink-500">
                                                 <XCircle className="h-3.5 w-3.5" /> Inactif
                                             </span>
                                         )}
@@ -168,7 +168,7 @@ export default function Index({ directory, summary }: Props) {
                             {directory.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Users className="h-6 w-6" />
                                             </span>

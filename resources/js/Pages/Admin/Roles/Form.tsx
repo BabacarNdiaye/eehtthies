@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Checkbox, Field, TextInput } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { RoleDetail } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { Lock } from 'lucide-react';
@@ -122,7 +123,11 @@ export default function Form({ role, modules, actions, isProtected }: Props) {
                                             </td>
                                             {Object.keys(actions).map((action) => (
                                                 <td key={action} className="px-3 py-2.5 text-center">
-                                                    <Checkbox checked={isChecked(action, module)} onChange={() => toggleCell(action, module)} />
+                                                    <Checkbox
+                                                        aria-label={`${actions[action]} — ${label}`}
+                                                        checked={isChecked(action, module)}
+                                                        onChange={() => toggleCell(action, module)}
+                                                    />
                                                 </td>
                                             ))}
                                         </tr>
@@ -133,7 +138,7 @@ export default function Form({ role, modules, actions, isProtected }: Props) {
                     </Card>
                 )}
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -141,7 +146,7 @@ export default function Form({ role, modules, actions, isProtected }: Props) {
                     >
                         {isEdit ? 'Enregistrer les modifications' : 'Créer le rôle'}
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

@@ -1,8 +1,9 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
+import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Role } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Lock, Pencil, Trash2 } from 'lucide-react';
 
 interface Props {
@@ -56,18 +57,18 @@ export default function Index({ roles, protectedRoles }: Props) {
                                         <td className="px-5 py-3 text-ink-600">{role.users_count ?? 0}</td>
                                         <td className="px-5 py-3">
                                             <div className="flex justify-end gap-2">
-                                                <Link href={route('admin.roles.edit', role.id)} className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100">
+                                                <IconLink href={route('admin.roles.edit', role.id)} label="Modifier">
                                                     <Pencil className="h-4 w-4" />
-                                                </Link>
+                                                </IconLink>
                                                 {!isProtected && (
-                                                    <button
+                                                    <IconButton
                                                         onClick={() => destroy(role)}
                                                         disabled={(role.users_count ?? 0) > 0}
-                                                        title={(role.users_count ?? 0) > 0 ? 'Réaffectez les utilisateurs avant suppression' : undefined}
-                                                        className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-30"
+                                                        label={(role.users_count ?? 0) > 0 ? 'Supprimer (réaffectez les utilisateurs avant)' : 'Supprimer'}
+                                                        tone="danger"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
-                                                    </button>
+                                                    </IconButton>
                                                 )}
                                             </div>
                                         </td>
@@ -77,7 +78,7 @@ export default function Index({ roles, protectedRoles }: Props) {
                             {roles.length === 0 && (
                                 <tr>
                                     <td colSpan={4} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Lock className="h-6 w-6" />
                                             </span>

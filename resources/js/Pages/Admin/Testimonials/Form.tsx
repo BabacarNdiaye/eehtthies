@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Textarea, Select, Checkbox } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Testimonial } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { Star } from 'lucide-react';
@@ -73,6 +74,8 @@ export default function Form({
                                         key={value}
                                         type="button"
                                         onClick={() => setData('rating', value)}
+                                        aria-label={`${value} sur 5`}
+                                        aria-pressed={value === data.rating}
                                         className="p-0.5"
                                     >
                                         <Star
@@ -103,7 +106,7 @@ export default function Form({
                     </label>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -111,7 +114,7 @@ export default function Form({
                     >
                         {isEdit ? 'Enregistrer les modifications' : 'Créer le témoignage'}
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

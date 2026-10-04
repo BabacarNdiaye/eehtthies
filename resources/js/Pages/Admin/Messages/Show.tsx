@@ -41,7 +41,7 @@ export default function Show({ contactMessage }: { contactMessage: ContactMessag
                             {contactMessage.email}
                             {contactMessage.phone && <> · {contactMessage.phone}</>}
                         </p>
-                        <p className="mt-1 text-xs text-ink-400">
+                        <p className="mt-1 text-xs text-ink-500">
                             Reçu le{' '}
                             {new Date(contactMessage.created_at).toLocaleDateString('fr-FR', {
                                 day: '2-digit',
@@ -66,7 +66,7 @@ export default function Show({ contactMessage }: { contactMessage: ContactMessag
                         </a>
                         <button
                             onClick={destroy}
-                            className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+                            className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50"
                         >
                             <Trash2 className="h-4 w-4" />
                             Supprimer

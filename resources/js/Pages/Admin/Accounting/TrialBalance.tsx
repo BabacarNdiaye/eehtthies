@@ -79,7 +79,7 @@ export default function TrialBalance({ rows, totalDebit, totalCredit, filters }:
                             {rows.length === 0 && (
                                 <tr>
                                     <td colSpan={4} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

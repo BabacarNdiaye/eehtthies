@@ -4,8 +4,9 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import { Select } from '@/Components/Admin/Field';
+import { IconButton, IconLink } from '@/Components/Admin/IconButton';
 import { Internship, Paginated } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Download, Inbox, Pencil, Trash2 } from 'lucide-react';
 
 interface Props {
@@ -31,7 +32,7 @@ export default function Index({ internships, statuses, filters }: Props) {
             <PageHeader title="Stages des élèves" subtitle="Suivez les placements en stage et leur évaluation." action={{ label: 'Nouveau stage', href: route('admin.internships.create') }} />
 
             <Card className="mb-6 p-4">
-                <Select value={filters.status ?? ''} onChange={(e) => applyFilters({ status: e.target.value })} className="sm:w-56">
+                <Select aria-label="Filtrer par statut" value={filters.status ?? ''} onChange={(e) => applyFilters({ status: e.target.value })} className="sm:w-56">
                     <option value="">Tous les statuts</option>
                     {Object.entries(statuses).map(([key, label]) => (
                         <option key={key} value={key}>
@@ -85,12 +86,12 @@ export default function Index({ internships, statuses, filters }: Props) {
                                                     <Download className="h-4 w-4" />
                                                 </a>
                                             )}
-                                            <Link href={route('admin.internships.edit', i.id)} className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100">
+                                            <IconLink href={route('admin.internships.edit', i.id)} label="Modifier">
                                                 <Pencil className="h-4 w-4" />
-                                            </Link>
-                                            <button onClick={() => destroy(i)} className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50">
+                                            </IconLink>
+                                            <IconButton onClick={() => destroy(i)} label="Supprimer" tone="danger">
                                                 <Trash2 className="h-4 w-4" />
-                                            </button>
+                                            </IconButton>
                                         </div>
                                     </td>
                                 </tr>
@@ -98,7 +99,7 @@ export default function Index({ internships, statuses, filters }: Props) {
                             {internships.data.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

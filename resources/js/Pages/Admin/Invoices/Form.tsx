@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { MONTH_LABELS } from '@/lib/months';
 import { Head, useForm } from '@inertiajs/react';
 
@@ -101,7 +102,7 @@ export default function Form({ students, academicYears, types }: Props) {
                     </div>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -109,7 +110,7 @@ export default function Form({ students, academicYears, types }: Props) {
                     >
                         Créer la facture
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

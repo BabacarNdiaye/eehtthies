@@ -1,12 +1,14 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import FilterBar, { SearchField } from '@/Components/Admin/FilterBar';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { Field, Select, TextInput } from '@/Components/Admin/Field';
+import { IconLink } from '@/Components/Admin/IconButton';
 import { Invoice, Paginated } from '@/types';
 import { MONTH_LABELS, SCHOOL_MONTHS } from '@/lib/months';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { AlertCircle, CalendarClock, Eye, Inbox, Search, Sparkles } from 'lucide-react';
+import { AlertCircle, CalendarClock, Eye, Inbox, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
@@ -77,7 +79,7 @@ export default function Index({ invoices, students, formations, academicYears, t
             >
                 <Link
                     href={route('admin.invoices.overdue')}
-                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50"
                 >
                     <AlertCircle className="h-4 w-4" /> Impayés
                 </Link>
@@ -231,18 +233,18 @@ export default function Index({ invoices, students, formations, academicYears, t
                 </Card>
             )}
 
-            <Card className="mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                <div className="relative flex-1">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-                    <TextInput
+            <FilterBar
+                search={
+                    <SearchField
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && applyFilters({ search })}
                         placeholder="Rechercher un élève..."
-                        className="pl-9"
                     />
-                </div>
-                <Select value={filters.type ?? ''} onChange={(e) => applyFilters({ type: e.target.value })} className="sm:w-56">
+                }
+                activeCount={[filters.type, filters.status].filter(Boolean).length}
+            >
+                <Select aria-label="Filtrer par type" value={filters.type ?? ''} onChange={(e) => applyFilters({ type: e.target.value })}>
                     <option value="">Tous les types</option>
                     {Object.entries(types).map(([key, label]) => (
                         <option key={key} value={key}>
@@ -250,13 +252,13 @@ export default function Index({ invoices, students, formations, academicYears, t
                         </option>
                     ))}
                 </Select>
-                <Select value={filters.status ?? ''} onChange={(e) => applyFilters({ status: e.target.value })} className="sm:w-48">
+                <Select aria-label="Filtrer par statut" value={filters.status ?? ''} onChange={(e) => applyFilters({ status: e.target.value })}>
                     <option value="">Tous les statuts</option>
                     <option value="impayee">Impayée</option>
                     <option value="partielle">Partielle</option>
                     <option value="payee">Payée</option>
                 </Select>
-            </Card>
+            </FilterBar>
 
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
@@ -293,9 +295,9 @@ export default function Index({ invoices, students, formations, academicYears, t
                                     </td>
                                     <td className="px-5 py-3">
                                         <div className="flex justify-end">
-                                            <Link href={route('admin.invoices.show', inv.id)} className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100">
+                                            <IconLink href={route('admin.invoices.show', inv.id)} label="Consulter">
                                                 <Eye className="h-4 w-4" />
-                                            </Link>
+                                            </IconLink>
                                         </div>
                                     </td>
                                 </tr>
@@ -303,7 +305,7 @@ export default function Index({ invoices, students, formations, academicYears, t
                             {invoices.data.length === 0 && (
                                 <tr>
                                     <td colSpan={7} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

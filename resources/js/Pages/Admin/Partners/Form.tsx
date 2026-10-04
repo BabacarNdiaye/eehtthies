@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Textarea, Checkbox } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Partner } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 
@@ -80,7 +81,7 @@ export default function Form({ partner }: { partner?: Partner }) {
                     </label>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -88,7 +89,7 @@ export default function Form({ partner }: { partner?: Partner }) {
                     >
                         {isEdit ? 'Enregistrer les modifications' : 'Créer le partenaire'}
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

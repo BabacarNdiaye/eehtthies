@@ -9,6 +9,7 @@ import {
     Textarea,
     TextInput,
 } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Teacher } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { KeyRound, Printer } from 'lucide-react';
@@ -285,7 +286,7 @@ export default function Form({ teacher, subjects, salaryPayments, monthLabels, p
                                 </table>
                             </div>
                         ) : (
-                            <p className="text-sm text-ink-400">Aucun paiement enregistré pour le moment.</p>
+                            <p className="text-sm text-ink-500">Aucun paiement enregistré pour le moment.</p>
                         )}
                     </Card>
                 )}
@@ -314,7 +315,7 @@ export default function Form({ teacher, subjects, salaryPayments, monthLabels, p
                             ))}
                         </div>
                     ) : (
-                        <p className="text-sm text-ink-400">
+                        <p className="text-sm text-ink-500">
                             Aucune matière disponible.
                         </p>
                     )}
@@ -339,14 +340,14 @@ export default function Form({ teacher, subjects, salaryPayments, monthLabels, p
                             {teacher?.user_id ? ' (réinitialiser)' : ''}
                         </button>
                         {!data.email && (
-                            <p className="mt-2 text-xs text-ink-400">
+                            <p className="mt-2 text-xs text-ink-500">
                                 Renseignez l'e-mail de l'enseignant ci-dessus pour activer son accès.
                             </p>
                         )}
                     </Card>
                 )}
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -356,7 +357,7 @@ export default function Form({ teacher, subjects, salaryPayments, monthLabels, p
                             ? 'Enregistrer les modifications'
                             : "Créer l'enseignant"}
                     </button>
-                </div>
+                </FormActions>
             </form>
             {teacher && (
                 <AttachmentsPanel target="teacher" targetId={teacher.id} attachments={teacher.attachments} title="Dossier de l'enseignant" hint="Contrat, CV, diplômes, pièce d'identité (PDF, JPG, PNG, DOC, 5 Mo maximum)." />

@@ -151,7 +151,7 @@ export default function Traffic({ daily, byRole, totalUsers, activeUsers30d, nev
                             ))}
                             {recent.length === 0 && (
                                 <tr>
-                                    <td colSpan={3} className="px-5 py-10 text-center text-sm text-ink-400">
+                                    <td colSpan={3} className="px-5 py-10 text-center text-sm text-ink-500">
                                         Aucune connexion enregistrée pour le moment.
                                     </td>
                                 </tr>

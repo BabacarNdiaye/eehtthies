@@ -114,7 +114,7 @@ export default function Create({ students, academicYears }: Props) {
                 <Card className="p-6">
                     <h3 className="mb-4 text-base font-semibold text-ink-900">Aperçu du calendrier</h3>
                     {preview.length === 0 ? (
-                        <p className="text-sm text-ink-400">
+                        <p className="text-sm text-ink-500">
                             Renseignez le montant, le nombre de tranches et la première échéance pour voir l'aperçu.
                         </p>
                     ) : (

@@ -738,6 +738,15 @@ export interface Located {
     group: NavGroup;
 }
 
+/**
+ * Vrai pour une page de création ou de modification (admin.students.create, admin.settings.edit…). Sur téléphone
+ * ces écrans « de saisie » n'ont pas de barre du bas : la barre Enregistrer collée au bas de l'écran la remplace,
+ * et la flèche du haut ramène à la liste.
+ */
+export function isFormRoute(current: string): boolean {
+    return /\.(create|edit)$/.test(current);
+}
+
 /** Retire les accents et les majuscules : « Élèves » et « eleves » se valent dans la recherche. */
 export function normalize(text: string): string {
     return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();

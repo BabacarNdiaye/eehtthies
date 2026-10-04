@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Select } from '@/Components/Admin/Field';
+import { IconButton } from '@/Components/Admin/IconButton';
 import { SchoolClass } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
@@ -204,10 +205,12 @@ export default function Index({
                                                 className="grid grid-cols-1 gap-3 sm:grid-cols-6 sm:items-end"
                                             >
                                                 <TextInput
+                                                    aria-label="Nom"
                                                     value={editForm.data.name}
                                                     onChange={(e) => editForm.setData('name', e.target.value)}
                                                 />
                                                 <Select
+                                                    aria-label="Formation"
                                                     value={editForm.data.formation_id}
                                                     onChange={(e) =>
                                                         editForm.setData(
@@ -223,6 +226,7 @@ export default function Index({
                                                     ))}
                                                 </Select>
                                                 <Select
+                                                    aria-label="Année académique"
                                                     value={editForm.data.academic_year_id}
                                                     onChange={(e) =>
                                                         editForm.setData(
@@ -238,6 +242,7 @@ export default function Index({
                                                     ))}
                                                 </Select>
                                                 <TextInput
+                                                    aria-label="Capacité"
                                                     type="number"
                                                     value={editForm.data.capacity}
                                                     onChange={(e) =>
@@ -248,6 +253,7 @@ export default function Index({
                                                     }
                                                 />
                                                 <Select
+                                                    aria-label="Classe suivante"
                                                     value={editForm.data.next_class_id}
                                                     onChange={(e) =>
                                                         editForm.setData(
@@ -266,6 +272,7 @@ export default function Index({
                                                         ))}
                                                 </Select>
                                                 <Select
+                                                    aria-label="Niveau"
                                                     value={editForm.data.formation_level_id}
                                                     onChange={(e) =>
                                                         editForm.setData(
@@ -291,13 +298,13 @@ export default function Index({
                                                     >
                                                         Enregistrer
                                                     </button>
-                                                    <button
+                                                    <IconButton
                                                         type="button"
                                                         onClick={() => setEditingId(null)}
-                                                        className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
+                                                        label="Annuler la modification"
                                                     >
                                                         <X className="h-4 w-4" />
-                                                    </button>
+                                                    </IconButton>
                                                 </div>
                                             </form>
                                         </td>
@@ -313,18 +320,19 @@ export default function Index({
                                         <td className="px-5 py-3 text-ink-600">{c.next_class?.name ?? '—'}</td>
                                         <td className="px-5 py-3">
                                             <div className="flex justify-end gap-2">
-                                                <button
+                                                <IconButton
                                                     onClick={() => startEdit(c)}
-                                                    className="rounded-lg p-2 text-ink-500 transition-colors duration-150 hover:bg-ink-100"
+                                                    label="Modifier"
                                                 >
                                                     <Pencil className="h-4 w-4" />
-                                                </button>
-                                                <button
+                                                </IconButton>
+                                                <IconButton
                                                     onClick={() => destroy(c)}
-                                                    className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50"
+                                                    label="Supprimer"
+                                                    tone="danger"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
-                                                </button>
+                                                </IconButton>
                                             </div>
                                         </td>
                                     </tr>
@@ -333,7 +341,7 @@ export default function Index({
                             {schoolClasses.length === 0 && (
                                 <tr>
                                     <td colSpan={8} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

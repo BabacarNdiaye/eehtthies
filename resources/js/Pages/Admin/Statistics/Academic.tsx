@@ -131,7 +131,7 @@ export default function Academic({
                         <Award className="h-5 w-5 text-gold-600" /> Taux de réussite par formation
                     </h2>
                     {successRateByFormation.length === 0 ? (
-                        <p className="text-sm text-ink-400">Aucun bulletin généré pour le moment.</p>
+                        <p className="text-sm text-ink-500">Aucun bulletin généré pour le moment.</p>
                     ) : (
                         <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={successRateByFormation}>
@@ -150,7 +150,7 @@ export default function Academic({
                         <GraduationCap className="h-5 w-5 text-gold-600" /> Moyenne par matière
                     </h2>
                     {averageBySubject.length === 0 ? (
-                        <p className="text-sm text-ink-400">Aucune note publiée pour le moment.</p>
+                        <p className="text-sm text-ink-500">Aucune note publiée pour le moment.</p>
                     ) : (
                         <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={averageBySubject}>
@@ -187,7 +187,7 @@ export default function Academic({
                                 <p className="text-sm font-semibold text-ink-900">{Number(rc.average).toFixed(2)}/20</p>
                             </li>
                         ))}
-                        {topStudents.length === 0 && <li className="px-5 py-8 text-center text-ink-400">Aucun bulletin généré.</li>}
+                        {topStudents.length === 0 && <li className="px-5 py-8 text-center text-ink-500">Aucun bulletin généré.</li>}
                     </ul>
                 </Card>
 
@@ -200,11 +200,11 @@ export default function Academic({
                             <li key={i} className="flex items-center justify-between px-5 py-3">
                                 <p className="text-sm font-medium text-ink-900">{t.teacher}</p>
                                 <p className="text-sm text-ink-600">
-                                    {t.average}/20 <span className="text-xs text-ink-400">({t.count} notes)</span>
+                                    {t.average}/20 <span className="text-xs text-ink-500">({t.count} notes)</span>
                                 </p>
                             </li>
                         ))}
-                        {teacherPerformance.length === 0 && <li className="px-5 py-8 text-center text-ink-400">Aucune donnée disponible.</li>}
+                        {teacherPerformance.length === 0 && <li className="px-5 py-8 text-center text-ink-500">Aucune donnée disponible.</li>}
                     </ul>
                 </Card>
             </div>

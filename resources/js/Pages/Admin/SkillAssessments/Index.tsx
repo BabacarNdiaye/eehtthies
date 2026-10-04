@@ -46,7 +46,7 @@ export default function Index({ assessments, schoolClasses, levels, selectedClas
 
             <Card className="mb-6 p-6">
                 <div className="max-w-xs">
-                    <Select value={selectedClassId ?? ''} onChange={(e) => changeClass(e.target.value)}>
+                    <Select aria-label="Filtrer par classe" value={selectedClassId ?? ''} onChange={(e) => changeClass(e.target.value)}>
                         <option value="">Toutes les classes</option>
                         {schoolClasses.map((c) => (
                             <option key={c.id} value={c.id}>
@@ -75,7 +75,7 @@ export default function Index({ assessments, schoolClasses, levels, selectedClas
                                 <tr key={a.id} className="transition-colors duration-150 hover:bg-ink-50/60">
                                     <td className="px-5 py-3 font-medium text-ink-900">
                                         {a.student.last_name} {a.student.first_name}
-                                        <span className="ml-2 text-xs font-normal text-ink-400">{a.student.matricule}</span>
+                                        <span className="ml-2 text-xs font-normal text-ink-500">{a.student.matricule}</span>
                                     </td>
                                     <td className="px-5 py-3 text-ink-700">{a.skill.name}</td>
                                     <td className="px-5 py-3">
@@ -102,7 +102,7 @@ export default function Index({ assessments, schoolClasses, levels, selectedClas
                             {assessments.data.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

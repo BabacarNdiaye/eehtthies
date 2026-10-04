@@ -221,7 +221,7 @@ export default function Dashboard({
                                     </li>
                                 ))}
                                 {latestCandidatures.length === 0 && (
-                                    <li className="px-5 py-6 text-center text-sm text-ink-400">Aucune candidature pour le moment.</li>
+                                    <li className="px-5 py-6 text-center text-sm text-ink-500">Aucune candidature pour le moment.</li>
                                 )}
                             </ul>
                         </Card>
@@ -247,7 +247,7 @@ export default function Dashboard({
                                     </li>
                                 ))}
                                 {latestNews.length === 0 && (
-                                    <li className="px-5 py-6 text-center text-sm text-ink-400">Aucun article pour le moment.</li>
+                                    <li className="px-5 py-6 text-center text-sm text-ink-500">Aucun article pour le moment.</li>
                                 )}
                             </ul>
                         </Card>

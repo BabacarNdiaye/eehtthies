@@ -82,6 +82,7 @@ export default function Grades({ exam, students, grades }: Props) {
                                     </td>
                                     <td className="px-5 py-3">
                                         <TextInput
+                                            aria-label={`Note de ${s.first_name} ${s.last_name}`}
                                             type="number"
                                             step="0.25"
                                             min={0}
@@ -94,6 +95,7 @@ export default function Grades({ exam, students, grades }: Props) {
                                     </td>
                                     <td className="px-5 py-3">
                                         <Checkbox
+                                            aria-label={`Absent : ${s.first_name} ${s.last_name}`}
                                             checked={entries[s.id]?.is_absent ?? false}
                                             onChange={(e) => setField(s.id, 'is_absent', e.target.checked)}
                                         />
@@ -110,7 +112,7 @@ export default function Grades({ exam, students, grades }: Props) {
                             {students.length === 0 && (
                                 <tr>
                                     <td colSpan={4} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

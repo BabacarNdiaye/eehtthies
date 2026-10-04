@@ -2,6 +2,8 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
+import { IconButton } from '@/Components/Admin/IconButton';
+import FormActions from '@/Components/Admin/FormActions';
 import { PracticalSession } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Trash2 } from 'lucide-react';
@@ -115,11 +117,11 @@ export default function Form({ session, schoolClasses, subjects, teachers, produ
                     </div>
                 </Card>
 
-                <div className="flex justify-end">
+                <FormActions>
                     <button type="submit" disabled={processing} className="rounded-lg bg-ink-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-ink-800 disabled:opacity-50">
                         {isEdit ? 'Enregistrer les modifications' : 'Créer la séance'}
                     </button>
-                </div>
+                </FormActions>
             </form>
 
             {isEdit && (
@@ -159,13 +161,13 @@ export default function Form({ session, schoolClasses, subjects, teachers, produ
                                         {fcfa(Number(item.quantity_used) * Number(item.unit_cost_at_time))}
                                     </p>
                                 </div>
-                                <button onClick={() => removeItem(item.id)} className="rounded-lg p-2 text-red-500 transition-colors duration-150 hover:bg-red-50">
+                                <IconButton onClick={() => removeItem(item.id)} label="Supprimer" tone="danger">
                                     <Trash2 className="h-4 w-4" />
-                                </button>
+                                </IconButton>
                             </li>
                         ))}
                         {(session?.items ?? []).length === 0 && (
-                            <li className="px-5 py-8 text-center text-ink-400">Aucun produit consommé pour cette séance.</li>
+                            <li className="px-5 py-8 text-center text-ink-500">Aucun produit consommé pour cette séance.</li>
                         )}
                     </ul>
                 </Card>

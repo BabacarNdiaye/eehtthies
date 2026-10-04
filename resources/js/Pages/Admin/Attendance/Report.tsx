@@ -99,7 +99,7 @@ export default function Report({ schoolClasses, summary, selectedClassId, from, 
                                             </p>
                                             <p className="text-xs text-ink-500">{row.student.matricule}</p>
                                         </td>
-                                        <td className="px-5 py-3 text-center font-medium text-emerald-600">
+                                        <td className="px-5 py-3 text-center font-medium text-emerald-700">
                                             {row.present}
                                         </td>
                                         <td className="px-5 py-3 text-center font-medium text-red-600">
@@ -116,7 +116,7 @@ export default function Report({ schoolClasses, summary, selectedClassId, from, 
                                 {summary.length === 0 && (
                                     <tr>
                                         <td colSpan={5} className="px-5 py-10 text-center">
-                                            <div className="flex flex-col items-center gap-3 text-ink-400">
+                                            <div className="flex flex-col items-center gap-3 text-ink-500">
                                                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                     <Inbox className="h-6 w-6" />
                                                 </span>

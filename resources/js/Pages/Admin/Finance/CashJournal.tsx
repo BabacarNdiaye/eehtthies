@@ -41,7 +41,7 @@ export default function CashJournal({ entries, from, to, totalIn, totalOut }: Pr
                     <TextInput type="date" value={to} onChange={(e) => updateFilters({ to: e.target.value })} />
                 </Field>
                 <div className="flex flex-col justify-end gap-1 text-sm">
-                    <p className="text-emerald-600">Entrées : {fcfa(totalIn)}</p>
+                    <p className="text-emerald-700">Entrées : {fcfa(totalIn)}</p>
                     <p className="text-red-600">Sorties : {fcfa(totalOut)}</p>
                 </div>
             </Card>
@@ -89,7 +89,7 @@ export default function CashJournal({ entries, from, to, totalIn, totalOut }: Pr
                             {entries.length === 0 && (
                                 <tr>
                                     <td colSpan={4} className="px-5 py-10 text-center">
-                                        <div className="flex flex-col items-center gap-3 text-ink-400">
+                                        <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
                                             </span>

@@ -100,7 +100,7 @@ export default function Marketing({ monthly, bySource, byFormation, totalCandida
                 <Card className="p-5">
                     <h2 className="mb-4 font-serif text-lg font-semibold text-ink-900">Candidatures par source</h2>
                     {sourceData.length === 0 ? (
-                        <p className="text-sm text-ink-400">Aucune candidature enregistrée.</p>
+                        <p className="text-sm text-ink-500">Aucune candidature enregistrée.</p>
                     ) : (
                         <ResponsiveContainer width="100%" height={260}>
                             <PieChart>

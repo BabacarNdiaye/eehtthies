@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, Select, TextInput, Checkbox } from '@/Components/Admin/Field';
+import { IconButton } from '@/Components/Admin/IconButton';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -112,7 +113,7 @@ function RulesFields({
                             {s.name}
                         </label>
                     ))}
-                    {subjects.length === 0 && <p className="text-xs text-ink-400">Aucune matière pour cette filière.</p>}
+                    {subjects.length === 0 && <p className="text-xs text-ink-500">Aucune matière pour cette filière.</p>}
                 </div>
             </div>
             <div className="sm:col-span-4">
@@ -124,7 +125,7 @@ function RulesFields({
                             {s.name}
                         </label>
                     ))}
-                    {skills.length === 0 && <p className="text-xs text-ink-400">Aucune compétence pour cette filière.</p>}
+                    {skills.length === 0 && <p className="text-xs text-ink-500">Aucune compétence pour cette filière.</p>}
                 </div>
             </div>
         </>
@@ -191,7 +192,7 @@ export default function Index({ formations, levels, subjects, skills, selectedFo
             <Card className="mb-6 p-6">
                 <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">Filière</h2>
                 <div className="max-w-xs">
-                    <Select value={selectedFormationId ?? ''} onChange={(e) => changeFormation(e.target.value)}>
+                    <Select aria-label="Filière" value={selectedFormationId ?? ''} onChange={(e) => changeFormation(e.target.value)}>
                         <option value="">Sélectionner une filière</option>
                         {formations.map((f) => (
                             <option key={f.id} value={f.id}>
@@ -246,13 +247,13 @@ export default function Index({ formations, levels, subjects, skills, selectedFo
                                                             >
                                                                 Enregistrer
                                                             </button>
-                                                            <button
+                                                            <IconButton
                                                                 type="button"
                                                                 onClick={() => setEditingId(null)}
-                                                                className="rounded-lg p-2 text-ink-500 hover:bg-ink-100"
+                                                                label="Annuler la modification"
                                                             >
                                                                 <X className="h-4 w-4" />
-                                                            </button>
+                                                            </IconButton>
                                                         </div>
                                                     </form>
                                                 </td>
@@ -285,18 +286,19 @@ export default function Index({ formations, levels, subjects, skills, selectedFo
                                                 </td>
                                                 <td className="px-5 py-3">
                                                     <div className="flex justify-end gap-2">
-                                                        <button
+                                                        <IconButton
                                                             onClick={() => startEdit(l)}
-                                                            className="rounded-lg p-2 text-ink-500 hover:bg-ink-100"
+                                                            label="Modifier"
                                                         >
                                                             <Pencil className="h-4 w-4" />
-                                                        </button>
-                                                        <button
+                                                        </IconButton>
+                                                        <IconButton
                                                             onClick={() => destroy(l)}
-                                                            className="rounded-lg p-2 text-red-500 hover:bg-red-50"
+                                                            label="Supprimer"
+                                                            tone="danger"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
-                                                        </button>
+                                                        </IconButton>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -305,7 +307,7 @@ export default function Index({ formations, levels, subjects, skills, selectedFo
                                     {levels.length === 0 && (
                                         <tr>
                                             <td colSpan={3} className="px-5 py-10 text-center">
-                                                <div className="flex flex-col items-center gap-3 text-ink-400">
+                                                <div className="flex flex-col items-center gap-3 text-ink-500">
                                                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                         <Inbox className="h-6 w-6" />
                                                     </span>

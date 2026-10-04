@@ -11,7 +11,7 @@ import useMediaQuery from '@/hooks/useMediaQuery';
 import usePullToRefresh from '@/hooks/usePullToRefresh';
 import useUnreadCount from '@/hooks/useUnreadCount';
 import { recallListUrl, rememberListUrl, rememberRecent } from '@/lib/adminMemory';
-import { crumbsFor, locate, shortcutTab, visibleGroups } from '@/lib/adminNav';
+import { crumbsFor, isFormRoute, locate, shortcutTab, visibleGroups } from '@/lib/adminNav';
 import { PageProps } from '@/types';
 import { router, usePage } from '@inertiajs/react';
 import { Home, LayoutGrid, MessageCircle, Search } from 'lucide-react';
@@ -49,7 +49,10 @@ export default function AdminLayout({ children }: PropsWithChildren) {
     // Une fiche ou un formulaire ramène à la liste de sa rubrique, avec les filtres et la page qu'elle avait.
     const backHref = crumbs.isSubPage && crumbs.item ? (recallListUrl(crumbs.item.href) ?? route(crumbs.item.href)) : null;
 
-    // <body data-admin> : le CSS réserve alors la place de la barre du bas (--portal-bar-h) sur téléphone.
+    // <body data-admin> : le CSS réserve alors la place de la barre du bas (--portal-bar-h) sur téléphone ;
+    // <body data-admin-form> (écran de saisie) : la place de la barre Enregistrer à la place.
+    const stacked = isFormRoute(current);
+
     useEffect(() => {
         document.body.dataset.admin = '';
 
@@ -57,6 +60,16 @@ export default function AdminLayout({ children }: PropsWithChildren) {
             delete document.body.dataset.admin;
         };
     }, []);
+
+    useEffect(() => {
+        if (!stacked) return;
+
+        document.body.dataset.adminForm = '';
+
+        return () => {
+            delete document.body.dataset.adminForm;
+        };
+    }, [stacked]);
 
     // Rubriques récentes de la palette, et adresse de chaque liste (l'adresse change aussi quand on filtre, sans
     // que la page soit remontée : d'où la dépendance sur `url`).
@@ -149,11 +162,9 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                 </main>
             </div>
 
+            {!isDesktop && !stacked && <BottomBar tabs={tabs} center={center} />}
             {!isDesktop && (
-                <>
-                    <BottomBar tabs={tabs} center={center} />
-                    <AdminMenuSheet open={menuOpen} onClose={closeMenu} onSearch={openPalette} groups={groups} current={current} profile={profile} />
-                </>
+                <AdminMenuSheet open={menuOpen} onClose={closeMenu} onSearch={openPalette} groups={groups} current={current} profile={profile} />
             )}
             <CommandPalette open={paletteOpen} onClose={closePalette} groups={groups} permissions={permissions ?? []} />
             <PullIndicator pull={pull} refreshing={refreshing} />

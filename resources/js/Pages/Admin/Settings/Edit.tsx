@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Textarea } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Building2, RotateCcw } from 'lucide-react';
@@ -147,11 +148,13 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                                 <div className="flex items-center gap-3">
                                     <input
                                         type="color"
+                                        aria-label={`${field.label} — sélecteur de couleur`}
                                         value={data[field.key]}
                                         onChange={(e) => setData(field.key, e.target.value)}
                                         className="h-10 w-14 shrink-0 cursor-pointer rounded-lg border border-ink-200 p-1"
                                     />
                                     <TextInput
+                                        aria-label={`${field.label} — code hexadécimal`}
                                         value={data[field.key]}
                                         onChange={(e) => setData(field.key, e.target.value)}
                                         placeholder={field.fallback}
@@ -374,7 +377,7 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                     </div>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -382,7 +385,7 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                     >
                         Enregistrer les paramètres
                     </button>
-                </div>
+                </FormActions>
             </form>
 
             {isSuperAdmin && (

@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Checkbox, Select } from '@/Components/Admin/Field';
+import FormActions from '@/Components/Admin/FormActions';
 import { User } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { UserRound } from 'lucide-react';
@@ -184,7 +185,7 @@ export default function Form({
                             </label>
                         ))}
                         {roles.length === 0 && (
-                            <p className="text-sm text-ink-400">Aucun rôle disponible.</p>
+                            <p className="text-sm text-ink-500">Aucun rôle disponible.</p>
                         )}
                     </div>
                     {errors.roles && <p className="mt-2 text-xs text-red-600">{errors.roles}</p>}
@@ -197,7 +198,7 @@ export default function Form({
                     </label>
                 </Card>
 
-                <div className="flex justify-end gap-3">
+                <FormActions>
                     <button
                         type="submit"
                         disabled={processing}
@@ -205,7 +206,7 @@ export default function Form({
                     >
                         {isEdit ? 'Enregistrer les modifications' : 'Créer le membre du personnel'}
                     </button>
-                </div>
+                </FormActions>
             </form>
         </AdminLayout>
     );

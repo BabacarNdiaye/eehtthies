@@ -32,7 +32,7 @@ export default function Show({ schoolClass, messages }: { schoolClass: { id: num
                                 <p className="text-sm font-semibold text-ink-900">{m.user?.name ?? 'Utilisateur'}</p>
                                 {m.body && <p className="mt-1 whitespace-pre-line text-sm text-ink-700">{m.body}</p>}
                                 {m.attachment_name && <p className="mt-1 text-sm text-ink-500">📎 {m.attachment_name}</p>}
-                                <p className="mt-1 text-xs text-ink-400">{new Date(m.created_at).toLocaleString('fr-FR')}</p>
+                                <p className="mt-1 text-xs text-ink-500">{new Date(m.created_at).toLocaleString('fr-FR')}</p>
                             </div>
                             <button
                                 onClick={() => destroy(m)}
@@ -44,7 +44,7 @@ export default function Show({ schoolClass, messages }: { schoolClass: { id: num
                         </div>
                     ))}
                     {messages.length === 0 && (
-                        <div className="flex flex-col items-center gap-3 px-5 py-10 text-center text-ink-400">
+                        <div className="flex flex-col items-center gap-3 px-5 py-10 text-center text-ink-500">
                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                 <Inbox className="h-6 w-6" />
                             </span>
