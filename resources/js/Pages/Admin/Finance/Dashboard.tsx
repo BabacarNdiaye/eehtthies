@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import useCompactChart, { axisLabel } from '@/hooks/useCompactChart';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Head, Link } from '@inertiajs/react';
@@ -58,6 +59,7 @@ function Kpi({
 }
 
 export default function Dashboard({ kpis, monthly, expensesByCategory, categoryLabels, lowStockProducts }: Props) {
+    const compact = useCompactChart();
     const categoryData = Object.entries(expensesByCategory).map(([key, total]) => ({
         category: categoryLabels[key] ?? key,
         total,
@@ -116,7 +118,7 @@ export default function Dashboard({ kpis, monthly, expensesByCategory, categoryL
                     <ResponsiveContainer width="100%" height={260}>
                         <BarChart data={categoryData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e6eaef" />
-                            <XAxis dataKey="category" tick={{ fontSize: 10 }} stroke="#6c86a3" interval={0} angle={-15} textAnchor="end" height={60} />
+                            <XAxis dataKey="category" tick={{ fontSize: 10 }} stroke="#6c86a3" interval={0} tickFormatter={(value) => axisLabel(value, compact, 12)} angle={compact ? -40 : -15} textAnchor="end" height={compact ? 80 : 60} />
                             <YAxis tick={{ fontSize: 12 }} stroke="#6c86a3" />
                             <Tooltip formatter={(v: number) => fcfa(v)} />
                             <Bar dataKey="total" fill="#243a52" radius={[4, 4, 0, 0]} />

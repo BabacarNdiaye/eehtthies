@@ -300,19 +300,7 @@ class InvoiceController extends Controller
 
     public function overdue(Request $request): Response
     {
-        $invoices = Invoice::with('student:id,first_name,last_name,matricule,phone,email')
-            ->withSum('payments', 'amount')
-            ->get()
-            ->map(function (Invoice $invoice) {
-                $paid = (float) ($invoice->payments_sum_amount ?? 0);
-                $net = (float) $invoice->amount - (float) $invoice->discount;
-                $invoice->computed_balance = round($net - $paid, 2);
-
-                return $invoice;
-            })
-            ->filter(fn ($i) => $i->computed_balance > 0)
-            ->sortByDesc('computed_balance')
-            ->values();
+        $invoices = Invoice::outstanding();
 
         return Inertia::render('Admin/Invoices/Overdue', [
             'invoices' => $invoices,

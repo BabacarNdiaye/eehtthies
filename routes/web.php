@@ -44,6 +44,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\SalaryController;
 use App\Http\Controllers\Admin\SchoolClassController;
+use App\Http\Controllers\Admin\SearchController as AdminSearchController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SkillAssessmentController;
 use App\Http\Controllers\Admin\SkillController;
@@ -212,6 +213,9 @@ Route::middleware('auth')->group(function () {
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::get('/dashboard', DashboardController::class);
+
+    // Palette de recherche (Ctrl/⌘ K) : les familles de résultats suivent les permissions du rôle (voir le contrôleur).
+    Route::get('recherche', AdminSearchController::class)->name('search')->middleware('throttle:60,1');
 
     Route::get('formations/import/template', [AdminFormationController::class, 'importTemplate'])->name('formations.import.template')->middleware('permission:ajouter_formations');
     Route::post('formations/import', [AdminFormationController::class, 'importCsv'])->name('formations.import')->middleware('permission:ajouter_formations');

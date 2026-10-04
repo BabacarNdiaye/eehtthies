@@ -6,6 +6,7 @@ use App\Models\Concerns\HasAttachments;
 use App\Notifications\PushAlert;
 use App\Support\AccountingPoster;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -73,6 +74,34 @@ class Invoice extends Model
             }
         });
         static::deleted(fn (Invoice $invoice) => AccountingPoster::void($invoice));
+    }
+
+    /**
+     * Factures dont il reste quelque chose à payer, la plus grosse dette d'abord. Chacune porte `computed_balance`
+     * (montant − remise − paiements). Source unique de la page « Situation des impayés » et du tableau de bord.
+     *
+     * @param  bool  $withStudent  Charger l'élève (nom, matricule, contact) : inutile pour un simple total.
+     * @return Collection<int, static>
+     */
+    public static function outstanding(bool $withStudent = true): Collection
+    {
+        $query = static::query()->withSum('payments', 'amount');
+
+        if ($withStudent) {
+            $query->with('student:id,first_name,last_name,matricule,phone,email');
+        }
+
+        return $query->get()
+            ->map(function (Invoice $invoice) {
+                $paid = (float) ($invoice->payments_sum_amount ?? 0);
+                $net = (float) $invoice->amount - (float) $invoice->discount;
+                $invoice->computed_balance = round($net - $paid, 2);
+
+                return $invoice;
+            })
+            ->filter(fn (Invoice $invoice) => $invoice->computed_balance > 0)
+            ->sortByDesc('computed_balance')
+            ->values();
     }
 
     public function student()

@@ -1,6 +1,9 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import useCompactChart, { axisLabel } from '@/hooks/useCompactChart';
 import Card from '@/Components/Admin/Card';
-import { Head, Link } from '@inertiajs/react';
+import PageHeader from '@/Components/Admin/PageHeader';
+import StatisticsTabs from '@/Components/Admin/StatisticsTabs';
+import { Head } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ArrowDown, ArrowUp, PiggyBank, TrendingUp } from 'lucide-react';
 
@@ -19,27 +22,6 @@ interface Props {
 
 const fcfa = (v: number) => `${new Intl.NumberFormat('fr-FR').format(Math.round(v))} FCFA`;
 
-function Tabs() {
-    return (
-        <div className="mb-6 flex flex-wrap gap-2">
-            <Link href={route('admin.statistics.academic')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Académique
-            </Link>
-            <Link href={route('admin.statistics.financial')} className="rounded-lg bg-ink-900 px-4 py-2 text-sm font-semibold text-white">
-                Financier
-            </Link>
-            <Link href={route('admin.statistics.marketing')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Marketing
-            </Link>
-            <Link href={route('admin.statistics.at-risk')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Élèves à risque
-            </Link>
-            <Link href={route('admin.statistics.traffic')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Trafic
-            </Link>
-        </div>
-    );
-}
 
 function YoyCard({ label, current, previous }: { label: string; current: number; previous: number }) {
     const diff = previous > 0 ? ((current - previous) / previous) * 100 : null;
@@ -63,15 +45,15 @@ function YoyCard({ label, current, previous }: { label: string; current: number;
 }
 
 export default function Financial({ revenueByFormation, totalExpected, totalCollected, monthly, comparison }: Props) {
+    const compact = useCompactChart();
     const outstanding = Math.max(0, totalExpected - totalCollected);
     const collectionRate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
 
     return (
         <AdminLayout>
             <Head title="Statistiques financières" />
-            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & pilotage</h1>
-            <p className="mb-4 text-sm text-ink-500">Indicateurs financiers : recettes, dépenses et recouvrement.</p>
-            <Tabs />
+            <PageHeader title="Statistiques & pilotage" subtitle="Indicateurs financiers : recettes, dépenses et recouvrement." />
+            <StatisticsTabs current="financial" />
 
             <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card className="p-5">
@@ -136,7 +118,7 @@ export default function Financial({ revenueByFormation, totalExpected, totalColl
                         <BarChart data={revenueByFormation} layout="vertical" margin={{ left: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e6eaef" />
                             <XAxis type="number" tick={{ fontSize: 11 }} stroke="#6c86a3" />
-                            <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 11 }} stroke="#6c86a3" />
+                            <YAxis type="category" dataKey="name" width={compact ? 96 : 160} tickFormatter={(value) => axisLabel(value, compact)} tick={{ fontSize: 11 }} stroke="#6c86a3" />
                             <Tooltip formatter={(v: number) => fcfa(v)} />
                             <Bar dataKey="total" fill="#c8942a" radius={[0, 4, 4, 0]} />
                         </BarChart>

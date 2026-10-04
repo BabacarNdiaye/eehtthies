@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Candidature;
 use App\Models\ContactMessage;
 use App\Models\Formation;
+use App\Models\Invoice;
+use App\Models\LeaveRequest;
 use App\Models\NewsArticle;
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -77,6 +80,7 @@ class DashboardController extends Controller
             : null;
 
         return Inertia::render('Admin/Dashboard', [
+            'todo' => $this->todo($user, $kpis),
             'kpis' => $kpis,
             'candidaturesByStatus' => $candidaturesByStatus,
             'studentsPerFormation' => $studentsPerFormation,
@@ -84,5 +88,42 @@ class DashboardController extends Controller
             'latestNews' => $latestNews,
             'latestCandidatures' => $latestCandidatures,
         ]);
+    }
+
+    /**
+     * Ce qui attend une décision du personnel. Chaque chiffre n'existe que si le rôle peut ouvrir la page vers
+     * laquelle il renvoie (même règle que les listes) : un rôle sans droit ne reçoit ni le chiffre, ni la clé.
+     *
+     * @param  array<string, int>  $kpis
+     * @return array<string, mixed>
+     */
+    private function todo(User $user, array $kpis): array
+    {
+        $todo = [];
+
+        if ($user->can('voir_candidatures')) {
+            $todo['candidatures_to_review'] = $kpis['candidatures_pending'];
+        }
+
+        if ($user->can('voir_comptabilite')) {
+            $outstanding = Invoice::outstanding(withStudent: false);
+
+            // Le franc CFA n'a pas de centimes : le montant s'envoie en entier.
+            $todo['invoices_outstanding'] = [
+                'count' => $outstanding->count(),
+                'amount' => (int) round($outstanding->sum('computed_balance')),
+            ];
+        }
+
+        // Valider ou refuser un congé demande le droit « modifier_utilisateurs » (voir LeaveController).
+        if ($user->can('modifier_utilisateurs')) {
+            $todo['leave_pending'] = LeaveRequest::where('status', 'en_attente')->count();
+        }
+
+        if ($user->can('voir_communication')) {
+            $todo['messages_unread'] = $kpis['unread_messages'];
+        }
+
+        return $todo;
     }
 }

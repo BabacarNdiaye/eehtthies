@@ -1,5 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import PageHeader from '@/Components/Admin/PageHeader';
+import StatisticsTabs from '@/Components/Admin/StatisticsTabs';
 import { Head, Link } from '@inertiajs/react';
 import { AlertTriangle, ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react';
 
@@ -32,27 +34,6 @@ interface Props {
 
 const fcfa = (v: number) => `${new Intl.NumberFormat('fr-FR').format(Math.round(v))} FCFA`;
 
-function Tabs() {
-    return (
-        <div className="mb-6 flex flex-wrap gap-2">
-            <Link href={route('admin.statistics.academic')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Académique
-            </Link>
-            <Link href={route('admin.statistics.financial')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Financier
-            </Link>
-            <Link href={route('admin.statistics.marketing')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Marketing
-            </Link>
-            <Link href={route('admin.statistics.at-risk')} className="rounded-lg bg-ink-900 px-4 py-2 text-sm font-semibold text-white">
-                Élèves à risque
-            </Link>
-            <Link href={route('admin.statistics.traffic')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Trafic
-            </Link>
-        </div>
-    );
-}
 
 const LEVEL_STYLES: Record<RiskStudent['level'], { label: string; badge: string; row: string }> = {
     eleve: { label: 'Élevé', badge: 'bg-red-100 text-red-700', row: 'border-l-4 border-red-500' },
@@ -64,11 +45,8 @@ export default function AtRisk({ students, summary }: Props) {
     return (
         <AdminLayout>
             <Head title="Élèves à risque" />
-            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & pilotage</h1>
-            <p className="mb-4 text-sm text-ink-500">
-                Détection automatique des élèves cumulant absences non justifiées, moyenne faible et/ou factures impayées en retard.
-            </p>
-            <Tabs />
+            <PageHeader title="Statistiques & pilotage" subtitle="Détection automatique des élèves cumulant absences non justifiées, moyenne faible et/ou factures impayées en retard." />
+            <StatisticsTabs current="at-risk" />
 
             <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card className="p-5">

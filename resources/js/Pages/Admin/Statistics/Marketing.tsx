@@ -1,6 +1,9 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import useCompactChart, { axisLabel } from '@/hooks/useCompactChart';
 import Card from '@/Components/Admin/Card';
-import { Head, Link } from '@inertiajs/react';
+import PageHeader from '@/Components/Admin/PageHeader';
+import StatisticsTabs from '@/Components/Admin/StatisticsTabs';
+import { Head } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Megaphone, Target, UserCheck } from 'lucide-react';
 
@@ -15,37 +18,16 @@ interface Props {
 
 const sourceColors = ['#243a52', '#c8942a', '#059669', '#7c3aed', '#dc2626'];
 
-function Tabs() {
-    return (
-        <div className="mb-6 flex flex-wrap gap-2">
-            <Link href={route('admin.statistics.academic')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Académique
-            </Link>
-            <Link href={route('admin.statistics.financial')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Financier
-            </Link>
-            <Link href={route('admin.statistics.marketing')} className="rounded-lg bg-ink-900 px-4 py-2 text-sm font-semibold text-white">
-                Marketing
-            </Link>
-            <Link href={route('admin.statistics.at-risk')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Élèves à risque
-            </Link>
-            <Link href={route('admin.statistics.traffic')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Trafic
-            </Link>
-        </div>
-    );
-}
 
 export default function Marketing({ monthly, bySource, byFormation, totalCandidatures, enrolled, conversionRate }: Props) {
+    const compact = useCompactChart();
     const sourceData = Object.entries(bySource).map(([key, total]) => ({ name: key, total }));
 
     return (
         <AdminLayout>
             <Head title="Statistiques marketing" />
-            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & pilotage</h1>
-            <p className="mb-4 text-sm text-ink-500">Indicateurs marketing : candidatures, sources et conversion.</p>
-            <Tabs />
+            <PageHeader title="Statistiques & pilotage" subtitle="Indicateurs marketing : candidatures, sources et conversion." />
+            <StatisticsTabs current="marketing" />
 
             <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <Card className="p-5">
@@ -123,7 +105,7 @@ export default function Marketing({ monthly, bySource, byFormation, totalCandida
                     <BarChart data={byFormation} layout="vertical" margin={{ left: 20 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e6eaef" />
                         <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} stroke="#6c86a3" />
-                        <YAxis type="category" dataKey="name" width={180} tick={{ fontSize: 11 }} stroke="#6c86a3" />
+                        <YAxis type="category" dataKey="name" width={compact ? 96 : 180} tickFormatter={(value) => axisLabel(value, compact)} tick={{ fontSize: 11 }} stroke="#6c86a3" />
                         <Tooltip />
                         <Bar dataKey="total" fill="#243a52" radius={[0, 4, 4, 0]} />
                     </BarChart>

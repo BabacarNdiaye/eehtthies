@@ -1,6 +1,8 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
-import { Head, Link } from '@inertiajs/react';
+import PageHeader from '@/Components/Admin/PageHeader';
+import StatisticsTabs from '@/Components/Admin/StatisticsTabs';
+import { Head } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Activity, LogIn, UserCheck, UserX } from 'lucide-react';
 
@@ -19,37 +21,13 @@ interface Props {
     }[];
 }
 
-function Tabs() {
-    return (
-        <div className="mb-6 flex flex-wrap gap-2">
-            <Link href={route('admin.statistics.academic')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Académique
-            </Link>
-            <Link href={route('admin.statistics.financial')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Financier
-            </Link>
-            <Link href={route('admin.statistics.marketing')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Marketing
-            </Link>
-            <Link href={route('admin.statistics.at-risk')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Élèves à risque
-            </Link>
-            <Link href={route('admin.statistics.traffic')} className="rounded-lg bg-ink-900 px-4 py-2 text-sm font-semibold text-white">
-                Trafic
-            </Link>
-        </div>
-    );
-}
 
 export default function Traffic({ daily, byRole, totalUsers, activeUsers30d, neverLoggedIn, logins30d, recent }: Props) {
     return (
         <AdminLayout>
             <Head title="Trafic" />
-            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & pilotage</h1>
-            <p className="mb-4 text-sm text-ink-500">
-                Utilisation de la plateforme : connexions au fil du temps, par profil.
-            </p>
-            <Tabs />
+            <PageHeader title="Statistiques & pilotage" subtitle="Utilisation de la plateforme : connexions au fil du temps, par profil." />
+            <StatisticsTabs current="traffic" />
 
             <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
                 <Card className="p-5">

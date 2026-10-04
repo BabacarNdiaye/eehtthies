@@ -1,6 +1,9 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import useCompactChart, { axisLabel } from '@/hooks/useCompactChart';
 import Card from '@/Components/Admin/Card';
-import { Head, Link } from '@inertiajs/react';
+import PageHeader from '@/Components/Admin/PageHeader';
+import StatisticsTabs from '@/Components/Admin/StatisticsTabs';
+import { Head } from '@inertiajs/react';
 import {
     Bar,
     BarChart,
@@ -38,27 +41,6 @@ interface Props {
 const genderLabels: Record<string, string> = { M: 'Masculin', F: 'Féminin' };
 const genderColors = ['#243a52', '#c8942a'];
 
-function Tabs() {
-    return (
-        <div className="mb-6 flex flex-wrap gap-2">
-            <Link href={route('admin.statistics.academic')} className="rounded-lg bg-ink-900 px-4 py-2 text-sm font-semibold text-white">
-                Académique
-            </Link>
-            <Link href={route('admin.statistics.financial')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Financier
-            </Link>
-            <Link href={route('admin.statistics.marketing')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Marketing
-            </Link>
-            <Link href={route('admin.statistics.at-risk')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Élèves à risque
-            </Link>
-            <Link href={route('admin.statistics.traffic')} className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
-                Trafic
-            </Link>
-        </div>
-    );
-}
 
 export default function Academic({
     studentsPerFormation,
@@ -69,14 +51,14 @@ export default function Academic({
     topStudents,
     teacherPerformance,
 }: Props) {
+    const compact = useCompactChart();
     const genderData = Object.entries(genderSplit).map(([key, total]) => ({ name: genderLabels[key] ?? key, total }));
 
     return (
         <AdminLayout>
             <Head title="Statistiques académiques" />
-            <h1 className="mb-1 font-serif text-2xl font-bold text-ink-900">Statistiques & pilotage</h1>
-            <p className="mb-4 text-sm text-ink-500">Indicateurs académiques : effectifs, résultats et performance pédagogique.</p>
-            <Tabs />
+            <PageHeader title="Statistiques & pilotage" subtitle="Indicateurs académiques : effectifs, résultats et performance pédagogique." />
+            <StatisticsTabs current="academic" />
 
             <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <Card className="p-5">
@@ -87,7 +69,7 @@ export default function Academic({
                         <BarChart data={studentsPerFormation} layout="vertical" margin={{ left: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e6eaef" />
                             <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} stroke="#6c86a3" />
-                            <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 11 }} stroke="#6c86a3" />
+                            <YAxis type="category" dataKey="name" width={compact ? 96 : 160} tickFormatter={(value) => axisLabel(value, compact)} tick={{ fontSize: 11 }} stroke="#6c86a3" />
                             <Tooltip />
                             <Bar dataKey="total" fill="#243a52" radius={[0, 4, 4, 0]} />
                         </BarChart>
@@ -136,7 +118,7 @@ export default function Academic({
                         <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={successRateByFormation}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#e6eaef" />
-                                <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="#6c86a3" interval={0} angle={-15} textAnchor="end" height={60} />
+                                <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="#6c86a3" interval={0} tickFormatter={(value) => axisLabel(value, compact, 12)} angle={compact ? -40 : -15} textAnchor="end" height={compact ? 80 : 60} />
                                 <YAxis unit="%" tick={{ fontSize: 12 }} stroke="#6c86a3" />
                                 <Tooltip formatter={(v: number) => `${v}%`} />
                                 <Bar dataKey="rate" name="Taux de réussite" fill="#059669" radius={[4, 4, 0, 0]} />
@@ -155,7 +137,7 @@ export default function Academic({
                         <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={averageBySubject}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#e6eaef" />
-                                <XAxis dataKey="subject" tick={{ fontSize: 10 }} stroke="#6c86a3" interval={0} angle={-15} textAnchor="end" height={60} />
+                                <XAxis dataKey="subject" tick={{ fontSize: 10 }} stroke="#6c86a3" interval={0} tickFormatter={(value) => axisLabel(value, compact, 12)} angle={compact ? -40 : -15} textAnchor="end" height={compact ? 80 : 60} />
                                 <YAxis domain={[0, 20]} tick={{ fontSize: 12 }} stroke="#6c86a3" />
                                 <Tooltip />
                                 <Bar dataKey="average" name="Moyenne /20" fill="#243a52" radius={[4, 4, 0, 0]} />

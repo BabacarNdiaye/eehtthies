@@ -2,7 +2,7 @@ import { readRecents } from '@/lib/adminMemory';
 import { matchPages, matchUtilityPages, NavGroup, QuickAction, searchTokens, startsAllWords, visibleQuickActions } from '@/lib/adminNav';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { router } from '@inertiajs/react';
-import { CornerDownLeft, LucideIcon, Search } from 'lucide-react';
+import { CornerDownLeft, IdCard, LoaderCircle, LucideIcon, Megaphone, Receipt, Search, UsersRound } from 'lucide-react';
 import { KeyboardEvent, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 interface Props {
@@ -17,9 +17,43 @@ interface Entry {
     label: string;
     hint?: string;
     icon: LucideIcon;
-    /** Nom de la route à ouvrir. */
+    /** Nom de la route à ouvrir (page ou action). */
+    href?: string;
+    /** Adresse à ouvrir (fiche trouvée par la recherche d'enregistrements). */
+    path?: string;
+}
+
+/** Une fiche renvoyée par `admin.search`. */
+interface RecordHit {
+    id: number;
+    label: string;
+    hint: string;
     href: string;
 }
+
+interface Records {
+    students: RecordHit[];
+    teachers: RecordHit[];
+    candidatures: RecordHit[];
+    invoices: RecordHit[];
+}
+
+const noRecords: Records = { students: [], teachers: [], candidatures: [], invoices: [] };
+
+const recordFamilies: { key: keyof Records; title: string; icon: LucideIcon }[] = [
+    { key: 'students', title: 'Élèves', icon: IdCard },
+    { key: 'teachers', title: 'Enseignants', icon: UsersRound },
+    { key: 'candidatures', title: 'Candidatures', icon: Megaphone },
+    { key: 'invoices', title: 'Factures', icon: Receipt },
+];
+
+/** Permissions qui ouvrent la recherche de fiches (elles décident aussi côté serveur, famille par famille), avec un exemple pour l'invite. */
+const recordPermissions: { permission: string; example: string }[] = [
+    { permission: 'voir_eleves', example: 'un élève' },
+    { permission: 'voir_enseignants', example: 'un enseignant' },
+    { permission: 'voir_candidatures', example: 'une candidature' },
+    { permission: 'voir_comptabilite', example: 'une facture' },
+];
 
 interface Section {
     title: string;
@@ -34,7 +68,7 @@ const fromAction = (action: QuickAction, prefix: string): Entry => ({
 });
 
 /** Sections affichées pour une saisie : récents et actions rapides quand elle est vide, sinon actions et pages qui correspondent. */
-function buildSections(groups: NavGroup[], permissions: readonly string[], query: string): Section[] {
+function buildSections(groups: NavGroup[], permissions: readonly string[], query: string, records: Records): Section[] {
     const actions = visibleQuickActions(permissions);
     const trimmed = query.trim();
 
@@ -69,9 +103,15 @@ function buildSections(groups: NavGroup[], permissions: readonly string[], query
         ...matchUtilityPages(trimmed).map((item) => ({ id: `page:${item.href}`, label: item.label, icon: item.icon, href: item.href })),
     ];
 
+    const found: Section[] = recordFamilies.map(({ key, title, icon }) => ({
+        title,
+        entries: records[key].map((hit) => ({ id: `${key}:${hit.id}`, label: hit.label, hint: hit.hint || undefined, icon, path: hit.href })),
+    }));
+
     return [
         { title: 'Actions rapides', entries: matchingActions.map((action) => fromAction(action, 'action')) },
         { title: 'Pages', entries: pages },
+        ...found,
     ].filter((section) => section.entries.length > 0);
 }
 
@@ -80,6 +120,10 @@ function Body({ onClose, groups, permissions }: Omit<Props, 'open'>) {
     const inputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState('');
     const [active, setActive] = useState(0);
+    const [records, setRecords] = useState<Records>(noRecords);
+    const [searching, setSearching] = useState(false);
+    const searchable = recordPermissions.filter(({ permission }) => permissions.includes(permission));
+    const canSearchRecords = searchable.length > 0;
 
     // Sur un écran tactile, headlessui ne donne pas le focus au champ (le clavier s'ouvrirait de lui-même) et le
     // garde sur la fenêtre. Ici l'utilisateur vient de toucher « Rechercher » pour écrire : on le donne nous-mêmes,
@@ -88,14 +132,50 @@ function Body({ onClose, groups, permissions }: Omit<Props, 'open'>) {
         queueMicrotask(() => inputRef.current?.focus());
     }, []);
 
+    // Fiches (élèves, enseignants, candidatures, factures) : le serveur filtre par permission. Anti-rebond de
+    // 250 ms, et la requête précédente est abandonnée dès qu'on retape : une réponse tardive n'écrase jamais une plus récente.
+    useEffect(() => {
+        const trimmed = query.trim();
+
+        if (!canSearchRecords || trimmed.length < 2) {
+            setRecords(noRecords);
+            setSearching(false);
+
+            return;
+        }
+
+        const controller = new AbortController();
+        setSearching(true);
+
+        const timer = window.setTimeout(async () => {
+            try {
+                const response = await window.axios.get<Records>(route('admin.search'), { params: { q: trimmed }, signal: controller.signal });
+
+                if (!controller.signal.aborted) {
+                    setRecords(response.data);
+                    setActive(0);
+                }
+            } catch {
+                if (!controller.signal.aborted) setRecords(noRecords);
+            } finally {
+                if (!controller.signal.aborted) setSearching(false);
+            }
+        }, 250);
+
+        return () => {
+            controller.abort();
+            window.clearTimeout(timer);
+        };
+    }, [query, canSearchRecords]);
+
     const sections = useMemo(() => {
         let index = 0;
 
-        return buildSections(groups, permissions, query).map((section) => ({
+        return buildSections(groups, permissions, query, records).map((section) => ({
             title: section.title,
             entries: section.entries.map((entry) => ({ ...entry, index: index++ })),
         }));
-    }, [groups, permissions, query]);
+    }, [groups, permissions, query, records]);
 
     const flat = useMemo(() => sections.flatMap((section) => section.entries), [sections]);
     const optionId = (index: number) => `${listId}-option-${index}`;
@@ -107,7 +187,7 @@ function Body({ onClose, groups, permissions }: Omit<Props, 'open'>) {
 
     const go = (entry: Entry) => {
         onClose();
-        router.visit(route(entry.href));
+        router.visit(entry.path ?? route(entry.href as string));
     };
 
     const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -150,7 +230,7 @@ function Body({ onClose, groups, permissions }: Omit<Props, 'open'>) {
                         setActive(0);
                     }}
                     onKeyDown={onKeyDown}
-                    placeholder="Rechercher une page, une action…"
+                    placeholder={canSearchRecords ? `Rechercher une page, ${searchable[0].example}…` : 'Rechercher une page, une action…'}
                     className="h-14 min-w-0 flex-1 border-0 bg-transparent p-0 text-base text-ink-900 placeholder:text-ink-500 focus:ring-0"
                 />
                 <button
@@ -166,7 +246,11 @@ function Body({ onClose, groups, permissions }: Omit<Props, 'open'>) {
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-2 sm:max-h-[50vh]">
                 {flat.length === 0 ? (
                     <p className="px-3 py-8 text-center text-sm text-ink-500">
-                        {query.trim() ? 'Aucun résultat pour cette recherche.' : "Tapez le nom d'une rubrique ou d'une action."}
+                        {searching
+                            ? 'Recherche en cours…'
+                            : query.trim()
+                              ? 'Aucun résultat pour cette recherche.'
+                              : "Tapez le nom d'une rubrique ou d'une action."}
                     </p>
                 ) : (
                     <ul id={listId} role="listbox" aria-label="Résultats">
@@ -212,8 +296,14 @@ function Body({ onClose, groups, permissions }: Omit<Props, 'open'>) {
                 )}
             </div>
 
+            {searching && flat.length > 0 && (
+                <p className="flex shrink-0 items-center gap-2 border-t border-ink-100 px-4 py-2 text-xs text-ink-500" aria-hidden="true">
+                    <LoaderCircle className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" /> Recherche des fiches…
+                </p>
+            )}
+
             <p role="status" className="sr-only">
-                {flat.length} résultat{flat.length > 1 ? 's' : ''}
+                {searching ? 'Recherche en cours' : `${flat.length} résultat${flat.length > 1 ? 's' : ''}`}
             </p>
 
             <div className="hidden shrink-0 items-center gap-4 border-t border-ink-100 px-4 py-2.5 text-xs text-ink-500 sm:flex">
