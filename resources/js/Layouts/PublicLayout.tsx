@@ -1,39 +1,42 @@
+import BottomBar, { BarTab } from '@/Components/Portal/BottomBar';
+import MobileFooter from '@/Components/Public/MobileFooter';
+import PublicMenuSheet from '@/Components/Public/PublicMenuSheet';
+import SiteLogo from '@/Components/SiteLogo';
+import { mainLinks } from '@/lib/publicNav';
+import { PageProps } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
     ChevronLeft,
     Clock,
     Facebook,
+    FilePenLine,
+    GraduationCap,
     Home,
     Instagram,
+    LayoutGrid,
     Linkedin,
     Mail,
     MapPin,
-    Menu,
     MessageCircle,
+    Newspaper,
     Phone,
-    User,
-    X,
     Youtube,
 } from 'lucide-react';
-import { PropsWithChildren, useEffect, useState } from 'react';
-import { PageProps } from '@/types';
-import SiteLogo from '@/Components/SiteLogo';
+import { PropsWithChildren, useCallback, useEffect, useState } from 'react';
 
-const navigation = [
-    { name: 'Accueil', href: 'home', active: (c: string) => c === 'home' },
-    { name: "À propos", href: 'pages.about', active: (c: string) => c === 'pages.about' },
-    { name: 'Formations', href: 'formations.index', active: (c: string) => c.startsWith('formations.') },
-    { name: 'Actualités', href: 'news.index', active: (c: string) => c.startsWith('news.') },
-    { name: 'Événements', href: 'events.index', active: (c: string) => c.startsWith('events.') },
-    { name: 'Galerie', href: 'gallery.index', active: (c: string) => c.startsWith('gallery.') },
-    { name: 'Contact', href: 'pages.contact', active: (c: string) => c === 'pages.contact' },
-];
-
-export default function PublicLayout({ children }: PropsWithChildren) {
-    const { props } = usePage<PageProps>();
+/**
+ * Coque des pages publiques. Sous `lg` (téléphone et tablette) : en-tête d'une ligne, barre du bas flottante
+ * (Accueil · Formations · Candidater · Actualités · Menu), feuille Menu qui regroupe toutes les rubriques et pied de
+ * page compact. À partir de `lg` : l'en-tête, le menu et le pied de page d'ordinateur.
+ * `hideBar` retire la barre du bas (page de saisie en étapes : candidature).
+ */
+export default function PublicLayout({ children, hideBar = false }: PropsWithChildren<{ hideBar?: boolean }>) {
+    const { props } = usePage<PageProps<{ formation?: { slug?: string } }>>();
     const { auth, siteSettings, flash } = props;
-    const [mobileOpen, setMobileOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const closeMenu = useCallback(() => setMenuOpen(false), []);
+    const current = (route().current() as string | undefined) ?? '';
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 12);
@@ -42,18 +45,47 @@ export default function PublicLayout({ children }: PropsWithChildren) {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
+    // <body data-site-bar> : le CSS réserve alors la place de la barre du bas (variable --portal-bar-h) aux éléments
+    // flottants — bouton EEHT Connect, bannière d'installation.
+    useEffect(() => {
+        if (hideBar) return;
+
+        document.body.dataset.siteBar = '';
+
+        return () => {
+            delete document.body.dataset.siteBar;
+        };
+    }, [hideBar]);
+
+    // Sur une fiche formation, « Candidater » présélectionne la formation consultée.
+    const formationSlug = current === 'formations.show' ? props.formation?.slug : undefined;
+
+    const tabs: BarTab[] = [
+        { key: 'home', label: 'Accueil', icon: Home, href: route('home'), active: current === 'home' },
+        { key: 'formations', label: 'Formations', icon: GraduationCap, href: route('formations.index'), active: current.startsWith('formations.') },
+        { key: 'news', label: 'Actualités', icon: Newspaper, href: route('news.index'), active: current.startsWith('news.') },
+        { key: 'menu', label: 'Menu', icon: LayoutGrid, onClick: () => setMenuOpen(true), active: menuOpen },
+    ];
+    const center: BarTab = {
+        key: 'apply',
+        label: 'Candidater',
+        icon: FilePenLine,
+        href: route('candidature.create', formationSlug ? { formation: formationSlug } : undefined),
+    };
+    const phoneHref = siteSettings.site_phone ? `tel:${siteSettings.site_phone.replace(/[^\d+]/g, '')}` : null;
+
     return (
         <div className="flex min-h-screen flex-col bg-white text-ink-900">
             <header
-                className={`sticky top-0 z-50 border-b border-ink-100/60 bg-white shadow-sm transition-all lg:border-b-0 lg:backdrop-blur ${
+                className={`sticky top-0 z-40 border-b border-ink-100/60 bg-white shadow-sm transition-all lg:border-b-0 lg:backdrop-blur ${
                     scrolled
                         ? 'lg:bg-white/95 lg:shadow-sm'
                         : 'lg:bg-white/70 lg:shadow-none'
                 }`}
             >
-                <div className="border-b border-ink-100/60 bg-ink-900 text-ink-100">
+                <div className="hidden border-b border-ink-100/60 bg-ink-900 text-ink-100 lg:block">
                     <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-xs sm:px-6 lg:px-8">
-                        <div className="hidden items-center gap-4 sm:flex">
+                        <div className="flex items-center gap-4">
                             {siteSettings.site_phone && (
                                 <span className="inline-flex items-center gap-1.5">
                                     <Phone className="h-3 w-3 text-gold-400" />
@@ -69,27 +101,27 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                         </div>
                         <div className="flex items-center gap-3">
                             {siteSettings.facebook_url && (
-                                <a href={siteSettings.facebook_url} target="_blank" rel="noreferrer" className="text-ink-200 hover:text-gold-400">
+                                <a href={siteSettings.facebook_url} target="_blank" rel="noreferrer" aria-label="Facebook" className="text-ink-200 hover:text-gold-400">
                                     <Facebook className="h-3.5 w-3.5" />
                                 </a>
                             )}
                             {siteSettings.instagram_url && (
-                                <a href={siteSettings.instagram_url} target="_blank" rel="noreferrer" className="text-ink-200 hover:text-gold-400">
+                                <a href={siteSettings.instagram_url} target="_blank" rel="noreferrer" aria-label="Instagram" className="text-ink-200 hover:text-gold-400">
                                     <Instagram className="h-3.5 w-3.5" />
                                 </a>
                             )}
                             {siteSettings.whatsapp_url && (
-                                <a href={siteSettings.whatsapp_url} target="_blank" rel="noreferrer" className="text-ink-200 hover:text-gold-400">
+                                <a href={siteSettings.whatsapp_url} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="text-ink-200 hover:text-gold-400">
                                     <MessageCircle className="h-3.5 w-3.5" />
                                 </a>
                             )}
                             {siteSettings.linkedin_url && (
-                                <a href={siteSettings.linkedin_url} target="_blank" rel="noreferrer" className="text-ink-200 hover:text-gold-400">
+                                <a href={siteSettings.linkedin_url} target="_blank" rel="noreferrer" aria-label="LinkedIn" className="text-ink-200 hover:text-gold-400">
                                     <Linkedin className="h-3.5 w-3.5" />
                                 </a>
                             )}
                             {siteSettings.youtube_url && (
-                                <a href={siteSettings.youtube_url} target="_blank" rel="noreferrer" className="text-ink-200 hover:text-gold-400">
+                                <a href={siteSettings.youtube_url} target="_blank" rel="noreferrer" aria-label="YouTube" className="text-ink-200 hover:text-gold-400">
                                     <Youtube className="h-3.5 w-3.5" />
                                 </a>
                             )}
@@ -97,13 +129,13 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                     </div>
                 </div>
 
-                <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+                <nav aria-label="Navigation du site" className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8 lg:py-4">
                     <div className="flex items-center gap-1.5">
-                        {!route().current('home') && (
+                        {current !== 'home' && (
                             <button
                                 onClick={() => window.history.back()}
                                 aria-label="Retour"
-                                className="-ml-1.5 flex h-9 w-9 items-center justify-center rounded-full text-ink-700 hover:bg-ink-100 lg:hidden"
+                                className="-ml-1.5 flex h-10 w-10 items-center justify-center rounded-full text-ink-700 hover:bg-ink-100 lg:hidden"
                             >
                                 <ChevronLeft className="h-5 w-5" />
                             </button>
@@ -125,17 +157,17 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                     </div>
 
                     <div className="hidden items-center gap-8 lg:flex">
-                        {navigation.map((item) => {
-                            const isActive = item.active(route().current() as string);
+                        {mainLinks.map((link) => {
+                            const isActive = link.match(current);
                             return (
                                 <Link
-                                    key={item.href}
-                                    href={route(item.href)}
+                                    key={link.key}
+                                    href={route(link.route)}
                                     className={`group relative py-1 text-sm font-medium transition-colors duration-150 ${
-                                        isActive ? 'text-gold-600' : 'text-ink-700 hover:text-gold-600'
+                                        isActive ? 'text-gold-700' : 'text-ink-700 hover:text-gold-700'
                                     }`}
                                 >
-                                    {item.name}
+                                    {link.label}
                                     <span
                                         className={`absolute -bottom-0.5 left-0 h-0.5 w-full origin-center bg-gold-500 transition-transform duration-300 ease-fluid ${
                                             isActive
@@ -159,7 +191,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                         ) : (
                             <Link
                                 href={route('login')}
-                                className="text-sm font-semibold text-ink-700 hover:text-gold-600"
+                                className="text-sm font-semibold text-ink-700 hover:text-gold-700"
                             >
                                 Connexion
                             </Link>
@@ -172,71 +204,20 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                         </Link>
                     </div>
 
-                    <button
-                        className="lg:hidden"
-                        onClick={() => setMobileOpen(true)}
-                        aria-label="Ouvrir le menu"
-                    >
-                        <Menu className="h-6 w-6 text-ink-900" />
-                    </button>
+                    {phoneHref && (
+                        <a
+                            href={phoneHref}
+                            aria-label="Appeler l'école"
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-ink-900 text-gold-400 lg:hidden"
+                        >
+                            <Phone className="h-4 w-4" />
+                        </a>
+                    )}
                 </nav>
-
-                {mobileOpen && (
-                    <div className="fixed inset-0 z-50 bg-ink-950/60 lg:hidden">
-                        <div className="absolute inset-y-0 right-0 w-full max-w-xs bg-white p-6 shadow-xl">
-                            <div className="mb-8 flex items-center justify-between">
-                                <span className="font-serif text-lg font-bold">
-                                    Menu
-                                </span>
-                                <button onClick={() => setMobileOpen(false)}>
-                                    <X className="h-6 w-6" />
-                                </button>
-                            </div>
-                            <div className="flex flex-col gap-4">
-                                {navigation.map((item) => (
-                                    <Link
-                                        key={item.href}
-                                        href={route(item.href)}
-                                        onClick={() => setMobileOpen(false)}
-                                        className={`text-base font-medium ${
-                                            item.active(route().current() as string)
-                                                ? 'text-gold-600'
-                                                : 'text-ink-800'
-                                        }`}
-                                    >
-                                        {item.name}
-                                    </Link>
-                                ))}
-                                <hr className="my-2 border-ink-100" />
-                                {auth.user ? (
-                                    <Link
-                                        href={route('dashboard')}
-                                        className="text-base font-semibold text-ink-900"
-                                    >
-                                        Mon espace
-                                    </Link>
-                                ) : (
-                                    <Link
-                                        href={route('login')}
-                                        className="text-base font-semibold text-ink-900"
-                                    >
-                                        Connexion
-                                    </Link>
-                                )}
-                                <Link
-                                    href={route('candidature.create')}
-                                    className="rounded-full bg-gold-500 px-5 py-3 text-center text-sm font-semibold text-ink-900"
-                                >
-                                    Candidater maintenant
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </header>
 
             {flash?.success && (
-                <div className="bg-emerald-600 px-4 py-2 text-center text-sm text-white">
+                <div className="bg-emerald-700 px-4 py-2 text-center text-sm text-white">
                     {flash.success}
                 </div>
             )}
@@ -246,37 +227,16 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                 </div>
             )}
 
-            <main className="flex-1 pb-16 lg:pb-0">{children}</main>
+            <main className="flex-1">{children}</main>
 
-            <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-ink-100 bg-white shadow-[0_-2px_8px_rgba(0,0,0,0.06)] lg:hidden">
-                <Link
-                    href={route('home')}
-                    className={`flex flex-col items-center gap-1 py-2.5 text-xs font-medium ${
-                        route().current('home') ? 'text-gold-600' : 'text-ink-500'
-                    }`}
-                >
-                    <Home className="h-5 w-5" />
-                    Accueil
-                </Link>
-                <button
-                    onClick={() => window.history.back()}
-                    className="flex flex-col items-center gap-1 py-2.5 text-xs font-medium text-ink-500"
-                >
-                    <ChevronLeft className="h-5 w-5" />
-                    Retour
-                </button>
-                <Link
-                    href={auth.user ? route('dashboard') : route('login')}
-                    className={`flex flex-col items-center gap-1 py-2.5 text-xs font-medium ${
-                        route().current('dashboard') || route().current('login')
-                            ? 'text-gold-600'
-                            : 'text-ink-500'
-                    }`}
-                >
-                    <User className="h-5 w-5" />
-                    Mon compte
-                </Link>
-            </nav>
+            <MobileFooter />
+
+            {!hideBar && (
+                <>
+                    <BottomBar tabs={tabs} center={center} />
+                    <PublicMenuSheet open={menuOpen} onClose={closeMenu} />
+                </>
+            )}
 
             <footer className="hidden bg-ink-950 text-ink-200 lg:block">
                 <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-16 sm:px-6 lg:grid-cols-5 lg:px-8">
@@ -299,13 +259,13 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                             Navigation
                         </h3>
                         <ul className="space-y-2.5 text-sm text-ink-400">
-                            {navigation.map((item) => (
-                                <li key={item.href}>
+                            {mainLinks.map((link) => (
+                                <li key={link.key}>
                                     <Link
-                                        href={route(item.href)}
+                                        href={route(link.route)}
                                         className="hover:text-white"
                                     >
-                                        {item.name}
+                                        {link.label}
                                     </Link>
                                 </li>
                             ))}

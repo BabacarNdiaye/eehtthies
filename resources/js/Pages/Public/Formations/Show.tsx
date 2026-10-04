@@ -251,7 +251,7 @@ export default function FormationsShow({
             {hasPresentation && (
                 <section id="presentation" className="scroll-mt-[160px] py-16 sm:py-20">
                     <Reveal className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-600">
+                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
                             Présentation
                         </span>
                         <h2 className="mt-2 font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
@@ -306,7 +306,7 @@ export default function FormationsShow({
             {hasAdmission && (
                 <section id="admission" className="scroll-mt-[160px] bg-ink-50/70 py-16 sm:py-20">
                     <Reveal className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-600">
+                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
                             Rejoindre la promotion
                         </span>
                         <h2 className="mt-2 flex items-center gap-2 font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
@@ -346,7 +346,7 @@ export default function FormationsShow({
                 <section id="programme" className="scroll-mt-[160px] py-16 sm:py-20">
                     <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                         <Reveal>
-                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-600">
+                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
                                 Contenu de la formation
                             </span>
                             <h2 className="mt-2 flex items-center gap-2 font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
@@ -419,7 +419,7 @@ export default function FormationsShow({
                 <section id="debouches" className="scroll-mt-[160px] bg-ink-50/70 py-16 sm:py-20">
                     <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                         <Reveal>
-                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-600">
+                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
                                 Après la formation
                             </span>
                             <h2 className="mt-2 flex items-center gap-2 font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
@@ -458,7 +458,7 @@ export default function FormationsShow({
                 <section id="temoignages" className="scroll-mt-[160px] py-16 sm:py-20">
                     <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                         <Reveal>
-                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-600">
+                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
                                 Ils en parlent
                             </span>
                             <h2 className="mt-2 font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
@@ -503,7 +503,7 @@ export default function FormationsShow({
             <section id="rentree-contact" className="scroll-mt-[160px] bg-ink-50/70 py-16 sm:py-20">
                 <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                     <Reveal>
-                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-600">
+                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-700">
                             Prochaine étape
                         </span>
                         <h2 className="mt-2 font-serif text-2xl font-bold text-ink-900 sm:text-3xl">

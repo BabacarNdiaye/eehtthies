@@ -78,7 +78,7 @@ export default function Index({ alumni }: { alumni: Alumnus[] }) {
                                                 href={alumnus.linkedin_url}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-600 hover:text-gold-700"
+                                                className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-700 hover:text-gold-800"
                                             >
                                                 <Linkedin className="h-3.5 w-3.5" /> Profil LinkedIn
                                             </a>

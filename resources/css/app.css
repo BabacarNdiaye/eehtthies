@@ -32,13 +32,16 @@
 /* Espaces élève, enseignant et parent : sur téléphone et tablette, une barre de navigation flottante occupe le
    bas de l'écran. PortalLayout pose l'attribut data-portal sur <body> ; --portal-bar-h donne alors la hauteur
    à réserver (marge de sécurité iOS comprise) aux éléments flottants — bannière d'installation, appel entrant —
-   et le bouton EEHT Connect, remplacé par l'onglet « Messages », est masqué. */
+   et le bouton EEHT Connect, remplacé par l'onglet « Messages », est masqué.
+   Le site public a la même barre (attribut data-site-bar, posé par PublicLayout) : le bouton EEHT Connect y reste
+   visible, simplement décalé au-dessus d'elle. */
 :root {
     --portal-bar-h: 0px;
 }
 
 @media (max-width: 1023px) {
-    body[data-portal] {
+    body[data-portal],
+    body[data-site-bar] {
         --portal-bar-h: calc(5.75rem + env(safe-area-inset-bottom, 0px));
     }
 

@@ -58,7 +58,7 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
                                                 {teacher.last_name}
                                             </h3>
                                             {teacher.specialty && (
-                                                <p className="mt-1 text-sm font-medium text-gold-600">
+                                                <p className="mt-1 text-sm font-medium text-gold-700">
                                                     {teacher.specialty}
                                                 </p>
                                             )}

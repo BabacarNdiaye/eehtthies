@@ -13,7 +13,8 @@ const appName = import.meta.env.VITE_APP_NAME || 'EEHT de Thiès';
 const loggedOut = (page: { props: unknown }) => !(page.props as { auth?: { user?: unknown } }).auth?.user;
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    // Les pages publiques nomment déjà l'école dans leur titre : on n'ajoute pas le nom une seconde fois.
+    title: (title) => (title.includes(appName) ? title : `${title} - ${appName}`),
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.tsx`,

@@ -18,7 +18,7 @@ export default function SectionHeading({
             {eyebrow && (
                 <span
                     className={`mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] ${
-                        dark ? 'text-gold-400' : 'text-gold-600'
+                        dark ? 'text-gold-400' : 'text-gold-700'
                     }`}
                 >
                     {eyebrow}
