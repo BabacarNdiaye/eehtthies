@@ -258,7 +258,7 @@ export default function PortalLayout({ title, nav, children }: PropsWithChildren
                         <div className="mx-4 mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 sm:mx-6">{flash.error}</div>
                     )}
 
-                    <main key={currentRoute} className="animate-fade-in-up flex-1 px-4 py-6 pb-[calc(var(--portal-bar-h)+1.5rem)] sm:px-6 lg:py-8 lg:pb-8">
+                    <main key={currentRoute} className="animate-fade-in-up flex-1 px-4 py-6 pb-[calc(var(--portal-bar-h)+1.5rem)] sm:px-6 lg:py-8 lg:pb-20">
                         {children}
                     </main>
                 </div>

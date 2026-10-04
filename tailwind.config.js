@@ -61,11 +61,17 @@ export default {
                     '0%': { opacity: '0', transform: 'translateY(-4px)' },
                     '100%': { opacity: '1', transform: 'translateY(0)' },
                 },
+                // La pastille « EEHT Connect » sort de son icône vers la gauche.
+                slideInRight: {
+                    '0%': { opacity: '0', transform: 'translateX(0.75rem) scale(0.96)' },
+                    '100%': { opacity: '1', transform: 'translateX(0) scale(1)' },
+                },
             },
             animation: {
                 'fade-in': 'fadeIn 0.2s ease-out',
                 'fade-in-up': 'fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
                 'collapse-in': 'collapseIn 0.2s ease-out',
+                'slide-in-right': 'slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             },
             transitionTimingFunction: {
                 fluid: 'cubic-bezier(0.16, 1, 0.3, 1)',
