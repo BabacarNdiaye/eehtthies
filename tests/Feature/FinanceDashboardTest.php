@@ -68,4 +68,29 @@ class FinanceDashboardTest extends TestCase
             ->where('desk.total', fn ($v) => (float) $v === 40000.0)
             ->has('desk.recent', 1));
     }
+
+    public function test_the_invoice_list_filters_by_status_across_all_pages_and_totals_them(): void
+    {
+        [$admin, $student, $year] = $this->bootSchool();
+
+        $paid = Invoice::create(['student_id' => $student->id, 'academic_year_id' => $year->id, 'type' => 'inscription', 'label' => 'Inscription', 'amount' => 50000]);
+        $paid->payments()->create(['amount' => 50000, 'method' => 'especes', 'paid_at' => now()]);
+        $partial = Invoice::create(['student_id' => $student->id, 'academic_year_id' => $year->id, 'type' => 'mensualite', 'period_month' => 9, 'label' => 'Sept', 'amount' => 20000]);
+        $partial->payments()->create(['amount' => 5000, 'method' => 'especes', 'paid_at' => now()]);
+        Invoice::create(['student_id' => $student->id, 'academic_year_id' => $year->id, 'type' => 'mensualite', 'period_month' => 10, 'label' => 'Oct', 'amount' => 20000]);
+
+        $this->actingAs($admin)->get(route('admin.invoices.index', ['status' => 'partielle']))->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->has('invoices.data', 1)
+            ->where('invoices.data.0.label', 'Sept')
+            ->where('stats.total', 3)
+            ->where('stats.payee', 1)
+            ->where('stats.partielle', 1)
+            ->where('stats.impayee', 1)
+            ->where('stats.invoiced', fn ($v) => (float) $v === 90000.0)
+            ->where('stats.collected', fn ($v) => (float) $v === 55000.0)
+            ->where('stats.outstanding', fn ($v) => (float) $v === 35000.0));
+
+        $this->actingAs($admin)->get(route('admin.invoices.index', ['status' => 'impayee']))->assertInertia(fn (Assert $page) => $page
+            ->has('invoices.data', 1)->where('invoices.data.0.label', 'Oct'));
+    }
 }
