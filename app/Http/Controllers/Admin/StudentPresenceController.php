@@ -84,6 +84,7 @@ class StudentPresenceController extends Controller
                     'id' => $student->id,
                     'name' => trim($student->first_name.' '.$student->last_name),
                     'matricule' => $student->matricule,
+                    'photo_url' => filled($student->photo) ? '/storage/'.ltrim($student->photo, '/') : null,
                     'class' => $student->schoolClass?->name,
                     'formation' => $student->formation?->name,
                     'last_seen_at' => $seen?->toIso8601String(),

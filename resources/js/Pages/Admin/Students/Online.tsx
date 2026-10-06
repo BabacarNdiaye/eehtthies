@@ -15,6 +15,7 @@ interface Row {
     id: number;
     name: string;
     matricule: string;
+    photo_url: string | null;
     class: string | null;
     formation: string | null;
     last_seen_at: string | null;
@@ -62,6 +63,33 @@ function ago(iso: string | null, serverTime: string, tick: number): string {
     if (seconds < 86_400) return `il y a ${Math.floor(seconds / 3600)} h`;
 
     return `le ${new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}`;
+}
+
+/**
+ * Photo de l'élève, ou ses initiales quand il n'en a pas ou que le fichier est introuvable. Décoratif : le nom est
+ * toujours écrit à côté. Un élève en ligne a un anneau vert.
+ */
+function PhotoAvatar({ student, className, rounded }: { student: Row; className: string; rounded: string }) {
+    const [broken, setBroken] = useState(false);
+    const online = student.state === 'online';
+
+    return (
+        <span className={`relative inline-flex shrink-0 ${className}`} aria-hidden="true">
+            {student.photo_url && !broken ? (
+                <img
+                    src={student.photo_url}
+                    alt=""
+                    loading="lazy"
+                    onError={() => setBroken(true)}
+                    className={`h-full w-full object-cover ${rounded} ${online ? 'ring-2 ring-emerald-400 ring-offset-2' : 'ring-1 ring-ink-200'}`}
+                />
+            ) : (
+                <span className={`flex h-full w-full items-center justify-center bg-ink-900 font-serif font-bold text-gold-300 ${rounded} ${online ? 'bg-emerald-600 text-white ring-2 ring-emerald-400 ring-offset-2' : ''}`}>
+                    {initialsOf(student.name)}
+                </span>
+            )}
+        </span>
+    );
 }
 
 function PresenceBadge({ state }: { state: PresenceState }) {
@@ -339,14 +367,7 @@ export default function Online({ students, counts, byClass, filters, formations,
                                 >
                                     <span className={`absolute inset-y-0 left-0 w-1 ${student.state === 'online' ? 'bg-emerald-500' : student.state === 'recent' ? 'bg-amber-400' : 'bg-ink-200'}`} aria-hidden="true" />
                                     <span className="relative shrink-0">
-                                        <span
-                                            className={`flex h-14 w-14 items-center justify-center rounded-2xl font-serif text-lg font-bold ${
-                                                student.state === 'online' ? 'bg-emerald-600 text-white' : 'bg-ink-900 text-gold-300'
-                                            }`}
-                                            aria-hidden="true"
-                                        >
-                                            {initialsOf(student.name)}
-                                        </span>
+                                        <PhotoAvatar student={student} className="h-14 w-14 text-lg" rounded="rounded-2xl" />
                                         {student.state === 'online' && (
                                             <span className="absolute -bottom-1 -right-1 flex h-4 w-4" aria-hidden="true">
                                                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
@@ -387,14 +408,7 @@ export default function Online({ students, counts, byClass, filters, formations,
                                 <tr key={student.id}>
                                     <td className="px-5 py-3">
                                         <Link href={route('admin.students.edit', student.id)} className="flex items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-gold-500">
-                                            <span
-                                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                                                    student.state === 'online' ? 'bg-emerald-600 text-white ring-2 ring-emerald-200' : 'bg-ink-900 text-gold-300'
-                                                }`}
-                                                aria-hidden="true"
-                                            >
-                                                {initialsOf(student.name)}
-                                            </span>
+                                            <PhotoAvatar student={student} className="h-10 w-10 text-sm" rounded="rounded-full" />
                                             <span className="min-w-0">
                                                 <span className="block font-medium text-ink-900">{student.name}</span>
                                                 <span className="block text-xs text-ink-500">{student.matricule}</span>
