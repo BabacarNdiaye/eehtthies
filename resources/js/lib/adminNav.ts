@@ -156,7 +156,7 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        label: 'Admissions & élèves',
+        label: 'Élèves & scolarité',
         icon: Users,
         items: [
             {
@@ -183,6 +183,22 @@ export const navGroups: NavGroup[] = [
                 active: (c) => c === 'admin.students.online',
                 permission: 'voir_eleves',
                 keywords: 'connectes presence connexion actifs maintenant qui est en ligne',
+            },
+            {
+                label: 'Passation de classe',
+                href: 'admin.class-promotion.index',
+                icon: ArrowUpCircle,
+                active: (c) => c.startsWith('admin.class-promotion'),
+                permission: 'modifier_eleves',
+                keywords: 'passage promotion redoublement fin d annee exclusion',
+            },
+            {
+                label: 'Diplômes & attestations',
+                href: 'admin.certificates.index',
+                icon: BadgeCheck,
+                active: (c) => c.startsWith('admin.certificates'),
+                permission: 'voir_eleves',
+                keywords: 'certificats attestations de stage remise',
             },
         ],
     },
@@ -235,10 +251,20 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        label: 'Structure pédagogique',
+        label: 'Programmes & organisation',
         icon: School,
         items: [
             {
+                section: 'Programmes',
+                label: 'Année académique',
+                href: 'admin.academic-years.index',
+                icon: CalendarDays,
+                active: (c) => c.startsWith('admin.academic-years'),
+                permission: 'voir_classes',
+                keywords: 'annee scolaire periode semestres rentree',
+            },
+            {
+                section: 'Programmes',
                 label: 'Formations',
                 href: 'admin.formations.index',
                 icon: GraduationCap,
@@ -247,6 +273,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'filieres diplomes programmes cursus',
             },
             {
+                section: 'Programmes',
                 label: 'Niveaux & règles de passage',
                 href: 'admin.formation-levels.index',
                 icon: Layers,
@@ -255,14 +282,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'progression annees passage redoublement seuils',
             },
             {
-                label: 'Classes',
-                href: 'admin.school-classes.index',
-                icon: Group,
-                active: (c) => c.startsWith('admin.school-classes'),
-                permission: 'voir_classes',
-                keywords: 'promotions groupes effectifs',
-            },
-            {
+                section: 'Programmes',
                 label: 'Matières',
                 href: 'admin.subjects.index',
                 icon: BookOpen,
@@ -271,6 +291,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'cours disciplines coefficients',
             },
             {
+                section: 'Programmes',
                 label: 'Référentiel de compétences',
                 href: 'admin.skills.index',
                 icon: Gauge,
@@ -279,12 +300,22 @@ export const navGroups: NavGroup[] = [
                 keywords: 'competences savoir-faire',
             },
             {
-                label: 'Année académique',
-                href: 'admin.academic-years.index',
-                icon: CalendarDays,
-                active: (c) => c.startsWith('admin.academic-years'),
+                section: 'Organisation',
+                label: 'Classes',
+                href: 'admin.school-classes.index',
+                icon: Group,
+                active: (c) => c.startsWith('admin.school-classes'),
                 permission: 'voir_classes',
-                keywords: 'annee scolaire periode semestres rentree',
+                keywords: 'promotions groupes effectifs',
+            },
+            {
+                section: 'Organisation',
+                label: 'Salles',
+                href: 'admin.rooms.index',
+                icon: DoorOpen,
+                active: (c) => c.startsWith('admin.rooms'),
+                permission: 'voir_salles',
+                keywords: 'locaux ateliers amphitheatre',
             },
         ],
     },
@@ -325,14 +356,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'professeurs formateurs intervenants vacataires',
             },
             {
-                label: 'Salles',
-                href: 'admin.rooms.index',
-                icon: DoorOpen,
-                active: (c) => c.startsWith('admin.rooms'),
-                permission: 'voir_salles',
-                keywords: 'locaux ateliers amphitheatre',
-            },
-            {
                 label: 'Bibliothèque',
                 href: 'admin.library.index',
                 icon: Library,
@@ -343,10 +366,11 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        label: 'Évaluations & diplômes',
+        label: 'Évaluations & conseils',
         icon: Award,
         items: [
             {
+                section: 'Notes & bulletins',
                 label: 'Examens & devoirs',
                 href: 'admin.exams.index',
                 icon: PenSquare,
@@ -355,6 +379,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'epreuves controles notes interrogations compositions',
             },
             {
+                section: 'Notes & bulletins',
                 label: 'Évaluations de compétences',
                 href: 'admin.skill-assessments.index',
                 icon: ListChecks,
@@ -363,6 +388,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'competences fiches grilles',
             },
             {
+                section: 'Notes & bulletins',
                 label: 'Bulletins',
                 href: 'admin.report-cards.index',
                 icon: ScrollText,
@@ -371,22 +397,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'releves notes moyennes semestre',
             },
             {
-                label: 'Passation de classe',
-                href: 'admin.class-promotion.index',
-                icon: ArrowUpCircle,
-                active: (c) => c.startsWith('admin.class-promotion'),
-                permission: 'modifier_eleves',
-                keywords: 'passage promotion redoublement fin d annee exclusion',
-            },
-            {
-                label: 'Diplômes & attestations',
-                href: 'admin.certificates.index',
-                icon: BadgeCheck,
-                active: (c) => c.startsWith('admin.certificates'),
-                permission: 'voir_eleves',
-                keywords: 'certificats attestations de stage remise',
-            },
-            {
+                section: 'Conseils de classe',
                 label: 'Conseils de classe',
                 href: 'admin.councils.index',
                 icon: Gavel,
@@ -395,6 +406,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'conseil de classe deliberation decisions proces verbal pv seance appreciations',
             },
             {
+                section: 'Conseils de classe',
                 label: 'Actions de suivi',
                 href: 'admin.follow-ups.index',
                 icon: ClipboardList,
@@ -403,6 +415,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'conseil de classe suivi soutien entretien famille echeance responsable',
             },
             {
+                section: 'Conseils de classe',
                 label: 'Bilan des conseils',
                 href: 'admin.council-dashboard.index',
                 icon: ChartNoAxesCombined,
@@ -411,6 +424,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'tableau de bord direction conseils de classe indicateurs decisions taux reussite actions de suivi',
             },
             {
+                section: 'Conseils de classe',
                 label: 'Réglages des conseils',
                 href: 'admin.council-settings.index',
                 icon: SlidersHorizontal,
