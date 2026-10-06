@@ -8,7 +8,7 @@ import { SessionDecisionType } from '@/Components/Council/DecisionPanel';
 import { SessionVote } from '@/Components/Council/VotePanel';
 import { confirmAction } from '@/lib/confirm';
 import { Head, Link, router } from '@inertiajs/react';
-import { AlertTriangle, CalendarClock, Camera, Copy, FileDown, FileText, History, ListChecks, Mail, MessageCircle, Pencil, Play, Send, Trash2, Undo2, Video } from 'lucide-react';
+import { AlertTriangle, CalendarClock, CalendarDays, Camera, ChevronRight, Copy, FileDown, FileText, GraduationCap, History, ListChecks, Mail, MapPin, MessageCircle, Pencil, Play, Send, Trash2, TrendingUp, Undo2, UserRound, Users, Video } from 'lucide-react';
 import { useState } from 'react';
 
 interface StudentRow {
@@ -85,13 +85,44 @@ interface Props {
 const fr = (value: number | null, digits = 2) => (value === null ? '—' : value.toLocaleString('fr-FR', { maximumFractionDigits: digits }));
 const keep = { preserveScroll: true } as const;
 
-function Stat({ label, value }: { label: string; value: string }) {
+const initials = (name: string) =>
+    name
+        .split(/[\s-]+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase();
+
+type Tone = 'neutral' | 'good' | 'warn' | 'bad';
+
+const STAT_TONES: Record<Tone, string> = {
+    neutral: 'text-ink-900',
+    good: 'text-emerald-700',
+    warn: 'text-amber-700',
+    bad: 'text-red-700',
+};
+
+function Stat({ label, value, icon: Icon, tone = 'neutral', note }: { label: string; value: string; icon: typeof Users; tone?: Tone; note?: string }) {
     return (
-        <div>
-            <dt className="text-xs text-ink-500">{label}</dt>
-            <dd className="font-serif text-2xl font-bold text-ink-900">{value}</dd>
+        <div className="rounded-xl border border-ink-100 bg-white p-4 shadow-soft">
+            <dt className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wider text-ink-500">
+                {label}
+                <Icon className="h-4 w-4 text-ink-300" aria-hidden="true" />
+            </dt>
+            <dd className={`mt-2 font-serif text-3xl font-bold leading-none ${STAT_TONES[tone]}`}>{value}</dd>
+            {note && <p className="mt-1.5 text-xs text-ink-500">{note}</p>}
         </div>
     );
+}
+
+/** Moyenne d'un élève : puce colorée (sous 10 = rouge) ; la valeur reste écrite. */
+function AverageChip({ value }: { value: number | null }) {
+    if (value === null) return <span className="text-ink-400">—</span>;
+
+    const tone = value < 10 ? 'bg-red-50 text-red-800 ring-red-600/20' : value >= 14 ? 'bg-emerald-50 text-emerald-800 ring-emerald-600/20' : 'bg-ink-50 text-ink-800 ring-ink-500/20';
+
+    return <span className={`inline-flex min-w-[3.25rem] justify-center rounded-lg px-2 py-1 text-sm font-semibold tabular-nums ring-1 ring-inset ${tone}`}>{fr(value)}</span>;
 }
 
 export default function Show({ council, students, members, summary, attendances, preCouncil, gradesChanged, followUpsCount, decisionTypes, categories, appeals, appealDeadline, terms, votes, familyNotices, can }: Props) {
@@ -110,92 +141,143 @@ export default function Show({ council, students, members, summary, attendances,
     const button = 'inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold';
     const secondary = `${button} border border-ink-200 bg-white text-ink-700 hover:bg-ink-50`;
     const primary = `${button} bg-ink-900 text-white hover:bg-ink-800`;
+    // Sur le bandeau sombre : boutons translucides, action principale en or.
+    const heroSecondary = `${button} border border-white/15 bg-white/10 text-white backdrop-blur transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400`;
+    const heroPrimary = `${button} bg-gold-500 text-ink-950 shadow-sm transition hover:bg-gold-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white`;
 
     return (
         <AdminLayout>
             <Head title={`Conseil ${council.class ?? ''}`} />
 
-            <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0">
-                    <p className="text-sm text-ink-500">
-                        <Link href={route('admin.councils.index')} className="hover:underline">
-                            Conseils de classe
-                        </Link>
-                    </p>
-                    <h1 className="font-serif text-2xl font-bold text-ink-900">
-                        {council.class} · {council.term}
-                    </h1>
-                    <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-ink-600">
-                        <CouncilStatusBadge status={status} label={council.status_label} />
-                        {council.sitting && (
-                            <Link href={route('admin.council-sittings.show', council.sitting.id)} className="font-semibold text-ink-800 underline">
-                                {council.sitting.label}
-                            </Link>
-                        )}
-                        <span>{council.year}</span>
-                        {council.is_end_of_year && <span>· Fin d’année</span>}
-                        <span>· {council.scheduled_at ? new Date(council.scheduled_at).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' }) : 'date à fixer'}</span>
-                        {council.room && <span>· {council.room}</span>}
-                    </p>
+            <header className="relative mb-6 overflow-hidden rounded-2xl bg-ink-900 p-6 text-white shadow-elevated sm:p-8">
+                <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gold-500/10 blur-2xl" aria-hidden="true" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gold-500/60 to-transparent" aria-hidden="true" />
+
+                <nav aria-label="Fil d’Ariane" className="relative flex items-center gap-1.5 text-sm text-ink-300">
+                    <Link href={route('admin.councils.index')} className="rounded outline-none hover:text-white hover:underline focus-visible:ring-2 focus-visible:ring-gold-400">
+                        Conseils de classe
+                    </Link>
+                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span aria-current="page" className="text-ink-100">
+                        {council.class}
+                    </span>
+                </nav>
+
+                <div className="relative mt-4 flex flex-wrap items-start justify-between gap-x-8 gap-y-5">
+                    <div className="min-w-0 flex-1 basis-80">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <h1 className="font-serif text-3xl font-bold leading-tight sm:text-4xl">{council.class}</h1>
+                            <CouncilStatusBadge status={status} label={council.status_label} />
+                        </div>
+                        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-base text-ink-200">
+                            <GraduationCap className="h-4 w-4 text-gold-300" aria-hidden="true" />
+                            {council.formation ?? 'Sans formation'}
+                            <span aria-hidden="true">·</span>
+                            {council.term}
+                            <span aria-hidden="true">·</span>
+                            {council.year}
+                            {council.is_end_of_year && <span className="rounded-md bg-gold-500/20 px-2 py-0.5 text-xs font-semibold text-gold-200 ring-1 ring-inset ring-gold-400/30">Fin d’année</span>}
+                        </p>
+
+                        <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-200">
+                            <div className="flex items-center gap-2">
+                                <dt className="sr-only">Date</dt>
+                                <CalendarDays className="h-4 w-4 text-ink-400" aria-hidden="true" />
+                                <dd>{council.scheduled_at ? new Date(council.scheduled_at).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' }) : 'Date à fixer'}</dd>
+                            </div>
+                            {council.room && (
+                                <div className="flex items-center gap-2">
+                                    <dt className="sr-only">Salle</dt>
+                                    <MapPin className="h-4 w-4 text-ink-400" aria-hidden="true" />
+                                    <dd>{council.room}</dd>
+                                </div>
+                            )}
+                            <div className="flex items-center gap-2">
+                                <dt className="sr-only">Président</dt>
+                                <UserRound className="h-4 w-4 text-ink-400" aria-hidden="true" />
+                                <dd>{council.president ?? 'Président à désigner'}</dd>
+                            </div>
+                            {council.main_teacher && (
+                                <div className="flex items-center gap-2">
+                                    <dt className="text-ink-400">Prof. principal</dt>
+                                    <dd>{council.main_teacher}</dd>
+                                </div>
+                            )}
+                            {council.sitting && (
+                                <div className="flex items-center gap-2">
+                                    <dt className="text-ink-400">Séance</dt>
+                                    <dd>
+                                        <Link href={route('admin.council-sittings.show', council.sitting.id)} className="font-semibold text-gold-300 underline-offset-2 hover:underline">
+                                            {council.sitting.label}
+                                        </Link>
+                                    </dd>
+                                </div>
+                            )}
+                        </dl>
+                    </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                    {can.update && (
-                        <Link href={route('admin.councils.edit', council.id)} className={secondary}>
-                            <Pencil className="h-4 w-4" aria-hidden="true" /> Modifier
+                <div className="relative mt-6 flex flex-wrap gap-2 border-t border-white/10 pt-5">
+                    {status !== 'draft' && status !== 'scheduled' && (
+                        <Link href={route('council.session.show', council.id)} className={status === 'in_session' ? heroPrimary : heroSecondary}>
+                            <Play className="h-4 w-4" aria-hidden="true" /> {status === 'in_session' ? 'Reprendre la séance' : 'Voir la séance'}
                         </Link>
-                    )}
-                    {can.delete && (
-                        <button type="button" className={`${secondary} text-red-700`} onClick={() => act('admin.councils.destroy', 'Supprimer ce conseil en brouillon ? Cette action est irréversible.', 'delete')}>
-                            <Trash2 className="h-4 w-4" aria-hidden="true" /> Supprimer
-                        </button>
-                    )}
-                    {can.schedule && status === 'draft' && (
-                        <button type="button" className={primary} onClick={() => act('admin.councils.schedule', null)}>
-                            <CalendarClock className="h-4 w-4" aria-hidden="true" /> Programmer
-                        </button>
-                    )}
-                    {can.schedule && status === 'scheduled' && (
-                        <>
-                            <button type="button" className={secondary} onClick={() => act('admin.councils.snapshot', null)}>
-                                <Camera className="h-4 w-4" aria-hidden="true" /> Rafraîchir la photo
-                            </button>
-                            <button type="button" className={secondary} onClick={() => act('admin.councils.unschedule', 'Annuler la programmation ? Le conseil repasse en brouillon.')}>
-                                <Undo2 className="h-4 w-4" aria-hidden="true" /> Annuler la programmation
-                            </button>
-                        </>
                     )}
                     {can.conduct && status === 'scheduled' && (
                         <button
                             type="button"
-                            className={primary}
+                            className={heroPrimary}
                             onClick={() => act('admin.councils.start', 'Ouvrir la séance ? La photo des données sera reprise une dernière fois puis figée.')}
                         >
                             <Play className="h-4 w-4" aria-hidden="true" /> Démarrer le conseil
                         </button>
                     )}
+                    {can.schedule && status === 'draft' && (
+                        <button type="button" className={heroPrimary} onClick={() => act('admin.councils.schedule', null)}>
+                            <CalendarClock className="h-4 w-4" aria-hidden="true" /> Programmer
+                        </button>
+                    )}
                     {['drafting_minutes', 'pending_validation', 'closed'].includes(status) && (
-                        <Link href={route('admin.councils.minutes', council.id)} className={status === 'closed' ? secondary : primary}>
+                        <Link href={route('admin.councils.minutes', council.id)} className={status === 'closed' ? heroSecondary : heroPrimary}>
                             <FileText className="h-4 w-4" aria-hidden="true" /> Procès-verbal
                         </Link>
                     )}
-                    {can.viewAudit && (
-                        <Link href={route('admin.councils.audit', council.id)} className={secondary}>
-                            <History className="h-4 w-4" aria-hidden="true" /> Journal
-                        </Link>
-                    )}
                     {status === 'in_session' && (
-                        <a href={route('council.meeting.show', council.id)} target="eeht-visio" className={secondary}>
+                        <a href={route('council.meeting.show', council.id)} target="eeht-visio" className={heroSecondary}>
                             <Video className="h-4 w-4" aria-hidden="true" /> Visioconférence
                         </a>
                     )}
-                    {status !== 'draft' && status !== 'scheduled' && (
-                        <Link href={route('council.session.show', council.id)} className={status === 'in_session' ? primary : secondary}>
-                            <Play className="h-4 w-4" aria-hidden="true" /> {status === 'in_session' ? 'Reprendre la séance' : 'Voir la séance'}
+                    {can.schedule && status === 'scheduled' && (
+                        <>
+                            <button type="button" className={heroSecondary} onClick={() => act('admin.councils.snapshot', null)}>
+                                <Camera className="h-4 w-4" aria-hidden="true" /> Rafraîchir la photo
+                            </button>
+                            <button type="button" className={heroSecondary} onClick={() => act('admin.councils.unschedule', 'Annuler la programmation ? Le conseil repasse en brouillon.')}>
+                                <Undo2 className="h-4 w-4" aria-hidden="true" /> Annuler la programmation
+                            </button>
+                        </>
+                    )}
+                    {can.update && (
+                        <Link href={route('admin.councils.edit', council.id)} className={heroSecondary}>
+                            <Pencil className="h-4 w-4" aria-hidden="true" /> Modifier
                         </Link>
                     )}
+                    {can.viewAudit && (
+                        <Link href={route('admin.councils.audit', council.id)} className={heroSecondary}>
+                            <History className="h-4 w-4" aria-hidden="true" /> Journal
+                        </Link>
+                    )}
+                    {can.delete && (
+                        <button
+                            type="button"
+                            className={`${heroSecondary} !text-red-200 hover:!bg-red-500/20 sm:ml-auto`}
+                            onClick={() => act('admin.councils.destroy', 'Supprimer ce conseil en brouillon ? Cette action est irréversible.', 'delete')}
+                        >
+                            <Trash2 className="h-4 w-4" aria-hidden="true" /> Supprimer
+                        </button>
+                    )}
                 </div>
-            </div>
+            </header>
 
             {gradesChanged > 0 && (
                 <div role="status" className="mb-6 flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
@@ -208,7 +290,7 @@ export default function Show({ council, students, members, summary, attendances,
             )}
 
             <Card className="mb-6 flex flex-wrap items-center gap-2 p-4">
-                <h2 className="mr-2 text-sm font-semibold text-ink-700">Documents et suivi</h2>
+                <h2 className="mr-2 text-xs font-semibold uppercase tracking-wider text-ink-500">Documents et suivi</h2>
                 <a href={route('admin.councils.documents.convocation', council.id)} className={secondary}>
                     <FileDown className="h-4 w-4" aria-hidden="true" /> Convocation
                 </a>
@@ -254,14 +336,14 @@ export default function Show({ council, students, members, summary, attendances,
                 )}
             </Card>
 
-            <Card className="mb-6 p-5">
-                <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-                    <Stat label="Effectif" value={String(summary.count)} />
-                    <Stat label="Moyenne de classe" value={fr(summary.average)} />
-                    <Stat label="Plus faible / plus forte" value={`${fr(summary.min)} / ${fr(summary.max)}`} />
-                    <Stat label="Taux ≥ 10" value={summary.pass_rate === null ? '—' : `${fr(summary.pass_rate, 1)} %`} />
-                    <Stat label="Attention / vigilance" value={`${summary.alerts.red ?? 0} / ${summary.alerts.orange ?? 0}`} />
-                    <Stat label="Absences non justifiées" value={`${fr(summary.unjustified_hours, 1)} h`} />
+            <section aria-label="Chiffres du conseil" className="mb-6">
+                <dl className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+                    <Stat label="Effectif" value={String(summary.count)} icon={Users} note={summary.left > 0 ? `${summary.left} sorti(s)` : undefined} />
+                    <Stat label="Moyenne de classe" value={fr(summary.average)} icon={TrendingUp} tone={summary.average !== null && summary.average < 10 ? 'bad' : 'neutral'} note="sur 20" />
+                    <Stat label="Plus faible / forte" value={`${fr(summary.min, 1)} · ${fr(summary.max, 1)}`} icon={TrendingUp} />
+                    <Stat label="Taux ≥ 10" value={summary.pass_rate === null ? '—' : `${fr(summary.pass_rate, 1)} %`} icon={GraduationCap} tone={summary.pass_rate !== null && summary.pass_rate < 50 ? 'bad' : summary.pass_rate !== null && summary.pass_rate >= 80 ? 'good' : 'neutral'} />
+                    <Stat label="Attention / vigilance" value={`${summary.alerts.red ?? 0} / ${summary.alerts.orange ?? 0}`} icon={AlertTriangle} tone={(summary.alerts.red ?? 0) > 0 ? 'bad' : (summary.alerts.orange ?? 0) > 0 ? 'warn' : 'good'} />
+                    <Stat label="Absences injustifiées" value={`${fr(summary.unjustified_hours, 1)} h`} icon={CalendarClock} tone={summary.unjustified_hours > 0 ? 'warn' : 'neutral'} />
                 </dl>
                 <p className="mt-3 text-xs text-ink-500">
                     {council.snapshot_taken_at
@@ -269,9 +351,9 @@ export default function Show({ council, students, members, summary, attendances,
                         : 'La photo des données sera prise à la programmation du conseil.'}
                     {summary.left > 0 && ` ${summary.left} élève(s) sorti(s) de la classe, hors statistiques.`}
                 </p>
-            </Card>
+            </section>
 
-            <div role="tablist" aria-label="Rubriques du conseil" className="mb-4 flex gap-1 border-b border-ink-100">
+            <div role="tablist" aria-label="Rubriques du conseil" className="mb-4 inline-flex max-w-full gap-1 overflow-x-auto rounded-xl bg-ink-100/70 p-1">
                 {(
                     [
                         ['students', `Élèves (${students.length})`],
@@ -287,7 +369,7 @@ export default function Show({ council, students, members, summary, attendances,
                         aria-selected={tab === key}
                         aria-controls={`panel-${key}`}
                         onClick={() => setTab(key)}
-                        className={`-mb-px border-b-2 px-4 py-3 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-gold-500 ${tab === key ? 'border-ink-900 text-ink-900' : 'border-transparent text-ink-500 hover:text-ink-800'}`}
+                        className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-gold-500 ${tab === key ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-800'}`}
                     >
                         {label}
                     </button>
@@ -298,7 +380,7 @@ export default function Show({ council, students, members, summary, attendances,
                 <Card id="panel-students" role="tabpanel" aria-labelledby="tab-students" className="overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
+                            <thead className="border-b border-ink-100 bg-ink-50/80 text-xs font-semibold uppercase tracking-wider text-ink-500">
                                 <tr>
                                     <th className="px-5 py-3">Élève</th>
                                     <th className="px-5 py-3">Moyenne</th>
@@ -309,16 +391,34 @@ export default function Show({ council, students, members, summary, attendances,
                             </thead>
                             <tbody className="divide-y divide-ink-100">
                                 {students.map((row) => (
-                                    <tr key={row.id} className={row.has_left_class ? 'text-ink-500' : ''}>
-                                        <td className="px-5 py-3 font-medium text-ink-900">
-                                            {row.name}
-                                            <p className="text-xs font-normal text-ink-500">
-                                                {row.matricule}
-                                                {row.has_left_class && ' · sorti(e) de la classe'}
-                                            </p>
+                                    <tr key={row.id} className={`transition-colors hover:bg-ink-50/60 ${row.has_left_class ? 'text-ink-500' : ''}`}>
+                                        <td className="px-5 py-3">
+                                            <div className="flex items-center gap-3">
+                                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink-900 text-xs font-bold text-gold-300" aria-hidden="true">
+                                                    {initials(row.name)}
+                                                </span>
+                                                <div className="min-w-0">
+                                                    <p className="font-medium text-ink-900">{row.name}</p>
+                                                    <p className="text-xs font-normal text-ink-500">
+                                                        {row.matricule}
+                                                        {row.has_left_class && ' · sorti(e) de la classe'}
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td className="px-5 py-3 text-ink-700">{fr(row.average)}</td>
-                                        <td className="px-5 py-3 text-ink-700">{row.rank ? `${row.rank}${row.class_size ? ` / ${row.class_size}` : ''}` : '—'}</td>
+                                        <td className="px-5 py-3">
+                                            <AverageChip value={row.average} />
+                                        </td>
+                                        <td className="px-5 py-3 tabular-nums text-ink-700">
+                                            {row.rank ? (
+                                                <>
+                                                    <span className="font-semibold text-ink-900">{row.rank}</span>
+                                                    {row.class_size ? <span className="text-ink-500"> / {row.class_size}</span> : null}
+                                                </>
+                                            ) : (
+                                                '—'
+                                            )}
+                                        </td>
                                         <td className="px-5 py-3">
                                             <AlertBadge level={row.alert_level} reasons={row.alert_reasons} />
                                             {row.alert_reasons.length > 0 && <p className="mt-1 max-w-xs text-xs text-ink-500">{row.alert_reasons.join(' ; ')}</p>}
@@ -364,7 +464,7 @@ export default function Show({ council, students, members, summary, attendances,
                 <Card id="panel-members" role="tabpanel" aria-labelledby="tab-members" className="overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
+                            <thead className="border-b border-ink-100 bg-ink-50/80 text-xs font-semibold uppercase tracking-wider text-ink-500">
                                 <tr>
                                     <th className="px-5 py-3">Membre</th>
                                     <th className="px-5 py-3">Fonction</th>
@@ -374,12 +474,21 @@ export default function Show({ council, students, members, summary, attendances,
                             </thead>
                             <tbody className="divide-y divide-ink-100">
                                 {members.map((member) => (
-                                    <tr key={member.id}>
-                                        <td className="px-5 py-3 font-medium text-ink-900">
-                                            {member.name}
-                                            {member.external_role && <p className="text-xs font-normal text-ink-500">{member.external_role}</p>}
+                                    <tr key={member.id} className="transition-colors hover:bg-ink-50/60">
+                                        <td className="px-5 py-3">
+                                            <div className="flex items-center gap-3">
+                                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink-100 text-xs font-bold text-ink-700" aria-hidden="true">
+                                                    {initials(member.name)}
+                                                </span>
+                                                <div className="min-w-0">
+                                                    <p className="font-medium text-ink-900">{member.name}</p>
+                                                    {member.external_role && <p className="text-xs font-normal text-ink-500">{member.external_role}</p>}
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td className="px-5 py-3 text-ink-600">{member.function_label}</td>
+                                        <td className="px-5 py-3">
+                                            <span className="inline-flex rounded-full bg-ink-50 px-2.5 py-1 text-xs font-medium text-ink-700 ring-1 ring-inset ring-ink-200">{member.function_label}</span>
+                                        </td>
                                         <td className="px-5 py-3 text-ink-600">{member.can_vote ? 'Oui' : 'Non'}</td>
                                         <td className="px-5 py-3">
                                             {canRollCall ? (
