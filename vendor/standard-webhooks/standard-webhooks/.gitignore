@@ -1,8 +1,0 @@
-# Mac files
-.DS_Store
-
-# PHP library
-libraries/composer.lock
-libraries/vendor/
-libraries/.php-cs-fixer.cache
-libraries/.phpunit.result.cache
