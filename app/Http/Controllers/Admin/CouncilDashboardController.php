@@ -33,7 +33,7 @@ class CouncilDashboardController extends Controller
             'classes' => SchoolClass::when($filters['academic_year_id'], fn ($query, int $id) => $query->where('academic_year_id', $id))
                 ->when($filters['formation_id'], fn ($query, int $id) => $query->where('formation_id', $id))
                 ->orderBy('name')->get(['id', 'name']),
-            'terms' => config('eeht.terms'),
+            'terms' => config('eeht.council_terms'),
         ]);
     }
 

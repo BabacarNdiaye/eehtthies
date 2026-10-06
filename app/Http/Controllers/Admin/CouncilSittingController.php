@@ -35,7 +35,7 @@ class CouncilSittingController extends Controller
         return Inertia::render('Admin/CouncilSittings/Create', [
             'defaults' => ['academic_year_id' => $year, 'term' => config('eeht.terms')[0] ?? ''],
             'years' => AcademicYear::orderByDesc('start_date')->get(['id', 'label']),
-            'terms' => config('eeht.terms'),
+            'terms' => config('eeht.council_terms'),
             // Classes de l'année, avec leurs enseignants (pour le professeur principal) et les périodes déjà tenues.
             'classes' => SchoolClass::with('formation:id,name')->where('academic_year_id', $year)->orderBy('name')->get()
                 ->map(fn (SchoolClass $class) => [
@@ -55,7 +55,7 @@ class CouncilSittingController extends Controller
         Gate::authorize('create', Council::class);
         $data = $request->validate([
             'academic_year_id' => ['required', 'integer', 'exists:academic_years,id'],
-            'term' => ['required', Rule::in(config('eeht.terms'))],
+            'term' => ['required', Rule::in(config('eeht.council_terms'))],
             'is_end_of_year' => ['boolean'],
             'scheduled_at' => ['required', 'date'],
             'room' => ['nullable', 'string', 'max:150'],

@@ -29,7 +29,7 @@ class CouncilDashboard
                 : AcademicYear::where('is_current', true)->value('id'),
             'formation_id' => $request->integer('formation_id') ?: null,
             'school_class_id' => $request->integer('school_class_id') ?: null,
-            'term' => in_array($request->query('term'), config('eeht.terms'), true) ? (string) $request->query('term') : '',
+            'term' => in_array($request->query('term'), config('eeht.council_terms'), true) ? (string) $request->query('term') : '',
         ];
     }
 

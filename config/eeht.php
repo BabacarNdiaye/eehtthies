@@ -63,6 +63,19 @@ return [
     ],
 
     /*
+    | Période propre aux formations courtes : un seul conseil, en fin de formation, sur toute l'année scolaire. Elle
+    | n'est pas dans « terms » : le découpage en semestres des bulletins, examens et présences reste inchangé.
+    */
+    'final_term' => 'Fin de formation',
+
+    /* Périodes qu'un conseil de classe peut porter : les semestres, puis la fin de formation. */
+    'council_terms' => [
+        'Semestre 1',
+        'Semestre 2',
+        'Fin de formation',
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | Modules et actions de permissions
     |--------------------------------------------------------------------------

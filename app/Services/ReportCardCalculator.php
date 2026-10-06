@@ -258,7 +258,7 @@ class ReportCardCalculator
     {
         $exams = Exam::where('school_class_id', $schoolClassId)
             ->where('academic_year_id', $academicYearId)
-            ->where('term', $term)
+            ->when($term !== config('eeht.final_term'), fn ($query) => $query->where('term', $term))
             ->where('is_published', true)
             ->get();
 
@@ -421,6 +421,10 @@ class ReportCardCalculator
      */
     public function termDateRange(AcademicYear $academicYear, string $term): ?array
     {
+        if ($term === config('eeht.final_term')) {
+            return $academicYear->start_date && $academicYear->end_date ? [$academicYear->start_date->copy(), $academicYear->end_date->copy()] : null;
+        }
+
         $terms = config('eeht.terms');
         $index = array_search($term, $terms, true);
 
@@ -484,7 +488,7 @@ class ReportCardCalculator
     {
         $terms = config('eeht.terms');
 
-        return $term === end($terms);
+        return $term === end($terms) || $term === config('eeht.final_term');
     }
 
     /**

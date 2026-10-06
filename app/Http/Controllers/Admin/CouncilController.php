@@ -61,7 +61,7 @@ class CouncilController extends Controller
         $currentYear = AcademicYear::where('is_current', true)->value('id');
         $filters = [
             'year' => $request->has('year') ? ($request->integer('year') ?: null) : $currentYear,
-            'term' => in_array($request->query('term'), config('eeht.terms'), true) ? $request->query('term') : '',
+            'term' => in_array($request->query('term'), config('eeht.council_terms'), true) ? $request->query('term') : '',
             'formation_id' => $request->integer('formation_id') ?: null,
             'school_class_id' => $request->integer('school_class_id') ?: null,
             'status' => array_key_exists((string) $request->query('status'), Council::STATUSES) ? $request->query('status') : '',
@@ -111,7 +111,7 @@ class CouncilController extends Controller
             'counts' => $counts,
             'filters' => $filters,
             'years' => AcademicYear::orderByDesc('start_date')->get(['id', 'label']),
-            'terms' => config('eeht.terms'),
+            'terms' => config('eeht.council_terms'),
             'formations' => Formation::orderBy('name')->get(['id', 'name']),
             'classes' => SchoolClass::when($filters['year'], fn (Builder $query, int $year) => $query->where('academic_year_id', $year))->orderBy('name')->get(['id', 'name', 'formation_id']),
             'statuses' => Council::STATUSES,
@@ -164,7 +164,7 @@ class CouncilController extends Controller
                 'term' => config('eeht.terms')[0] ?? '',
             ],
             'years' => AcademicYear::orderByDesc('start_date')->get(['id', 'label']),
-            'terms' => config('eeht.terms'),
+            'terms' => config('eeht.council_terms'),
             'classes' => SchoolClass::with('formation:id,name')->orderBy('name')->get(['id', 'name', 'formation_id', 'academic_year_id'])
                 ->map(fn (SchoolClass $class) => ['id' => $class->id, 'name' => $class->name, 'formation' => $class->formation?->name, 'academic_year_id' => $class->academic_year_id]),
             'staff' => $this->staffUsers(),
@@ -203,7 +203,7 @@ class CouncilController extends Controller
         $data = $request->validate([
             'academic_year_id' => ['required', 'integer', 'exists:academic_years,id'],
             'school_class_id' => ['required', 'integer', 'exists:school_classes,id'],
-            'term' => ['required', Rule::in(config('eeht.terms'))],
+            'term' => ['required', Rule::in(config('eeht.council_terms'))],
             'is_end_of_year' => ['boolean'],
             'scheduled_at' => ['nullable', 'date'],
             'room' => ['nullable', 'string', 'max:120'],
@@ -238,7 +238,7 @@ class CouncilController extends Controller
         $frame = collect($data)->only([
             'academic_year_id', 'school_class_id', 'term', 'scheduled_at', 'room', 'agenda', 'preconseil_deadline',
             'president_id', 'main_teacher_id', 'secretary_id',
-        ])->all() + ['is_end_of_year' => (bool) ($data['is_end_of_year'] ?? false)];
+        ])->all() + ['is_end_of_year' => (bool) ($data['is_end_of_year'] ?? false) || $data['term'] === config('eeht.final_term')];
 
         return [$frame, $data['members'] ?? [], $data['action'] ?? 'draft'];
     }
@@ -391,7 +391,7 @@ class CouncilController extends Controller
                     'outcome_label' => CouncilAppeal::OUTCOMES[$appeal->outcome] ?? $appeal->outcome,
                 ]),
             'appealDeadline' => $council->isClosed() ? app(RectificationService::class)->appealDeadline($council)->toDateString() : null,
-            'terms' => config('eeht.terms'),
+            'terms' => config('eeht.council_terms'),
             // DIR-07 : familles prévenues, envoi manuel, liens WhatsApp prêts à envoyer (secrétariat).
             'familyNotices' => $council->isClosed() ? [
                 'enabled' => CouncilSettings::familyNotify(),

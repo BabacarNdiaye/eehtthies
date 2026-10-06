@@ -52,4 +52,19 @@ class CouncilAllFormationsTest extends TestCase
             $this->assertSame(Council::CLOSED, $closed->status, "Conseil non clôturé pour {$formation->code}.");
         }
     }
+
+    public function test_a_final_term_council_counts_the_exams_of_every_semester(): void
+    {
+        $subject = $this->subject('Service', 2);
+        [$teacherUser] = $this->teacher('Final', [$subject]);
+        $pupil = $this->pupil('Awa');
+        $this->grade($this->exam($subject, 'examen', 'Semestre 1'), $pupil, 10.0);
+        $this->grade($this->exam($subject, 'examen', 'Semestre 2'), $pupil, 16.0);
+
+        $president = $this->staff('direction');
+        $council = $this->openCouncil($president, ['term' => config('eeht.final_term'), 'is_end_of_year' => true, 'main_teacher_id' => $teacherUser->id]);
+
+        $this->assertEquals(13.0, (float) $council->students()->firstOrFail()->general_average);
+        $this->assertTrue($council->is_end_of_year);
+    }
 }

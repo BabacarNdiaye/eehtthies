@@ -50,7 +50,7 @@ class CouncilSittingService
                         'academic_year_id' => $frame['academic_year_id'],
                         'school_class_id' => $class->id,
                         'term' => $frame['term'],
-                        'is_end_of_year' => (bool) ($frame['is_end_of_year'] ?? false),
+                        'is_end_of_year' => (bool) ($frame['is_end_of_year'] ?? false) || $frame['term'] === config('eeht.final_term'),
                         'scheduled_at' => $frame['scheduled_at'] ?? null,
                         'room' => $frame['room'] ?? null,
                         'agenda' => $frame['agenda'] ?? null,
