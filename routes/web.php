@@ -55,7 +55,11 @@ use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Admin\PaymentPlanController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\PracticalSessionController;
+use App\Http\Controllers\Admin\EconomatDashboardController;
+use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\PurchaseOrderController;
+use App\Http\Controllers\Admin\SupplyRequestController;
 use App\Http\Controllers\Admin\ReportCardController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoomController;
@@ -690,6 +694,24 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     Route::get('products/movements', [ProductController::class, 'movements'])->name('products.movements')->middleware('permission:voir_stocks');
     Route::post('products/{product}/movements', [ProductController::class, 'storeMovement'])->name('products.movements.store')->middleware('permission:modifier_stocks');
     PermissionRouting::gate(Route::resource('products', ProductController::class)->except('show'), 'stocks');
+
+    // Économat : tableau de bord, bons de commande, demandes de matériel et inventaire.
+    Route::get('economat', [EconomatDashboardController::class, 'index'])->name('economat.dashboard')->middleware('permission:voir_stocks');
+
+    PermissionRouting::gate(Route::resource('purchase-orders', PurchaseOrderController::class)->only(['index', 'create', 'store', 'show']), 'stocks');
+    Route::post('purchase-orders/{purchaseOrder}/send', [PurchaseOrderController::class, 'send'])->name('purchase-orders.send')->middleware('permission:modifier_stocks');
+    Route::post('purchase-orders/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive')->middleware('permission:modifier_stocks');
+    Route::post('purchase-orders/{purchaseOrder}/expense', [PurchaseOrderController::class, 'expense'])->name('purchase-orders.expense')->middleware('permission:ajouter_comptabilite');
+    Route::post('purchase-orders/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel')->middleware('permission:modifier_stocks');
+    Route::get('purchase-orders/{purchaseOrder}/pdf', [PurchaseOrderController::class, 'pdf'])->name('purchase-orders.pdf')->middleware('permission:voir_stocks');
+
+    PermissionRouting::gate(Route::resource('supply-requests', SupplyRequestController::class)->only(['index', 'create', 'store', 'show']), 'stocks');
+    Route::post('supply-requests/{supplyRequest}/approve', [SupplyRequestController::class, 'approve'])->name('supply-requests.approve')->middleware('permission:modifier_stocks');
+    Route::post('supply-requests/{supplyRequest}/refuse', [SupplyRequestController::class, 'refuse'])->name('supply-requests.refuse')->middleware('permission:modifier_stocks');
+    Route::post('supply-requests/{supplyRequest}/deliver', [SupplyRequestController::class, 'deliver'])->name('supply-requests.deliver')->middleware('permission:modifier_stocks');
+
+    Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index')->middleware('permission:voir_stocks');
+    Route::post('inventory', [InventoryController::class, 'store'])->name('inventory.store')->middleware('permission:modifier_stocks');
 
     PermissionRouting::gate(
         Route::resource('practical-sessions', PracticalSessionController::class)

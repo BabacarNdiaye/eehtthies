@@ -61,6 +61,7 @@ import {
     Network,
     Newspaper,
     Package,
+    PackageCheck,
     PanelTop,
     PenSquare,
     PieChart,
@@ -69,6 +70,7 @@ import {
     ReceiptText,
     Route,
     Scale,
+    ShoppingCart,
     ScanLine,
     School,
     ScrollText,
@@ -104,7 +106,7 @@ import {
  * présences, on organise les formations et les classes, on enseigne, on évalue et on diplôme, puis viennent
  * l'argent (frais de scolarité, comptabilité, stocks), l'insertion professionnelle, la communication, le site, les
  * statistiques, le personnel et l'administration du logiciel. Un métier retrouve ses pages au même endroit : le
- * caissier dans « Finance », le magasinier dans « Stocks & achats ».
+ * caissier dans « Finance », l'économe dans « Économat ».
  *
  * Une page appartient à une seule rubrique (les fonctions `active` ne se recouvrent pas) : AdminMenuCoverageTest le
  * vérifie pour toutes les pages d'administration, y compris celles que l'on ajoutera.
@@ -484,16 +486,48 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        label: 'Stocks & achats',
+        label: 'Économat',
         icon: Warehouse,
         items: [
             {
-                label: 'Produits & stocks',
+                label: "Tableau de bord de l'économat",
+                href: 'admin.economat.dashboard',
+                icon: Gauge,
+                active: (c) => c === 'admin.economat.dashboard',
+                permission: 'voir_stocks',
+                keywords: 'economat econome stock valeur ruptures alertes reapprovisionnement',
+            },
+            {
+                label: 'Articles & stocks',
                 href: 'admin.products.index',
                 icon: Package,
                 active: (c) => c.startsWith('admin.products') && c !== 'admin.products.movements',
                 permission: 'voir_stocks',
-                keywords: 'inventaire marchandises articles seuils alerte',
+                keywords: 'inventaire marchandises articles produits denrees fournitures uniformes materiel seuils alerte',
+            },
+            {
+                label: 'Bons de commande',
+                href: 'admin.purchase-orders.index',
+                icon: ShoppingCart,
+                active: (c) => c.startsWith('admin.purchase-orders'),
+                permission: 'voir_stocks',
+                keywords: 'achats commandes fournisseurs reception livraison bon de commande approvisionnement',
+            },
+            {
+                label: 'Demandes de matériel',
+                href: 'admin.supply-requests.index',
+                icon: PackageCheck,
+                active: (c) => c.startsWith('admin.supply-requests'),
+                permission: 'voir_stocks',
+                keywords: 'demandes atelier pratique cours cuisine sortie livraison matiere premiere classe',
+            },
+            {
+                label: 'Inventaire',
+                href: 'admin.inventory.index',
+                icon: ListChecks,
+                active: (c) => c.startsWith('admin.inventory'),
+                permission: 'voir_stocks',
+                keywords: 'comptage ecarts regularisation stock physique',
             },
             {
                 label: 'Mouvements de stock',

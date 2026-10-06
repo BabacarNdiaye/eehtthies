@@ -99,7 +99,7 @@ class AdminMenuCoverageTest extends TestCase
     public function test_the_stock_manager_only_sees_stock_pages(): void
     {
         $this->assertEqualsCanonicalizing(
-            ['admin.dashboard', 'admin.products.index', 'admin.products.movements', 'admin.suppliers.index', 'connect.index', 'admin.leave.index'],
+            ['admin.dashboard', 'admin.economat.dashboard', 'admin.products.index', 'admin.purchase-orders.index', 'admin.supply-requests.index', 'admin.inventory.index', 'admin.products.movements', 'admin.suppliers.index', 'connect.index', 'admin.leave.index'],
             $this->report()['visible']['responsable-stocks'],
         );
     }
