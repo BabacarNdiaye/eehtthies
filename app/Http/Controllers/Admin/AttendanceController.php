@@ -81,18 +81,25 @@ class AttendanceController extends Controller
     // Vue publique de la borne — jeton requis dans l'URL (GET /borne/pointage/open?token=...)
     public function kioskOpen(Request $request): Response
     {
-        $token = $request->query('token');
-        if (! $token || $token !== env('KIOSK_TOKEN')) {
+        if (! $this->validKioskToken($request->query('token'))) {
             abort(403, 'Jeton invalide ou manquant.');
         }
 
         return $this->renderKiosk($this->modeFromRequest($request));
     }
 
-    // Borne publique sans jeton ni authentification (temporaire, pour les tests)
+    // Borne ouverte depuis une session de connexion du personnel (route /borne/pointage, derrière « staff »).
     public function kioskPublic(Request $request): Response
     {
         return $this->renderKiosk($this->modeFromRequest($request));
+    }
+
+    /** Le jeton de la borne : comparaison à temps constant, et refus si aucun jeton n'est configuré. */
+    private function validKioskToken(mixed $given): bool
+    {
+        $expected = (string) config('eeht.kiosk_token');
+
+        return $expected !== '' && is_string($given) && hash_equals($expected, $given);
     }
 
     private function modeFromRequest(Request $request): string
@@ -174,8 +181,7 @@ class AttendanceController extends Controller
     // requête
     public function qrScanOpen(Request $request, AttendanceCheckInResolver $resolver)
     {
-        $token = $request->input('kiosk_token');
-        if (! $token || $token !== env('KIOSK_TOKEN')) {
+        if (! $this->validKioskToken($request->input('kiosk_token'))) {
             return response()->json(['message' => 'Jeton de borne invalide.'], 403);
         }
 

@@ -26,6 +26,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Borne de pointage
+    |--------------------------------------------------------------------------
+    |
+    | Jeton qui ouvre la borne publique (tablette de portique). Il se lit ICI et non avec env() dans le code :
+    | quand la configuration est mise en cache (php artisan optimize), env() renvoie vide hors des fichiers config/.
+    |
+    */
+    'kiosk_token' => env('KIOSK_TOKEN'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Mots de passe des accès au portail
     |--------------------------------------------------------------------------
     |

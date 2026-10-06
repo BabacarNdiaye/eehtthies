@@ -207,8 +207,8 @@ Route::get('/dashboard', function () {
 // Points d'entrée publics de la borne (protégés par jeton, non soumis à une session de connexion pour qu'une
 // tablette de portique sans surveillance puisse rester indéfiniment sur cette page) — ouvrir avec
 // /borne/pointage/open?token=VOTRE_JETON&mode=gate
-Route::get('/borne/pointage/open', [AttendanceController::class, 'kioskOpen'])->name('borne.pointage.open');
-Route::post('/borne/pointage/scan/open', [AttendanceController::class, 'qrScanOpen'])->name('borne.pointage.scan.open');
+Route::get('/borne/pointage/open', [AttendanceController::class, 'kioskOpen'])->middleware('throttle:30,1')->name('borne.pointage.open');
+Route::post('/borne/pointage/scan/open', [AttendanceController::class, 'qrScanOpen'])->middleware('throttle:120,1')->name('borne.pointage.scan.open');
 
 // Conseil de classe : mode séance (E05) et vue projetée (E06), hors de /admin pour qu'un président enseignant y accède.
 // Les droits sont ceux de CouncilPolicy (lecture : membre ou personnel habilité ; écriture : conduct).
