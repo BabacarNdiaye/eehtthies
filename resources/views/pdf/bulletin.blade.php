@@ -216,10 +216,7 @@
 
     <div class="footer-sign">
         <div class="cell" style="width: 60%;">
-            <div style="font-size: 9px; color: #555;">
-                Document généré le {{ \Illuminate\Support\Carbon::now()->translatedFormat('d F Y à H:i') }}<br>
-                Référence de vérification : {{ $reportCard->qr_token }}
-            </div>
+            &nbsp;
         </div>
         <div class="cell right">
             <img src="data:image/svg+xml;base64,{{ $qrCode }}" width="64" height="64" alt="QR Code de vérification"><br>

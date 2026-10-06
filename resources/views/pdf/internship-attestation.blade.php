@@ -93,7 +93,7 @@
     </div>
 
     <div class="footer">
-        Fait à Thiès, le {{ \Illuminate\Support\Carbon::now()->translatedFormat('d F Y') }} — Document généré automatiquement.
+        Fait à Thiès, le {{ \Illuminate\Support\Carbon::now()->translatedFormat('d F Y') }}.
     </div>
 </body>
 </html>

@@ -121,7 +121,7 @@
     @endif
 
     <div class="footer">
-        Ce reçu atteste du paiement reçu par l'EEHT de Thiès. Document généré automatiquement.
+        Ce reçu atteste du paiement reçu par l'EEHT de Thiès.
     </div>
 </body>
 </html>

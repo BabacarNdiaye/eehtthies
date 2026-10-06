@@ -87,7 +87,7 @@
     </div>
 
     <div class="footer">
-        Ce bulletin atteste du paiement de salaire versé par l'EEHT de Thiès. Document généré automatiquement.
+        Ce bulletin atteste du paiement de salaire versé par l'EEHT de Thiès.
     </div>
 </body>
 </html>

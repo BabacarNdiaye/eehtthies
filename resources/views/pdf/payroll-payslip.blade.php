@@ -129,7 +129,7 @@
     </div>
 
     <div class="footer">
-        Ce bulletin atteste du paiement du salaire versé par l'EEHT de Thiès. Les retenues et primes sont celles saisies par l'établissement. Document généré automatiquement.
+        Ce bulletin atteste du paiement du salaire versé par l'EEHT de Thiès. Les retenues et primes sont celles saisies par l'établissement.
     </div>
 </body>
 </html>

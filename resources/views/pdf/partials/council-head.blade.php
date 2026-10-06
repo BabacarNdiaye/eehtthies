@@ -27,7 +27,7 @@
 </head>
 <body>
     <div class="footer">
-        {{ $title }} · généré le {{ now()->translatedFormat('d/m/Y H:i') }}
+        {{ $title }}
         <span style="float: right;">Page <span class="page"></span></span>
     </div>
 

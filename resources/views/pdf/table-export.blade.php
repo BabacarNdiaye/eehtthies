@@ -76,6 +76,6 @@
         </tbody>
     </table>
 
-    <p class="footer">EEHT de Thiès — Document généré automatiquement depuis la plateforme de gestion intégrée.</p>
+    <p class="footer">EEHT de Thiès</p>
 </body>
 </html>
