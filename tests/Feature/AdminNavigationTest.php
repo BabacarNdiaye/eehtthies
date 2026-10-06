@@ -53,8 +53,6 @@ class AdminNavigationTest extends TestCase
         preg_match_all("/href: '([a-z0-9.\-]+)'/", $this->navSource(), $matches);
 
         $expected = [
-            'admin.invoices.monthly' => 'le suivi des mensualités',
-            'admin.invoices.overdue' => 'les impayés',
             'admin.finance.cash-journal' => 'le journal de caisse',
             'admin.finance.settings' => 'les réglages des paiements',
             'admin.products.movements' => 'les mouvements de stock',
@@ -63,6 +61,17 @@ class AdminNavigationTest extends TestCase
 
         foreach ($expected as $name => $page) {
             $this->assertContains($name, $matches[1], "Le menu doit mener à {$page} ({$name}) sans passer par le bouton d'une autre page.");
+        }
+    }
+
+    public function test_follow_up_pages_stay_one_tab_away_from_the_invoices_entry(): void
+    {
+        // Mensualités, impayés, échéanciers et paiements en ligne ne sont plus des rubriques : ce sont les onglets de « Factures & suivi ».
+        $tabs = file_get_contents(base_path('resources/js/Components/Admin/FinanceTabs.tsx'));
+
+        foreach (['admin.invoices.monthly', 'admin.invoices.overdue', 'admin.payment-plans.index', 'admin.online-payments.index'] as $name) {
+            $this->assertStringContainsString("'{$name}'", $tabs, "L'onglet de {$name} a disparu de FinanceTabs.");
+            $this->assertTrue(Route::has($name), "{$name} n'est plus une route.");
         }
     }
 

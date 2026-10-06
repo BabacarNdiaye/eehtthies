@@ -108,7 +108,7 @@ class AdminMenuCoverageTest extends TestCase
     {
         $visible = $this->report()['visible']['caissier'];
 
-        foreach (['admin.cashier.create', 'admin.invoices.index', 'admin.invoices.monthly', 'admin.invoices.overdue', 'admin.payment-plans.index', 'admin.finance.cash-journal'] as $page) {
+        foreach (['admin.cashier.create', 'admin.invoices.index', 'admin.finance.cash-journal'] as $page) {
             $this->assertContains($page, $visible, "Le caissier doit voir {$page}.");
         }
 
@@ -121,7 +121,7 @@ class AdminMenuCoverageTest extends TestCase
     {
         $visible = $this->report()['visible']['comptable'];
 
-        foreach (['admin.invoices.overdue', 'admin.finance.dashboard', 'admin.accounting.ledger', 'admin.payroll.index', 'admin.salaries.index'] as $page) {
+        foreach (['admin.invoices.index', 'admin.finance.dashboard', 'admin.accounting.journal-entries.index', 'admin.payroll.index', 'admin.salaries.index'] as $page) {
             $this->assertContains($page, $visible, "Le comptable doit voir {$page}.");
         }
 
@@ -138,7 +138,7 @@ class AdminMenuCoverageTest extends TestCase
             $this->assertContains($page, $visible, "L'administration doit voir {$page}.");
         }
 
-        foreach (['admin.finance.dashboard', 'admin.invoices.monthly', 'admin.products.index', 'admin.backups.index'] as $page) {
+        foreach (['admin.finance.dashboard', 'admin.invoices.index', 'admin.products.index', 'admin.backups.index'] as $page) {
             $this->assertNotContains($page, $visible, "L'administration ne doit pas voir {$page}.");
         }
     }
