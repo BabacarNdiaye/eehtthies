@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\LeaveRequest;
+use App\Models\LessonLog;
+use App\Models\TimetableEntry;
 use App\Models\PayrollRun;
 use App\Models\SalaryPayment;
 use App\Models\Teacher;
@@ -28,7 +30,8 @@ class HrController extends Controller
             ->get(['id', 'name', 'email', 'avatar', 'position', 'department', 'hire_date', 'monthly_salary', 'is_active']);
 
         $teachers = Teacher::orderBy('last_name')
-            ->get(['id', 'first_name', 'last_name', 'photo', 'professional_email', 'email', 'phone', 'specialty', 'experience_years', 'status']);
+            ->withCount(['schoolClasses', 'subjects'])
+            ->get(['id', 'first_name', 'last_name', 'photo', 'professional_email', 'email', 'phone', 'specialty', 'experience_years', 'status', 'payment_type', 'monthly_salary']);
 
         $directory = $adminStaff->map(fn (User $u) => [
             'id' => 'user-'.$u->id,
@@ -90,15 +93,38 @@ class HrController extends Controller
 
         $payrollRun = PayrollRun::where('period_year', $today->year)->where('period_month', $today->month)->first();
 
+        // Équipe pédagogique : charge hebdomadaire réelle (emploi du temps) et suivi du cahier de texte.
+        $minutes = TimetableEntry::whereNotNull('teacher_id')->get(['teacher_id', 'start_time', 'end_time'])
+            ->groupBy('teacher_id')
+            ->map(fn ($slots) => $slots->sum(fn ($e) => max(0, Carbon::parse($e->end_time)->diffInMinutes(Carbon::parse($e->start_time), true))));
+        $logs = LessonLog::where('date', '>=', $today->copy()->subDays(30))->selectRaw('teacher_id, count(*) as n')
+            ->groupBy('teacher_id')->pluck('n', 'teacher_id');
+        $activeTeachers = $teachers->where('status', 'actif');
+        $faculty = $activeTeachers->map(fn (Teacher $t) => [
+            'id' => $t->id,
+            'name' => $t->full_name,
+            'photo' => $t->photo,
+            'specialty' => $t->specialty ?: '—',
+            'hours' => round(($minutes[$t->id] ?? 0) / 60, 1),
+            'classes' => (int) $t->school_classes_count,
+            'subjects' => (int) $t->subjects_count,
+            'logs' => (int) ($logs[$t->id] ?? 0),
+            'payment' => $t->payment_type === 'horaire' ? 'Horaire' : 'Fixe',
+            'experience' => (int) $t->experience_years,
+            'editUrl' => route('admin.teachers.edit', $t->id),
+        ])->sortByDesc('hours')->values();
+
         // Dossiers à compléter : ce qui manque pour une gestion RH fiable.
         $incomplete = [
             ['label' => "Sans date d'embauche", 'count' => $adminStaff->whereNull('hire_date')->count(), 'href' => route('admin.users.index')],
             ['label' => 'Sans fonction renseignée', 'count' => $adminStaff->filter(fn (User $u) => ! $u->position)->count(), 'href' => route('admin.users.index')],
             ['label' => 'Enseignants sans téléphone', 'count' => $teachers->filter(fn (Teacher $t) => ! $t->phone)->count(), 'href' => route('admin.teachers.index')],
+            ['label' => 'Enseignants sans emploi du temps', 'count' => $faculty->where('hours', 0)->count(), 'href' => route('admin.teachers.index')],
             ['label' => 'Comptes inactifs', 'count' => $directory->where('active', false)->count(), 'href' => route('admin.users.index')],
         ];
 
         $user = $request->user();
+
 
         return Inertia::render('Admin/Hr/Index', [
             'directory' => $directory,
@@ -118,6 +144,17 @@ class HrController extends Controller
                 'payrollStatus' => $payrollRun?->status,
             ],
             'departments' => $byDepartment,
+            'faculty' => [
+                'totalHours' => round($faculty->sum('hours'), 1),
+                'averageHours' => $faculty->isEmpty() ? 0 : round($faculty->avg('hours'), 1),
+                'averageExperience' => $faculty->isEmpty() ? null : round($faculty->avg('experience'), 1),
+                'fixed' => $faculty->where('payment', 'Fixe')->count(),
+                'hourly' => $faculty->where('payment', 'Horaire')->count(),
+                'withoutSchedule' => $faculty->where('hours', 0)->count(),
+                'withoutLogs' => $faculty->where('hours', '>', 0)->where('logs', 0)->count(),
+                'inactive' => $teachers->where('status', '!=', 'actif')->count(),
+                'teachers' => $faculty->take(10)->values(),
+            ],
             'leave' => [
                 'pending' => $pendingLeaves->take(5)->map($leaveRow)->values(),
                 'today' => $onLeave->take(6)->map($leaveRow)->values(),

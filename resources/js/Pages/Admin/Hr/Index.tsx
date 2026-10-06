@@ -60,6 +60,17 @@ interface Props {
         onLeaveToday: number;
         payrollStatus: string | null;
     };
+    faculty: {
+        totalHours: number;
+        averageHours: number;
+        averageExperience: number | null;
+        fixed: number;
+        hourly: number;
+        withoutSchedule: number;
+        withoutLogs: number;
+        inactive: number;
+        teachers: { id: number; name: string; photo: string | null; specialty: string; hours: number; classes: number; subjects: number; logs: number; payment: string; experience: number; editUrl: string }[];
+    };
     departments: { name: string; count: number }[];
     leave: { pending: LeaveRow[]; today: LeaveRow[] };
     recentHires: { name: string; photo: string | null; detail: string; hireDate: string }[];
@@ -127,7 +138,7 @@ function Empty({ icon: Icon, text }: { icon: typeof Users; text: string }) {
     );
 }
 
-export default function Index({ directory, summary, departments, leave, recentHires, incomplete, can }: Props) {
+export default function Index({ directory, summary, faculty, departments, leave, recentHires, incomplete, can }: Props) {
     const [q, setQ] = useState('');
     const [filter, setFilter] = useState<'all' | 'admin' | 'teacher' | 'inactive'>('all');
 
@@ -145,6 +156,7 @@ export default function Index({ directory, summary, departments, leave, recentHi
     }, [directory, q, filter]);
 
     const maxDept = Math.max(1, ...departments.map((d) => d.count));
+    const maxHours = Math.max(1, ...faculty.teachers.map((t) => t.hours));
     const activeRate = summary.total ? Math.round((summary.active / summary.total) * 100) : 0;
     const teacherShare = summary.total ? Math.round((summary.teachers / summary.total) * 100) : 0;
 
@@ -175,16 +187,16 @@ export default function Index({ directory, summary, departments, leave, recentHi
     return (
         <AdminLayout>
             <Head title="Ressources humaines" />
-            <PageHeader title="Ressources humaines" subtitle="Pilotez votre équipe : effectifs, congés, paie et dossiers du personnel, administratif comme enseignant." />
+            <PageHeader title="Ressources humaines" subtitle="Pilotez votre équipe : corps enseignant, personnel administratif, congés, paie et dossiers." />
 
             <section aria-label="Synthèse" className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 p-6 text-white shadow-elevated sm:p-8">
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gold-500/60 to-transparent" aria-hidden="true" />
                 <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-center">
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-300">Capital humain</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-300">Équipe de l'école</p>
                         <p className="mt-2 font-serif text-5xl font-bold tabular-nums sm:text-6xl">
                             {summary.total}
-                            <span className="ml-3 text-lg font-medium text-white/60">collaborateurs</span>
+                            <span className="ml-3 text-lg font-medium text-white/60">membres du personnel</span>
                         </p>
                         <div className="mt-5 flex h-2.5 overflow-hidden rounded-full bg-white/10" role="img" aria-label={`${teacherShare} % d'enseignants`}>
                             <span className="bg-gold-400" style={{ width: `${teacherShare}%` }} />
@@ -264,6 +276,85 @@ export default function Index({ directory, summary, departments, leave, recentHi
                     </Link>
                 </Card>
             )}
+
+            <Card className="mb-6 overflow-hidden">
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-ink-100 px-5 py-4">
+                    <div>
+                        <h2 className="font-serif text-lg font-semibold text-ink-900">Équipe pédagogique</h2>
+                        <p className="mt-0.5 text-xs text-ink-500">Charge d'enseignement hebdomadaire d'après l'emploi du temps, et suivi du cahier de texte (30 derniers jours).</p>
+                    </div>
+                    {can.teachers && (
+                        <Link href={route('admin.teachers.index')} className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-gold-700 hover:underline">
+                            Tous les enseignants
+                            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                        </Link>
+                    )}
+                </div>
+                <dl className="grid grid-cols-2 gap-px bg-ink-100 sm:grid-cols-3 lg:grid-cols-6">
+                    {[
+                        { label: 'Heures de cours / semaine', value: `${faculty.totalHours} h` },
+                        { label: 'Charge moyenne', value: `${faculty.averageHours} h` },
+                        { label: 'Expérience moyenne', value: faculty.averageExperience !== null ? `${faculty.averageExperience} ans` : '—' },
+                        { label: 'Salaire fixe', value: String(faculty.fixed) },
+                        { label: 'Payés à l\'heure', value: String(faculty.hourly) },
+                        { label: 'Sans emploi du temps', value: String(faculty.withoutSchedule), warn: faculty.withoutSchedule > 0 },
+                    ].map((m) => (
+                        <div key={m.label} className="bg-white px-5 py-4">
+                            <dt className="text-xs text-ink-500">{m.label}</dt>
+                            <dd className={`mt-1 text-xl font-bold tabular-nums ${m.warn ? 'text-amber-700' : 'text-ink-900'}`}>{m.value}</dd>
+                        </div>
+                    ))}
+                </dl>
+                {faculty.teachers.length === 0 ? (
+                    <Empty icon={GraduationCap} text="Aucun enseignant actif." />
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
+                                <tr>
+                                    <th className="px-5 py-3">Enseignant</th>
+                                    <th className="px-5 py-3">Charge hebdomadaire</th>
+                                    <th className="px-5 py-3">Classes</th>
+                                    <th className="px-5 py-3">Matières</th>
+                                    <th className="px-5 py-3">Cahier de texte</th>
+                                    <th className="px-5 py-3">Rémunération</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-ink-100">
+                                {faculty.teachers.map((t) => (
+                                    <tr key={t.id} className="transition-colors hover:bg-ink-50/60">
+                                        <td className="px-5 py-3">
+                                            <Link href={t.editUrl} className="flex items-center gap-3 hover:underline">
+                                                <Avatar name={t.name} photo={t.photo} />
+                                                <span>
+                                                    <span className="block font-medium text-ink-900">{t.name}</span>
+                                                    <span className="block text-xs text-ink-500">{t.specialty} · {t.experience} an(s)</span>
+                                                </span>
+                                            </Link>
+                                        </td>
+                                        <td className="min-w-[10rem] px-5 py-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-2 flex-1 overflow-hidden rounded-full bg-ink-100">
+                                                    <div className={`h-full rounded-full ${t.hours === 0 ? 'bg-amber-400' : 'bg-gradient-to-r from-gold-500 to-gold-300'}`} style={{ width: `${(t.hours / maxHours) * 100}%` }} />
+                                                </div>
+                                                <span className="w-12 text-right text-xs font-semibold tabular-nums text-ink-700">{t.hours} h</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-5 py-3 tabular-nums text-ink-600">{t.classes}</td>
+                                        <td className="px-5 py-3 tabular-nums text-ink-600">{t.subjects}</td>
+                                        <td className="px-5 py-3">
+                                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${t.logs > 0 ? 'bg-emerald-100 text-emerald-700' : t.hours > 0 ? 'bg-amber-100 text-amber-700' : 'bg-ink-100 text-ink-500'}`}>
+                                                {t.logs > 0 ? `${t.logs} séance(s)` : t.hours > 0 ? 'Non rempli' : '—'}
+                                            </span>
+                                        </td>
+                                        <td className="px-5 py-3 text-ink-600">{t.payment}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </Card>
 
             <div className="mb-6 grid gap-6 lg:grid-cols-3">
                 <Section title="Congés" hint="Demandes à traiter et absences du jour" action={{ label: 'Gérer', href: route('admin.leave.index') }}>

@@ -80,6 +80,8 @@ class HrDashboardTest extends TestCase
             ->has('leave.pending', 1)
             ->has('leave.today', 1)
             ->has('departments')
+            ->where('faculty.withoutSchedule', 0)
+            ->has('faculty.teachers', 0)
             ->has('recentHires', 1)
             ->has('incomplete')
             ->where('can.payroll', false)
