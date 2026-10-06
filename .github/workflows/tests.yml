@@ -1,0 +1,44 @@
+# Contrôle automatique : lance toute la suite de tests à chaque pull request et à chaque envoi sur une branche autre
+# que main (main passe déjà par le workflow de déploiement). Aucun secret n'est nécessaire.
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, gd, zip, bcmath, exif, fileinfo, pdo_sqlite
+          coverage: none
+
+      - name: Dépendances PHP
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Dépendances front et compilation (types + Vite)
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+
+      - name: Tests
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan test
