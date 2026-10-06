@@ -7,6 +7,7 @@ import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
+import { FormationTabs } from '@/Components/Admin/ClusterTabs';
 
 type SkillRow = {
     id: number;
@@ -80,6 +81,7 @@ export default function Index({ formations, skills, selectedFormationId }: Props
                 title="Référentiel de compétences"
                 subtitle="Définissez les compétences professionnelles évaluées pour chaque filière."
             />
+            <FormationTabs current="skills" />
 
             <Card className="mb-6 p-6">
                 <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">Filière</h2>

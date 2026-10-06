@@ -8,6 +8,7 @@ import { Paginated } from '@/types';
 import { Head, router, Link } from '@inertiajs/react';
 
 import { CalendarDays, CalendarClock, ChevronRight, ClipboardCheck, GraduationCap, Inbox, Lock, RotateCcw, UserRound, Users, Video } from 'lucide-react';
+import { CouncilTabs } from '@/Components/Admin/ClusterTabs';
 
 interface CouncilRow {
     id: number;
@@ -135,6 +136,7 @@ export default function Index({ councils, counts, filters, years, terms, formati
                     </Link>
                 )}
             </PageHeader>
+            <CouncilTabs current="councils" />
 
             <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
                 {GROUPS.map(({ key, label, hint, icon: Icon }) => {

@@ -7,6 +7,7 @@ import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
+import { FormationTabs } from '@/Components/Admin/ClusterTabs';
 
 type Ref = { id: number; name: string };
 
@@ -189,6 +190,7 @@ export default function Index({ formations, levels, subjects, skills, selectedFo
                 title="Niveaux & règles de passage"
                 subtitle="Configurez, pour chaque formation, ses niveaux et les règles qui déterminent le passage, le redoublement ou la diplomation."
             />
+            <FormationTabs current="levels" />
 
             <Card className="mb-6 p-6">
                 <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">Filière</h2>

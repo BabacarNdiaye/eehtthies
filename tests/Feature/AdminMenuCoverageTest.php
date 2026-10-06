@@ -134,7 +134,7 @@ class AdminMenuCoverageTest extends TestCase
     {
         $visible = $this->report()['visible']['administration'];
 
-        foreach (['admin.students.index', 'admin.candidatures.index', 'admin.pointage.report', 'admin.timetable.index', 'admin.roles.index', 'admin.payroll.index'] as $page) {
+        foreach (['admin.students.index', 'admin.candidatures.index', 'admin.pointage.index', 'admin.timetable.index', 'admin.roles.index', 'admin.payroll.index'] as $page) {
             $this->assertContains($page, $visible, "L'administration doit voir {$page}.");
         }
 

@@ -6,6 +6,7 @@ import { Field, Select, TextInput } from '@/Components/Admin/Field';
 import { Attendance, Paginated, SchoolClass, Subject } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Download, Inbox } from 'lucide-react';
+import { PresenceTabs } from '@/Components/Admin/ClusterTabs';
 
 interface Props {
     schoolClasses: SchoolClass[];
@@ -79,6 +80,7 @@ export default function Register({
                     </a>
                 </div>
             </PageHeader>
+            <PresenceTabs current="register" />
 
             <Card className="mb-6 p-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">

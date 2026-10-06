@@ -156,10 +156,11 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        label: 'Élèves & scolarité',
-        icon: Users,
+        label: 'Gestion pédagogique',
+        icon: School,
         items: [
             {
+                section: 'Admissions & élèves',
                 label: 'Candidatures',
                 href: 'admin.candidatures.index',
                 icon: FileUser,
@@ -168,6 +169,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'admissions dossiers inscription candidats pre-inscription',
             },
             {
+                section: 'Admissions & élèves',
                 label: 'Élèves',
                 href: 'admin.students.index',
                 icon: IdCard,
@@ -177,6 +179,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'etudiants apprenants inscrits matricule dossiers',
             },
             {
+                section: 'Admissions & élèves',
                 label: 'Élèves en ligne',
                 href: 'admin.students.online',
                 icon: Wifi,
@@ -185,38 +188,17 @@ export const navGroups: NavGroup[] = [
                 keywords: 'connectes presence connexion actifs maintenant qui est en ligne',
             },
             {
-                label: 'Passation de classe',
-                href: 'admin.class-promotion.index',
-                icon: ArrowUpCircle,
-                active: (c) => c.startsWith('admin.class-promotion'),
-                permission: 'modifier_eleves',
-                keywords: 'passage promotion redoublement fin d annee exclusion',
-            },
-            {
-                label: 'Diplômes & attestations',
-                href: 'admin.certificates.index',
-                icon: BadgeCheck,
-                active: (c) => c.startsWith('admin.certificates'),
-                permission: 'voir_eleves',
-                keywords: 'certificats attestations de stage remise',
-            },
-        ],
-    },
-    {
-        label: 'Vie scolaire',
-        icon: CalendarCheck,
-        items: [
-            {
-                label: 'Pointage des élèves',
+                section: 'Vie scolaire',
+                label: 'Présences',
                 href: 'admin.pointage.index',
                 icon: ClipboardCheck,
-                // Le registre et les statistiques ont leur propre rubrique plus bas : ils partagent le préfixe de
-                // route admin.pointage et ne doivent pas aussi allumer « Pointage des élèves ».
-                active: (c) => isPresence(c) && !c.includes('.register') && !c.endsWith('.report'),
+                // Pointage, registre d'absences et statistiques sont des onglets de la même rubrique (PresenceTabs).
+                active: (c) => isPresence(c),
                 permission: 'voir_presences',
-                keywords: 'presence appel absences retards',
+                keywords: 'presence appel absences retards registre statistiques taux de presence absenteisme',
             },
             {
+                section: 'Vie scolaire',
                 label: 'Scanner les cartes (entrée)',
                 href: 'admin.borne.pointage.gate',
                 icon: ScanLine,
@@ -225,22 +207,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'qr badge borne entree carte scan',
             },
             {
-                label: "Registre d'absences",
-                href: 'admin.pointage.register',
-                icon: UserX,
-                active: (c) => isPresence(c) && c.includes('.register'),
-                permission: 'voir_presences',
-                keywords: 'absences retards historique justifiees cahier',
-            },
-            {
-                label: 'Statistiques de présence',
-                href: 'admin.pointage.report',
-                icon: UserCheck,
-                active: (c) => isPresence(c) && c.endsWith('.report'),
-                permission: 'voir_presences',
-                keywords: 'assiduite taux de presence absenteisme periode',
-            },
-            {
+                section: 'Vie scolaire',
                 label: 'Discipline',
                 href: 'admin.discipline.index',
                 icon: ShieldAlert,
@@ -248,14 +215,8 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_discipline',
                 keywords: 'sanctions avertissement blame exclusion conduite vie scolaire',
             },
-        ],
-    },
-    {
-        label: 'Programmes & organisation',
-        icon: School,
-        items: [
             {
-                section: 'Programmes',
+                section: 'Structure pédagogique',
                 label: 'Année académique',
                 href: 'admin.academic-years.index',
                 icon: CalendarDays,
@@ -264,25 +225,17 @@ export const navGroups: NavGroup[] = [
                 keywords: 'annee scolaire periode semestres rentree',
             },
             {
-                section: 'Programmes',
+                section: 'Structure pédagogique',
                 label: 'Formations',
                 href: 'admin.formations.index',
                 icon: GraduationCap,
-                active: (c) => c.startsWith('admin.formations'),
+                // Formations, niveaux & règles de passage et référentiel de compétences : onglets (FormationTabs).
+                active: (c) => c.startsWith('admin.formations') || c.startsWith('admin.formation-levels') || c.startsWith('admin.skills'),
                 permission: 'voir_formations',
-                keywords: 'filieres diplomes programmes cursus',
+                keywords: 'filieres diplomes programmes cursus niveaux regles de passage referentiel de competences',
             },
             {
-                section: 'Programmes',
-                label: 'Niveaux & règles de passage',
-                href: 'admin.formation-levels.index',
-                icon: Layers,
-                active: (c) => c.startsWith('admin.formation-levels'),
-                permission: 'voir_formations',
-                keywords: 'progression annees passage redoublement seuils',
-            },
-            {
-                section: 'Programmes',
+                section: 'Structure pédagogique',
                 label: 'Matières',
                 href: 'admin.subjects.index',
                 icon: BookOpen,
@@ -291,16 +244,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'cours disciplines coefficients',
             },
             {
-                section: 'Programmes',
-                label: 'Référentiel de compétences',
-                href: 'admin.skills.index',
-                icon: Gauge,
-                active: (c) => c.startsWith('admin.skills'),
-                permission: 'voir_formations',
-                keywords: 'competences savoir-faire',
-            },
-            {
-                section: 'Organisation',
+                section: 'Structure pédagogique',
                 label: 'Classes',
                 href: 'admin.school-classes.index',
                 icon: Group,
@@ -309,7 +253,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'promotions groupes effectifs',
             },
             {
-                section: 'Organisation',
+                section: 'Structure pédagogique',
                 label: 'Salles',
                 href: 'admin.rooms.index',
                 icon: DoorOpen,
@@ -317,29 +261,18 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_salles',
                 keywords: 'locaux ateliers amphitheatre',
             },
-        ],
-    },
-    {
-        label: 'Enseignement',
-        icon: Presentation,
-        items: [
             {
+                section: 'Enseignement',
                 label: 'Emploi du temps',
                 href: 'admin.timetable.index',
                 icon: Clock,
-                active: (c) => c.startsWith('admin.timetable'),
+                // Emploi du temps et cahier de texte : onglets (TeachingTabs).
+                active: (c) => c.startsWith('admin.timetable') || c.startsWith('admin.lesson-logs'),
                 permission: 'voir_emploi_du_temps',
-                keywords: 'planning horaires cours seances',
+                keywords: 'planning horaires cours seances cahier de texte seances contenu devoirs',
             },
             {
-                label: 'Cahier de texte',
-                href: 'admin.lesson-logs.index',
-                icon: BookText,
-                active: (c) => c.startsWith('admin.lesson-logs'),
-                permission: 'voir_emploi_du_temps',
-                keywords: 'cours contenu devoirs seances journal de classe',
-            },
-            {
+                section: 'Enseignement',
                 label: 'Ateliers pratiques',
                 href: 'admin.practical-sessions.index',
                 icon: ChefHat,
@@ -348,6 +281,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'travaux pratiques seances cuisine tp',
             },
             {
+                section: 'Enseignement',
                 label: 'Fiches enseignants',
                 href: 'admin.teachers.index',
                 icon: Contact,
@@ -356,6 +290,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'professeurs formateurs intervenants vacataires',
             },
             {
+                section: 'Enseignement',
                 label: 'Bibliothèque',
                 href: 'admin.library.index',
                 icon: Library,
@@ -363,14 +298,8 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_formations',
                 keywords: 'documents ressources livres supports de cours',
             },
-        ],
-    },
-    {
-        label: 'Évaluations & conseils',
-        icon: Award,
-        items: [
             {
-                section: 'Notes & bulletins',
+                section: 'Évaluations & diplômes',
                 label: 'Examens & devoirs',
                 href: 'admin.exams.index',
                 icon: PenSquare,
@@ -379,7 +308,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'epreuves controles notes interrogations compositions',
             },
             {
-                section: 'Notes & bulletins',
+                section: 'Évaluations & diplômes',
                 label: 'Évaluations de compétences',
                 href: 'admin.skill-assessments.index',
                 icon: ListChecks,
@@ -388,7 +317,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'competences fiches grilles',
             },
             {
-                section: 'Notes & bulletins',
+                section: 'Évaluations & diplômes',
                 label: 'Bulletins',
                 href: 'admin.report-cards.index',
                 icon: ScrollText,
@@ -397,25 +326,17 @@ export const navGroups: NavGroup[] = [
                 keywords: 'releves notes moyennes semestre',
             },
             {
-                section: 'Conseils de classe',
+                section: 'Évaluations & diplômes',
                 label: 'Conseils de classe',
                 href: 'admin.councils.index',
                 icon: Gavel,
-                active: (c) => c.startsWith('admin.councils') || c.startsWith('admin.council-sittings'),
+                // Conseils et actions de suivi : onglets (CouncilTabs).
+                active: (c) => c.startsWith('admin.councils') || c.startsWith('admin.council-sittings') || (c.startsWith('admin.follow-ups') && c !== 'admin.follow-ups.mine'),
                 permission: 'voir_conseils',
-                keywords: 'conseil de classe deliberation decisions proces verbal pv seance appreciations',
+                keywords: 'conseil de classe deliberation decisions proces verbal pv seance appreciations actions de suivi entretiens',
             },
             {
-                section: 'Conseils de classe',
-                label: 'Actions de suivi',
-                href: 'admin.follow-ups.index',
-                icon: ClipboardList,
-                active: (c) => c.startsWith('admin.follow-ups') && c !== 'admin.follow-ups.mine',
-                permission: 'voir_conseils',
-                keywords: 'conseil de classe suivi soutien entretien famille echeance responsable',
-            },
-            {
-                section: 'Conseils de classe',
+                section: 'Évaluations & diplômes',
                 label: 'Bilan des conseils',
                 href: 'admin.council-dashboard.index',
                 icon: ChartNoAxesCombined,
@@ -424,13 +345,31 @@ export const navGroups: NavGroup[] = [
                 keywords: 'tableau de bord direction conseils de classe indicateurs decisions taux reussite actions de suivi',
             },
             {
-                section: 'Conseils de classe',
+                section: 'Évaluations & diplômes',
                 label: 'Réglages des conseils',
                 href: 'admin.council-settings.index',
                 icon: SlidersHorizontal,
                 active: (c) => c.startsWith('admin.council-settings'),
                 permission: 'voir_parametrage_conseils',
                 keywords: 'conseil de classe decisions seuils alertes pastilles groupes de matieres validation recours',
+            },
+            {
+                section: 'Évaluations & diplômes',
+                label: 'Passation de classe',
+                href: 'admin.class-promotion.index',
+                icon: ArrowUpCircle,
+                active: (c) => c.startsWith('admin.class-promotion'),
+                permission: 'modifier_eleves',
+                keywords: 'passage promotion redoublement fin d annee exclusion',
+            },
+            {
+                section: 'Évaluations & diplômes',
+                label: 'Diplômes & attestations',
+                href: 'admin.certificates.index',
+                icon: BadgeCheck,
+                active: (c) => c.startsWith('admin.certificates'),
+                permission: 'voir_eleves',
+                keywords: 'certificats attestations de stage remise',
             },
         ],
     },

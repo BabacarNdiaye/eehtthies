@@ -7,6 +7,7 @@ import { Formation } from '@/types';
 import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2 } from 'lucide-react';
+import { FormationTabs } from '@/Components/Admin/ClusterTabs';
 
 export default function Index({ formations }: { formations: Formation[] }) {
     const destroy = async (formation: Formation) => {
@@ -34,6 +35,7 @@ export default function Index({ formations }: { formations: Formation[] }) {
                     templateRoute={route('admin.formations.import.template')}
                 />
             </PageHeader>
+            <FormationTabs current="formations" />
 
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">

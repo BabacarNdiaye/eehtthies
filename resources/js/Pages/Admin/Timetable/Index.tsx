@@ -8,6 +8,7 @@ import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Clock, MapPin, Pencil, Plus, Trash2, User, X } from 'lucide-react';
 import { useState } from 'react';
+import { TeachingTabs } from '@/Components/Admin/ClusterTabs';
 
 type ClassOption = SchoolClass & { formation?: { id: number; name: string } };
 type TeacherOption = { id: number; first_name: string; last_name: string };
@@ -128,6 +129,7 @@ export default function Index({ schoolClasses, subjects, teachers, rooms, entrie
                     </>
                 )}
             </PageHeader>
+            <TeachingTabs current="timetable" />
 
             <Card className="mb-6 p-6">
                 <Field label="Classe">

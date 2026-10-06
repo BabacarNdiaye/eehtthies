@@ -6,6 +6,7 @@ import { Field, Select, TextInput } from '@/Components/Admin/Field';
 import { LessonLog, Paginated, SchoolClass } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Download, Inbox } from 'lucide-react';
+import { TeachingTabs } from '@/Components/Admin/ClusterTabs';
 
 interface TeacherOption {
     id: number;
@@ -61,6 +62,7 @@ export default function Index({ logs, schoolClasses, teachers, selectedClassId, 
                     <Download className="h-4 w-4" /> Exporter en PDF
                 </a>
             </PageHeader>
+            <TeachingTabs current="lesson-log" />
 
             <Card className="mb-6 p-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">

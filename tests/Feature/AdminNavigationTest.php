@@ -56,7 +56,6 @@ class AdminNavigationTest extends TestCase
             'admin.finance.cash-journal' => 'le journal de caisse',
             'admin.finance.settings' => 'les réglages des paiements',
             'admin.products.movements' => 'les mouvements de stock',
-            'admin.pointage.report' => 'les statistiques de présence',
         ];
 
         foreach ($expected as $name => $page) {
@@ -64,14 +63,25 @@ class AdminNavigationTest extends TestCase
         }
     }
 
-    public function test_follow_up_pages_stay_one_tab_away_from_the_invoices_entry(): void
+    public function test_follow_up_pages_stay_one_tab_away_from_their_menu_entry(): void
     {
-        // Mensualités, impayés, échéanciers et paiements en ligne ne sont plus des rubriques : ce sont les onglets de « Factures & suivi ».
-        $tabs = file_get_contents(base_path('resources/js/Components/Admin/FinanceTabs.tsx'));
+        // Ces pages ne sont plus des rubriques du menu : ce sont des onglets de la rubrique voisine.
+        $clusters = [
+            'resources/js/Components/Admin/FinanceTabs.tsx' => ['admin.invoices.monthly', 'admin.invoices.overdue', 'admin.payment-plans.index', 'admin.online-payments.index'],
+            'resources/js/Components/Admin/ClusterTabs.tsx' => [
+                'admin.pointage.register', 'admin.pointage.report',
+                'admin.formation-levels.index', 'admin.skills.index',
+                'admin.lesson-logs.index', 'admin.follow-ups.index',
+            ],
+        ];
 
-        foreach (['admin.invoices.monthly', 'admin.invoices.overdue', 'admin.payment-plans.index', 'admin.online-payments.index'] as $name) {
-            $this->assertStringContainsString("'{$name}'", $tabs, "L'onglet de {$name} a disparu de FinanceTabs.");
-            $this->assertTrue(Route::has($name), "{$name} n'est plus une route.");
+        foreach ($clusters as $file => $names) {
+            $source = file_get_contents(base_path($file));
+
+            foreach ($names as $name) {
+                $this->assertStringContainsString("'{$name}'", $source, "L'onglet de {$name} a disparu de {$file}.");
+                $this->assertTrue(Route::has($name), "{$name} n'est plus une route.");
+            }
         }
     }
 
