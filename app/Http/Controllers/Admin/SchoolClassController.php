@@ -34,9 +34,9 @@ class SchoolClassController extends Controller
                 'academicYear:id,label',
                 'nextClass:id,name',
                 $migrated ? 'formationLevel:id,formation_id,label' : null,
-            ]))->withCount('students')->latest()->get(),
+            ]))->withCount(['students', 'teachers'])->latest()->get(),
             'formations' => Formation::orderBy('name')->get(['id', 'name']),
-            'academicYears' => AcademicYear::orderByDesc('start_date')->get(['id', 'label']),
+            'academicYears' => AcademicYear::orderByDesc('start_date')->get(['id', 'label', 'is_current']),
             'formationLevels' => $migrated ? FormationLevel::orderBy('level_number')->get(['id', 'formation_id', 'label']) : collect(),
         ]);
     }
