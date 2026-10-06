@@ -8,7 +8,7 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-export default function Library({ resources }: { resources: LibraryResourceRow[] }) {
+export default function Library({ resources, uploadLimitMb = 10 }: { resources: LibraryResourceRow[]; uploadLimitMb?: number }) {
     const currentUserId = usePage().props.auth.user?.id;
     const [showCreate, setShowCreate] = useState(false);
 
@@ -86,6 +86,7 @@ export default function Library({ resources }: { resources: LibraryResourceRow[]
                         </Field>
                         {form.data.type === 'document' ? (
                             <DocumentFileField
+                                maxMb={uploadLimitMb}
                                 file={form.data.file}
                                 onFileChange={(file) => form.setData('file', file)}
                                 onThumbnailChange={(thumbnail) => form.setData('thumbnail', thumbnail)}
