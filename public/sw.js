@@ -61,14 +61,16 @@ self.addEventListener('push', (event) => {
         self.registration.showNotification(payload.title || 'EEHT de Thiès', {
             body: payload.body,
             icon: payload.icon || '/icons/icon-192.png',
-            badge: '/icons/icon-192.png',
+            badge: payload.badge || '/icons/badge-96.png',
+            image: payload.image,
+            lang: payload.lang || 'fr',
             tag: payload.tag,
             renotify: !!payload.tag && !!payload.renotify,
             requireInteraction: !!payload.requireInteraction,
             vibrate: payload.vibrate,
             actions: payload.actions,
             silent: false,
-            timestamp: Date.now(),
+            timestamp: data.sent_at || Date.now(),
             data,
         }),
     );
