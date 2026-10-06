@@ -21,3 +21,4 @@ Thumbs.db
 .vscode
 npm-debug.log
 yarn-error.log
+/database/*.sqlite*
