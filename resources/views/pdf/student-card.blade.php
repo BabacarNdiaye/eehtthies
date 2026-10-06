@@ -11,7 +11,6 @@
         $ink = '#50022b';
         $gold = '#c8942a';
         $accent = '#8bc93f';
-        $logoPath = \App\Models\Setting::get('site_logo');
         $schoolName = \App\Models\Setting::get('site_name', 'EEHT de Thiès');
     @endphp
     <style>
@@ -76,11 +75,7 @@
         <div class="card">
             <div class="header-bar">
                 <div class="logo-cell">
-                    @if($logoPath)
-                        <img src="{{ public_path('storage/'.$logoPath) }}" alt="Logo">
-                    @else
-                        <span class="logo-fallback">E</span>
-                    @endif
+                    <img src="{{ \App\Support\SiteBrand::file() }}" alt="Logo">
                 </div>
                 <div class="name-cell">{{ $schoolName }}</div>
             </div>

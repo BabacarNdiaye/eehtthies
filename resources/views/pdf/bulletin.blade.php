@@ -59,11 +59,7 @@
 <body>
     <div class="top-header">
         <div class="cell school-seal" style="width: 90px; text-align: left;">
-            @if($logoPath = \App\Models\Setting::get('site_logo'))
-                <img src="{{ public_path('storage/'.$logoPath) }}" alt="Logo" style="width: 44px; height: 44px; object-fit: contain;">
-            @else
-                <span class="badge">E</span>
-            @endif
+            <img src="{{ \App\Support\SiteBrand::file() }}" alt="Logo" style="width: 44px; height: 44px; object-fit: contain;">
         </div>
         <div class="cell republic">
             <div class="title">République du Sénégal</div>

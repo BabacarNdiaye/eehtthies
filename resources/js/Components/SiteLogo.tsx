@@ -1,41 +1,39 @@
 import { usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { PageProps } from '@/types';
 
+/** Logo EEHT d'origine, livré avec l'application : il s'affiche même sans lien public/storage. */
+export const DEFAULT_LOGO = '/images/logo-eeht.png';
+
 /**
- * Affiche le logo téléversé de l'école lorsqu'il a été défini dans Admin ▸ Paramètres, sinon se rabat sur le
- * badge monogramme stylisé utilisé partout dans l'application.
+ * Affiche le logo téléversé dans Admin ▸ Paramètres ; si aucun n'est défini (ou s'il est introuvable sur le serveur),
+ * affiche le logo EEHT d'origine.
  */
 export default function SiteLogo({
     size = 40,
-    tone = 'dark',
     className = '',
 }: {
     size?: number;
+    /** Conservé pour compatibilité : le logo d'origine n'a pas de variante claire/foncée. */
     tone?: 'dark' | 'gold';
     className?: string;
 }) {
     const { props } = usePage<PageProps>();
-    const logo = props.siteSettings?.site_logo;
-
-    if (logo) {
-        return (
-            <span
-                className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ${className}`}
-                style={{ width: size, height: size }}
-            >
-                <img src={`/storage/${logo}`} alt={props.siteSettings.site_short_name} className="h-full w-full object-contain" />
-            </span>
-        );
-    }
-
-    const toneClasses = tone === 'gold' ? 'bg-gold-500 text-ink-900' : 'bg-ink-900 text-gold-400';
+    const uploaded = props.siteSettings?.site_logo;
+    const [broken, setBroken] = useState(false);
+    const src = uploaded && !broken ? `/storage/${uploaded.replace(/^\/+/, '')}` : DEFAULT_LOGO;
 
     return (
         <span
-            className={`flex shrink-0 items-center justify-center rounded-full font-serif font-bold ${toneClasses} ${className}`}
-            style={{ width: size, height: size, fontSize: size * 0.45 }}
+            className={`flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white ${className}`}
+            style={{ width: size, height: size }}
         >
-            E
+            <img
+                src={src}
+                alt={props.siteSettings?.site_short_name ?? 'EEHT'}
+                className="h-full w-full object-contain"
+                onError={() => setBroken(true)}
+            />
         </span>
     );
 }
