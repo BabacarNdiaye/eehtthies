@@ -110,6 +110,7 @@ use App\Http\Controllers\Site\JobOfferController;
 use App\Http\Controllers\Site\NewsController;
 use App\Http\Controllers\Site\PageController;
 use App\Http\Controllers\Site\PaymentWebhookController;
+use App\Http\Controllers\Site\PublicStorageController;
 use App\Http\Controllers\Site\ReceiptVerificationController;
 use App\Http\Controllers\Site\ReportCardVerificationController;
 use App\Http\Controllers\Site\SitemapController;
@@ -125,6 +126,9 @@ use Inertia\Inertia;
 
 Route::get('/manifest.webmanifest', PwaManifestController::class)->name('pwa.manifest');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+
+// Photos et fichiers publics quand le raccourci public/storage est absent (voir PublicStorageController).
+Route::get('/storage/{path}', PublicStorageController::class)->where('path', '.*')->name('public.storage');
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('/a-propos', [PageController::class, 'about'])->name('pages.about');
