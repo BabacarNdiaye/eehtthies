@@ -17,6 +17,7 @@ import { PageProps } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { ClipboardList, LayoutGrid, Layers, List } from 'lucide-react';
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { StudentTabs } from '@/Components/Admin/ClusterTabs';
 
 type View = 'cards' | 'list';
 
@@ -273,6 +274,7 @@ export default function Index(page: StudentsPageProps) {
             >
                 <ActionsMenu filters={filters} can={{ export: can.export, import: can.import, edit: can.edit }} classId={scope?.class?.id ?? null} onImport={() => setShowImport(true)} onGenerateEmails={generateEmails} />
             </PageHeader>
+            <StudentTabs current="students" />
 
             <Modal show={showImport} onClose={() => setShowImport(false)} maxWidth="md">
                 <form onSubmit={submitImport} className="p-6">

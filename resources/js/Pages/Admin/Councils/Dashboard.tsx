@@ -8,6 +8,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { AlertTriangle, CalendarClock, ClipboardCheck, Clock, Download, Eye, GraduationCap, Lock, Percent, Users, Video } from 'lucide-react';
 import { ReactNode } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CouncilTabs } from '@/Components/Admin/ClusterTabs';
 
 interface Indicators {
     examined: number;
@@ -118,6 +119,7 @@ export default function Dashboard(props: Props) {
                     <Download className="h-4 w-4" aria-hidden="true" /> Exporter (Excel)
                 </a>
             </PageHeader>
+            <CouncilTabs current="dashboard" />
 
             <Card className="mb-6 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Select aria-label="Année scolaire" value={filters.academic_year_id ?? ''} onChange={(e) => go({ academic_year_id: e.target.value, school_class_id: '' })}>

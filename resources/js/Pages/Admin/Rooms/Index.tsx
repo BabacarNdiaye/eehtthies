@@ -8,6 +8,7 @@ import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
+import { RoomTabs } from '@/Components/Admin/ClusterTabs';
 
 export default function Index({ rooms }: { rooms: Room[] }) {
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -62,6 +63,7 @@ export default function Index({ rooms }: { rooms: Room[] }) {
                 title="Salles"
                 subtitle="Gérez les salles de classe, ateliers et espaces utilisés pour l'emploi du temps et les examens."
             />
+            <RoomTabs current="rooms" />
 
             <Card className="mb-6 p-6">
                 <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">Ajouter une salle</h2>

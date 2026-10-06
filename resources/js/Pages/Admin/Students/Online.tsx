@@ -8,6 +8,7 @@ import { Paginated } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Clock, LayoutGrid, List, Loader2, RotateCcw, UserX, Users, Wifi } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { StudentTabs } from '@/Components/Admin/ClusterTabs';
 
 type PresenceState = 'online' | 'recent' | 'offline' | 'never' | 'no_account';
 
@@ -208,6 +209,7 @@ export default function Online({ students, counts, byClass, filters, formations,
         <AdminLayout>
             <Head title="Élèves en ligne" />
             <PageHeader title="Élèves en ligne" subtitle={`Qui est connecté à l’application en ce moment. La liste se met à jour toute seule toutes les ${REFRESH_MS / 1000} secondes.`} />
+            <StudentTabs current="online" />
 
             <section aria-label="Aperçu en direct" className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 p-6 text-white shadow-elevated sm:p-8">
                 <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" aria-hidden="true" />

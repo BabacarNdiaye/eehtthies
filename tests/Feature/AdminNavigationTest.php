@@ -29,7 +29,7 @@ class AdminNavigationTest extends TestCase
         preg_match_all("/href: '([a-z0-9.\-]+)'/", $this->navSource(), $matches);
         $hrefs = array_unique($matches[1]);
 
-        $this->assertGreaterThan(60, count($hrefs), 'La navigation devrait compter plus de 60 rubriques.');
+        $this->assertGreaterThan(50, count($hrefs), 'La navigation devrait compter plus de 50 rubriques.');
 
         foreach ($hrefs as $name) {
             $this->assertTrue(Route::has($name), "La rubrique « {$name} » ne correspond à aucune route nommée.");
@@ -72,6 +72,9 @@ class AdminNavigationTest extends TestCase
                 'admin.pointage.register', 'admin.pointage.report',
                 'admin.formation-levels.index', 'admin.skills.index',
                 'admin.lesson-logs.index', 'admin.follow-ups.index',
+                'admin.borne.pointage.gate', 'admin.library.index',
+                'admin.council-dashboard.index', 'admin.council-settings.index',
+                'admin.students.online', 'admin.academic-years.index', 'admin.practical-sessions.index',
             ],
         ];
 

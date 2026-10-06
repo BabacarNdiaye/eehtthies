@@ -91,7 +91,7 @@ class AdminMenuCoverageTest extends TestCase
     {
         $report = $this->report();
 
-        $this->assertGreaterThan(60, $report['counts']['items'], 'Le menu devrait compter plus de 60 rubriques.');
+        $this->assertGreaterThan(50, $report['counts']['items'], 'Le menu devrait compter plus de 50 rubriques.');
         $this->assertGreaterThan(100, $report['counts']['pages'], "L'audit devrait avoir examiné plus de 100 pages d'administration.");
         $this->assertSame([], $report['problems'], "Le menu est incohérent :\n- ".implode("\n- ", $report['problems']));
     }

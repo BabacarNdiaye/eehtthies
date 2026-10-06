@@ -13,6 +13,7 @@ import { CouncilRules, DecisionTypeRow, SubjectGroupRow, SubjectRow, ThresholdSe
 import { PageProps } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { KeyboardEvent, useState } from 'react';
+import { CouncilTabs } from '@/Components/Admin/ClusterTabs';
 
 interface Props {
     decisionTypes: DecisionTypeRow[];
@@ -81,6 +82,7 @@ export default function Index(props: Props) {
                 title="Réglages des conseils de classe"
                 subtitle="Décisions possibles, seuils des pastilles d'alerte, groupes de matières, règles de vote et circuit de validation du procès-verbal."
             />
+            <CouncilTabs current="settings" />
 
             <div role="tablist" aria-label="Rubriques du paramétrage" className="-mx-4 mb-6 flex gap-1 overflow-x-auto border-b border-ink-100 px-4 sm:mx-0 sm:px-0">
                 {TABS.map((item) => {

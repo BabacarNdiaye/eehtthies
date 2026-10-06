@@ -9,6 +9,7 @@ import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { FormationTabs } from '@/Components/Admin/ClusterTabs';
 
 export default function Index({ resources }: { resources: LibraryResourceRow[] }) {
     const [showCreate, setShowCreate] = useState(false);
@@ -78,6 +79,7 @@ export default function Index({ resources }: { resources: LibraryResourceRow[] }
                     Ajouter une ressource
                 </button>
             </PageHeader>
+            <FormationTabs current="library" />
 
             <LibraryBrowser
                 resources={resources}

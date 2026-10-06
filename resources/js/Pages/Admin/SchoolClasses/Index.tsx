@@ -8,6 +8,7 @@ import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
+import { ClassTabs } from '@/Components/Admin/ClusterTabs';
 
 type ClassRow = SchoolClass & {
     formation: { id: number; name: string };
@@ -89,6 +90,7 @@ export default function Index({
                 title="Classes"
                 subtitle="Gérez les classes rattachées aux formations et aux années académiques."
             />
+            <ClassTabs current="classes" />
 
             <Card className="mb-6 p-6">
                 <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">Ajouter une classe</h2>

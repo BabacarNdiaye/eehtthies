@@ -8,6 +8,7 @@ import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
+import { ClassTabs } from '@/Components/Admin/ClusterTabs';
 
 function toDateInput(value?: string | null) {
     if (!value) return '';
@@ -70,6 +71,7 @@ export default function Index({ academicYears }: { academicYears: AcademicYear[]
                 title="Années académiques"
                 subtitle="Gérez les années académiques utilisées pour les classes et les inscriptions."
             />
+            <ClassTabs current="years" />
 
             <Card className="mb-6 p-6">
                 <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">Ajouter une année</h2>
