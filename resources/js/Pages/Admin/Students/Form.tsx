@@ -727,7 +727,7 @@ function DocumentsCard({
                             </div>
                             <div className="flex items-center gap-3">
                                 <a
-                                    href={`/storage/${doc.file_path}`}
+                                    href={route('admin.students.documents.show', [student.id, doc.id])}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-700 hover:bg-ink-50"

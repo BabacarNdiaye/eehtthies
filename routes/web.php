@@ -322,6 +322,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     Route::post('students/{student}/access', [StudentController::class, 'createAccess'])->name('students.access')->middleware('permission:modifier_eleves');
     Route::post('students/{student}/parent-access', [StudentController::class, 'createParentAccess'])->name('students.parentAccess')->middleware('permission:modifier_eleves');
     Route::post('students/{student}/documents', [StudentDocumentController::class, 'store'])->name('students.documents.store')->middleware('permission:modifier_eleves');
+    Route::get('students/{student}/documents/{document}', [StudentDocumentController::class, 'show'])->name('students.documents.show')->middleware('permission:voir_eleves');
     Route::delete('students/{student}/documents/{document}', [StudentDocumentController::class, 'destroy'])->name('students.documents.destroy')->middleware('permission:modifier_eleves');
     Route::get('students/{student}/diploma', [StudentController::class, 'diplomaPdf'])->name('students.diploma')->middleware('permission:voir_eleves');
     Route::get('students/{student}/attestation', [StudentController::class, 'attestationPdf'])->name('students.attestation')->middleware('permission:voir_eleves');

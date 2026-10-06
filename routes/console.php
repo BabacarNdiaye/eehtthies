@@ -17,6 +17,9 @@ Schedule::command('optimize')->hourly()->onOneServer();
 // Sauvegardes automatiques : exporte chaque nuit la base de données + les médias téléversés, puis nettoie
 // selon la politique de rétention de config/backup.php, et alerte par e-mail si une sauvegarde planifiée est
 // manquante ou trop volumineuse.
+// Documents d'élèves : ramène chaque nuit sur le disque privé tout fichier resté sur l'ancien disque public.
+Schedule::command('app:privatize-student-documents')->dailyAt('01:30')->onOneServer();
+
 Schedule::command('backup:run')->dailyAt('02:00')->onOneServer();
 Schedule::command('backup:clean')->dailyAt('03:00')->onOneServer();
 Schedule::command('backup:monitor')->dailyAt('04:00')->onOneServer();
