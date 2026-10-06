@@ -1,11 +1,9 @@
-# Contrôle automatique : lance toute la suite de tests à chaque pull request et à chaque envoi sur une branche autre
-# que main (main passe déjà par le workflow de déploiement). Aucun secret n'est nécessaire.
+# Contrôle automatique : lance toute la suite de tests à chaque pull request (et à chaque nouvel envoi sur celle-ci).
+# main passe déjà par le workflow de déploiement. Aucun secret n'est nécessaire.
 name: Tests
 
 on:
   pull_request:
-  push:
-    branches-ignore: [main]
 
 concurrency:
   group: tests-${{ github.ref }}
