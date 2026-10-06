@@ -1,0 +1,287 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Slim, low-contrast scrollbars for the admin shell (sidebar nav, scrollable
+   panels) — the default OS scrollbar looks heavy next to the rest of the
+   polished admin chrome. Firefox + WebKit only; other browsers keep the
+   native scrollbar, which is an acceptable fallback. */
+.scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--ink-700) / 0.5) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--ink-700) / 0.5);
+    border-radius: 9999px;
+}
+
+/* Espaces élève, enseignant et parent : sur téléphone et tablette, une barre de navigation flottante occupe le
+   bas de l'écran. PortalLayout pose l'attribut data-portal sur <body> ; --portal-bar-h donne alors la hauteur
+   à réserver (marge de sécurité iOS comprise) aux éléments flottants — bannière d'installation, appel entrant —
+   et le bouton EEHT Connect, remplacé par l'onglet « Messages », est masqué.
+   Le site public a la même barre (attribut data-site-bar, posé par PublicLayout) : le bouton EEHT Connect y reste
+   visible, simplement décalé au-dessus d'elle.
+   L'administration (attribut data-admin, posé par AdminLayout) a la sienne, avec l'onglet « Messages » : comme
+   dans les espaces, le bouton EEHT Connect est masqué sur téléphone. */
+:root {
+    --portal-bar-h: 0px;
+}
+
+@media (max-width: 1023px) {
+    body[data-portal],
+    body[data-site-bar],
+    body[data-admin] {
+        --portal-bar-h: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    body[data-portal] .connect-fab,
+    body[data-admin] .connect-fab {
+        display: none;
+    }
+
+    /* Écran de saisie de l'administration (création, modification) : la barre Enregistrer collante (FormActions)
+       prend la place de la barre du bas ; --portal-bar-h réserve sa hauteur aux bannières flottantes. */
+    body[data-admin-form] {
+        --portal-bar-h: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Page de saisie en étapes du site public : barre Précédent / Continuer à la place de la barre du bas. */
+    body[data-site-form] {
+        --portal-bar-h: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    body[data-site-form] .connect-fab {
+        display: none;
+    }
+}
+
+/* Application installée : le navigateur n'offre plus « tirer pour actualiser », l'application le fait elle-même. */
+@media (display-mode: standalone) {
+    body[data-portal],
+    body[data-admin] {
+        overscroll-behavior-y: contain;
+    }
+}
+
+/* Administration : chiffres « de ligne » dans les titres en Playfair Display, dont les chiffres elzéviriens
+   donnaient « 7o ooo FCFA » (le 0 y ressemble à un o). Réservé à l'administration : le site public garde son style. */
+body[data-admin] .font-serif {
+    font-variant-numeric: lining-nums;
+}
+
+/* Administration — tableaux. Sous 768 px chaque ligne devient une carte : le hook useResponsiveTables (monté par
+   AdminLayout) pose sur les cellules data-label (colonne), data-title (titre de la carte) et data-actions (boutons),
+   sur les lignes data-single (intitulé de section ou message « Aucun… ») et data-has-actions. La carte est un flex
+   qui se replie : titre et boutons sur la première ligne (propriété order), puis un champ par ligne, libellé à
+   gauche (pseudo-élément), valeur à droite — quel que soit le contenu de la cellule. Les tableaux « matrice »
+   (data-table="scroll") gardent leur forme : défilement horizontal, première colonne collée. Le CSS vit sous
+   768 px ; au-delà, rien ne change. !important là où Tailwind pose ses propres bordures et marges (divide-y, px-5). */
+@media (max-width: 767px) {
+    body[data-admin] table[data-cards] {
+        display: block;
+        width: 100%;
+    }
+
+    /* L'en-tête reste dans l'arbre d'accessibilité mais ne prend plus de place. */
+    body[data-admin] table[data-cards] > thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    /* minmax(0, 1fr) : sans cela une carte ne peut pas être plus étroite que son texte le plus long (un titre en
+       `truncate`, par exemple) et la page déborde. */
+    body[data-admin] table[data-cards] > tbody {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.625rem;
+        padding: 0.75rem;
+    }
+
+    body[data-admin] table[data-cards] > tbody > tr {
+        display: flex;
+        min-width: 0;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        column-gap: 0.5rem;
+        row-gap: 0.125rem;
+        padding: 0.75rem 0.875rem;
+        border: 1px solid rgb(var(--ink-100)) !important;
+        border-radius: 0.875rem;
+        background-color: rgb(var(--ink-50) / 0.5);
+    }
+
+    body[data-admin] table[data-cards] > tbody > tr > td {
+        position: relative;
+        order: 3;
+        display: block;
+        flex: 0 0 100%;
+        min-height: 1.5rem;
+        padding: 0.125rem 0 0.125rem 7.25rem !important;
+        border: 0 !important;
+        text-align: left !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+    }
+
+    body[data-admin] table[data-cards] > tbody > tr > td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        top: 0.1875rem;
+        width: 6.75rem;
+        padding-right: 0.5rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        line-height: 1.125rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgb(var(--ink-500));
+    }
+
+    body[data-admin] table[data-cards] > tbody > tr > td[data-long-label] {
+        min-height: 2.5rem;
+    }
+
+    /* Colonne sans intérêt sur une carte (th data-card-hide). */
+    body[data-admin] table[data-cards] > tbody > tr > td[data-hide] {
+        display: none;
+    }
+
+    /* Une cellule sans libellé (colonne sans en-tête) occupe toute la largeur. */
+    body[data-admin] table[data-cards] > tbody > tr > td:not([data-label]),
+    body[data-admin] table[data-cards] > tbody > tr > td[data-label=''] {
+        padding-left: 0 !important;
+    }
+
+    body[data-admin] table[data-cards] > tbody > tr > td:not([data-label])::before,
+    body[data-admin] table[data-cards] > tbody > tr > td[data-label='']::before {
+        display: none;
+    }
+
+    /* Sur une carte il y a la place de lire tout le texte : on ne tronque plus (`truncate`, `line-clamp`). */
+    body[data-admin] table[data-cards] > tbody > tr > td :is(.truncate, [class*='line-clamp-']) {
+        display: block;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        -webkit-line-clamp: unset;
+    }
+
+    /* Titre de la carte : première ligne, à gauche. */
+    body[data-admin] table[data-cards] > tbody > tr > td[data-title] {
+        order: 1;
+        flex: 1 1 0;
+        min-width: 0;
+        padding-left: 0 !important;
+        font-size: 0.9375rem;
+    }
+
+    body[data-admin] table[data-cards] > tbody > tr > td[data-title]::before {
+        display: none;
+    }
+
+    /* Avec des boutons à droite (44 px de haut), le titre se centre sur eux au lieu de flotter en haut ; ses lignes
+       (nom, puis matricule ou type) restent l'une sous l'autre. */
+    body[data-admin] table[data-cards] > tbody > tr[data-has-actions] > td[data-title] {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 2.75rem;
+    }
+
+    /* Boutons : première ligne, à droite. */
+    body[data-admin] table[data-cards] > tbody > tr > td[data-actions] {
+        order: 2;
+        flex: 0 0 auto;
+        margin-left: auto;
+        padding: 0 !important;
+    }
+
+    body[data-admin] table[data-cards] > tbody > tr > td[data-actions]::before {
+        display: none;
+    }
+
+    /* Intitulé de section (« BTS 1 Cuisine · 12 élèves ») ou message « Aucun… » : pas de carte. */
+    body[data-admin] table[data-cards] > tbody > tr[data-single] {
+        padding: 0;
+        border: 0 !important;
+        border-radius: 0;
+        background-color: transparent !important;
+    }
+
+    body[data-admin] table[data-cards] > tbody > tr[data-single] > td {
+        flex-basis: 100%;
+        padding: 0.375rem 0.25rem !important;
+        text-align: inherit !important;
+    }
+
+    body[data-admin] table[data-cards] > tbody > tr[data-single] > td::before {
+        display: none;
+    }
+
+    /* Cases à cocher et boutons radio : 24 px au doigt (WCAG 2.5.8) au lieu de 16. */
+    body[data-admin] input[type='checkbox'],
+    body[data-admin] input[type='radio'] {
+        width: 1.5rem;
+        height: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    /* Tableaux « matrice » : ils défilent, mais restent lisibles — marges réduites, première colonne collée. */
+    body[data-admin] table[data-table='scroll'] :is(th, td) {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    body[data-admin] table[data-table='scroll'] tbody td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background-color: #fff;
+    }
+
+    body[data-admin] table[data-table='scroll'] thead th:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background-color: rgb(var(--ink-50));
+    }
+}
+
+.scrollbar-none {
+    scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+
+/* iOS Safari auto-zooms the page when a focused input's font-size is below
+   16px, regardless of the viewport meta tag — forcing 16px on mobile is the
+   only reliable way to stop it without disabling pinch-zoom entirely. */
+@media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}

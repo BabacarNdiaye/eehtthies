@@ -1,0 +1,1 @@
+import e from"./PrivacyPolicy-DZGN2CrV.js";export{e as default};

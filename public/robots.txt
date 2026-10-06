@@ -1,0 +1,16 @@
+# Fichier statique (et non une route) : il écrase l'ancien robots.txt à chaque déploiement par archive.
+# Si le domaine du site change, mettre à jour la ligne « Sitemap » ci-dessous.
+User-agent: *
+Disallow: /admin
+Disallow: /espace-eleve
+Disallow: /espace-parent
+Disallow: /espace-enseignant
+Disallow: /connect
+Disallow: /borne
+Disallow: /login
+Disallow: /suivi-candidature
+Disallow: /candidature/confirmation/
+Disallow: /bulletins/verifier/
+Disallow: /diplomes/verifier/
+
+Sitemap: https://eeht.onits.sn/sitemap.xml

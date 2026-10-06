@@ -1,0 +1,1 @@
+import e from"./LegalNotice-DJP0xReF.js";export{e as default};

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Hors ligne — EEHT de Thiès</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #50022b;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+            padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+        }
+        main { max-width: 420px; margin: 0 auto; }
+        .intro { text-align: center; padding: 12px 0 20px; }
+        img.logo { width: 72px; height: 72px; border-radius: 18px; margin-bottom: 16px; }
+        h1 { font-size: 1.25rem; margin: 0 0 8px; }
+        p { color: rgba(255,255,255,0.75); font-size: 0.95rem; line-height: 1.5; margin: 0 0 16px; }
+        button {
+            background: #8bc93f;
+            color: #1a1a1a;
+            border: none;
+            min-height: 44px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        /* Ce que l'application a gardé dans le navigateur (voir offline.js) */
+        #snapshot { display: grid; gap: 14px; }
+        .who h2 { margin: 0; font-size: 1.15rem; }
+        .who p { margin: 2px 0 0; }
+        .panel { background: #fff; color: #1a1a1a; border-radius: 22px; padding: 18px; }
+        .panel h3 { margin: 0 0 12px; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6b6b; }
+        .panel .muted { color: #6b6b6b; margin: 0; }
+        .muted { color: rgba(255,255,255,0.75); }
+        .small { font-size: 0.8rem; }
+        .qr { display: block; width: 100%; max-width: 240px; margin: 0 auto; }
+        .matricule { text-align: center; font-weight: 700; font-size: 1.1rem; color: #1a1a1a; margin: 10px 0 4px; }
+        .panel .small { text-align: center; }
+        .agenda { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+        .agenda li { display: flex; gap: 12px; align-items: flex-start; border-top: 1px solid #eee; padding-top: 10px; }
+        .agenda li:first-child { border-top: 0; padding-top: 0; }
+        .time { flex: none; width: 112px; white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .what { display: grid; gap: 2px; }
+        .what small { color: #6b6b6b; font-size: 0.8rem; }
+        .actions { text-align: center; padding-top: 6px; }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="intro">
+            <img class="logo" src="/icons/icon-192.png" alt="EEHT de Thiès">
+            <h1>Vous êtes hors ligne</h1>
+            <p>Impossible de joindre le serveur pour le moment. Voici ce qui est enregistré sur cet appareil.</p>
+        </div>
+
+        <div id="snapshot"></div>
+
+        <div class="actions">
+            <p>Vérifiez votre connexion internet puis réessayez.</p>
+            <button onclick="location.reload()">Réessayer</button>
+        </div>
+    </main>
+    <script src="/offline.js" defer></script>
+</body>
+</html>
