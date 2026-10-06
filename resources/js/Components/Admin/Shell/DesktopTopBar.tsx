@@ -20,7 +20,7 @@ export default function DesktopTopBar({ crumbs, onSearch }: Props) {
     if (trail.length === 0) trail.push({ label: 'Administration' });
 
     return (
-        <header className="sticky top-0 z-30 hidden h-16 items-center justify-between gap-4 border-b border-ink-100 bg-white px-6 lg:flex">
+        <header className="sticky top-0 z-30 hidden h-16 items-center justify-between gap-4 border-b border-ink-100/80 bg-white/80 px-6 backdrop-blur-xl lg:flex">
             <nav aria-label="Fil d'Ariane" className="min-w-0">
                 <ol className="flex items-center gap-1.5 text-sm text-ink-500">
                     {trail.map((crumb, index) => {
@@ -49,7 +49,7 @@ export default function DesktopTopBar({ crumbs, onSearch }: Props) {
                     type="button"
                     onClick={onSearch}
                     aria-haspopup="dialog"
-                    className="flex h-10 w-72 items-center gap-2 rounded-lg border border-ink-200 bg-ink-50 px-3 text-sm text-ink-500 outline-none transition-colors hover:border-ink-300 hover:bg-white focus-visible:ring-2 focus-visible:ring-gold-500"
+                    className="flex h-10 w-72 items-center gap-2 rounded-xl border border-ink-200 bg-ink-50/80 px-3 text-sm text-ink-500 outline-none transition-colors hover:border-ink-300 hover:bg-white focus-visible:ring-2 focus-visible:ring-gold-500"
                 >
                     <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span className="flex-1 truncate text-left">Rechercher une page…</span>
@@ -58,7 +58,7 @@ export default function DesktopTopBar({ crumbs, onSearch }: Props) {
                     </kbd>
                 </button>
                 <NotificationBell href={route('connect.index')} />
-                <Link href={route('home')} className="text-sm font-medium text-ink-600 transition-colors duration-150 hover:text-gold-700">
+                <Link href={route('home')} className="rounded-lg px-2 py-1 text-sm font-medium text-ink-600 outline-none transition-colors duration-150 hover:text-gold-700 focus-visible:ring-2 focus-visible:ring-gold-500">
                     Voir le site public →
                 </Link>
             </div>

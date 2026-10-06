@@ -135,7 +135,7 @@ export default function AdminLayout({ children }: PropsWithChildren) {
     };
 
     return (
-        <div className="min-h-screen bg-ink-50">
+        <div className="min-h-screen bg-ink-50 bg-[radial-gradient(60rem_28rem_at_100%_0%,rgb(var(--gold-100)/0.45),transparent)] bg-no-repeat">
             <a
                 href="#contenu"
                 className="sr-only rounded-lg bg-white px-4 py-2 text-sm font-semibold text-ink-900 shadow-elevated focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70]"

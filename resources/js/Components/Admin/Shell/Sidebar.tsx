@@ -42,12 +42,13 @@ export default function Sidebar({ groups, current, name, role }: Props) {
     };
 
     return (
-        <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col bg-ink-900 lg:flex">
-            <div className="flex h-16 shrink-0 items-center gap-2.5 px-5">
+        <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-white/5 bg-gradient-to-b from-ink-900 via-ink-900 to-ink-950 lg:flex">
+            <div className="relative flex h-16 shrink-0 items-center gap-2.5 px-5">
+                <span className="pointer-events-none absolute inset-x-5 bottom-0 h-px bg-gradient-to-r from-gold-500/60 via-gold-500/20 to-transparent" aria-hidden="true" />
                 <SiteLogo size={36} tone="gold" />
                 <div className="flex flex-col leading-tight">
                     <span className="font-serif text-sm font-bold text-white">EEHT Admin</span>
-                    <span className="text-[10px] uppercase tracking-widest text-ink-300">Gestion intégrée</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-300/80">Gestion intégrée</span>
                 </div>
             </div>
 
@@ -70,11 +71,12 @@ export default function Sidebar({ groups, current, name, role }: Props) {
                                     key={item.href}
                                     href={route(item.href)}
                                     aria-current={isActive ? 'page' : undefined}
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200 ${focusRing} ${
-                                        isActive ? 'bg-gold-500 text-ink-900' : 'text-ink-300 hover:bg-white/5 hover:text-white'
+                                    className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 ${focusRing} ${
+                                        isActive ? 'bg-white/10 text-white shadow-inner shadow-black/10' : 'text-ink-300 hover:bg-white/5 hover:text-white'
                                     }`}
                                 >
-                                    <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                                    {isActive && <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-gold-400" aria-hidden="true" />}
+                                    <Icon className={`h-5 w-5 shrink-0 ${isActive ? 'text-gold-300' : ''}`} aria-hidden="true" />
                                     {item.label}
                                 </Link>
                             );
@@ -93,15 +95,15 @@ export default function Sidebar({ groups, current, name, role }: Props) {
                                 aria-expanded={isOpen}
                                 aria-controls={panelId}
                                 onClick={() => toggle(group.label as string)}
-                                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200 ${focusRing} ${
+                                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 ${focusRing} ${
                                     isOpen
                                         ? 'bg-white/5 text-white'
                                         : hasActiveChild
-                                          ? 'text-gold-400'
+                                          ? 'text-gold-300'
                                           : 'text-ink-300 hover:bg-white/5 hover:text-white'
                                 }`}
                             >
-                                {GroupIcon && <GroupIcon className="h-5 w-5 shrink-0" aria-hidden="true" />}
+                                {GroupIcon && <GroupIcon className={`h-5 w-5 shrink-0 ${hasActiveChild ? 'text-gold-300' : ''}`} aria-hidden="true" />}
                                 <span className="flex-1 text-balance text-left">{group.label}</span>
                                 <ChevronDown
                                     className={`h-4 w-4 shrink-0 transition-transform duration-300 ease-fluid motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`}
@@ -115,7 +117,7 @@ export default function Sidebar({ groups, current, name, role }: Props) {
                                 }`}
                             >
                                 <div className="overflow-hidden">
-                                    <div className="mt-1 space-y-0.5 rounded-lg bg-black/25 p-1.5 shadow-inner shadow-black/20 ring-1 ring-inset ring-white/5">
+                                    <div className="mt-1 space-y-0.5 rounded-xl bg-black/25 p-1.5 shadow-inner shadow-black/20 ring-1 ring-inset ring-white/5">
                                         {group.items.map((item) => {
                                             const Icon = item.icon;
                                             const isActive = item.active(current);
@@ -125,11 +127,12 @@ export default function Sidebar({ groups, current, name, role }: Props) {
                                                     key={item.href}
                                                     href={route(item.href)}
                                                     aria-current={isActive ? 'page' : undefined}
-                                                    className={`flex items-center gap-3 rounded-md px-3 py-2 text-balance text-sm font-medium transition-colors duration-200 ${focusRing} ${
-                                                        isActive ? 'bg-gold-500 text-ink-900' : 'text-ink-300 hover:bg-white/10 hover:text-white'
+                                                    className={`relative flex items-center gap-3 rounded-lg px-3 py-2 text-balance text-sm font-medium transition-colors duration-200 ${focusRing} ${
+                                                        isActive ? 'bg-white/10 text-white' : 'text-ink-300 hover:bg-white/10 hover:text-white'
                                                     }`}
                                                 >
-                                                    <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                                                    {isActive && <span className="absolute inset-y-1.5 left-0 w-1 rounded-r-full bg-gold-400" aria-hidden="true" />}
+                                                    <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-gold-300' : ''}`} aria-hidden="true" />
                                                     {item.label}
                                                 </Link>
                                             );
@@ -146,13 +149,13 @@ export default function Sidebar({ groups, current, name, role }: Props) {
                 <div className="mb-3 flex items-center gap-3">
                     <div
                         aria-hidden="true"
-                        className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-700 text-sm font-semibold text-white"
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-gold-400 to-gold-600 text-sm font-bold text-ink-950 ring-2 ring-white/10"
                     >
-                        {name.charAt(0)}
+                        {name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-white">{name}</p>
-                        <p className="truncate text-xs text-ink-300">{role}</p>
+                        <p className="truncate text-xs capitalize text-ink-300">{role}</p>
                     </div>
                 </div>
                 <Link

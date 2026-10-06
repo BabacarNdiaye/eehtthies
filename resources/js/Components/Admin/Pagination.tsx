@@ -9,7 +9,7 @@ function decode(label: string): string {
     return box.value;
 }
 
-const pill = 'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors duration-150';
+const pill = 'rounded-lg px-3 py-1.5 text-xs font-semibold outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-gold-500';
 
 function Step({ link, className = '' }: { link: PaginationLink; className?: string }) {
     const text = decode(link.label);
@@ -38,7 +38,7 @@ export default function Pagination<T>({ data }: { data: Paginated<T> }) {
     return (
         <nav
             aria-label="Pagination"
-            className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-100 px-4 py-3 text-sm sm:px-6"
+            className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-100 bg-ink-50/40 px-4 py-3 text-sm sm:px-6"
         >
             <p className="text-ink-500">
                 Affichage de <span className="font-medium">{data.from ?? 0}</span> à{' '}
@@ -60,7 +60,7 @@ export default function Pagination<T>({ data }: { data: Paginated<T> }) {
                                     preserveScroll
                                     aria-label={isPage ? `Page ${text}` : undefined}
                                     aria-current={link.active ? 'page' : undefined}
-                                    className={`${pill} ${link.active ? 'bg-ink-900 text-white' : 'text-ink-700 hover:bg-ink-100'}`}
+                                    className={`${pill} ${link.active ? 'bg-ink-900 text-white shadow-sm' : 'text-ink-700 hover:bg-ink-100'}`}
                                 >
                                     {text}
                                 </Link>

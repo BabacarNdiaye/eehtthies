@@ -285,3 +285,38 @@ body[data-admin] .font-serif {
         font-size: 16px !important;
     }
 }
+
+/* Administration — finitions communes. Sélecteurs à spécificité nulle (:where) : une classe Tailwind posée sur la page
+   l'emporte toujours, ces règles ne comblent que ce qu'une page n'a pas réglé. */
+body[data-admin] ::selection {
+    background-color: rgb(var(--gold-200));
+    color: rgb(var(--ink-900));
+}
+
+@media (min-width: 768px) {
+    :where(body[data-admin]) main table thead th {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.07em;
+    }
+
+    :where(body[data-admin]) main table tbody tr {
+        transition: background-color 150ms ease;
+    }
+
+    :where(body[data-admin]) main table tbody tr:hover {
+        background-color: rgb(var(--ink-50) / 0.7);
+    }
+
+    :where(body[data-admin]) main table td,
+    :where(body[data-admin]) main table th {
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body[data-admin] * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
