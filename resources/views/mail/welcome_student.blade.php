@@ -33,7 +33,7 @@
     </p>
 
     <p style="margin: 16px 0 0; font-size: 13px; line-height: 1.7; color: #445a72;">
-        Pour votre sécurité, nous vous recommandons de changer ce mot de passe dès votre première connexion,
+        Pour votre sécurité, ce mot de passe est provisoire : vous devrez en choisir un nouveau dès votre première connexion,
         depuis la page « Mot de passe » de votre espace.
     </p>
 

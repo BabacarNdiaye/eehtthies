@@ -11,6 +11,7 @@ use App\Models\TeacherSalaryPayment;
 use App\Models\User;
 use App\Support\Exportable;
 use App\Support\InstitutionalEmail;
+use App\Support\TemporaryPassword;
 use App\Support\PayoutAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -267,7 +268,7 @@ class TeacherController extends Controller
             $teacher->update(['professional_email' => InstitutionalEmail::generate("{$teacher->first_name} {$teacher->last_name}")]);
         }
 
-        $password = config('eeht.default_password');
+        $password = TemporaryPassword::generate();
 
         $user = User::updateOrCreate(
             ['email' => $teacher->professional_email],
@@ -277,9 +278,10 @@ class TeacherController extends Controller
                 'email_verified_at' => now(),
             ]
         );
+        $user->forceFill(TemporaryPassword::flag(true))->save();
         $user->syncRoles(['enseignant']);
         $teacher->update(['user_id' => $user->id]);
 
-        return back()->with('success', "Accès enseignant créé. Identifiant : {$teacher->professional_email} — Mot de passe par défaut : {$password}");
+        return back()->with('success', "Accès enseignant créé. Identifiant : {$teacher->professional_email} — Mot de passe provisoire : {$password} (à changer à la première connexion ; notez-le maintenant, il ne sera plus affiché)");
     }
 }

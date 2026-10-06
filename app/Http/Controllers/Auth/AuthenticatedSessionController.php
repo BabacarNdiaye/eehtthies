@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Support\TemporaryPassword;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,12 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        // Un compte créé avec l'ancien mot de passe commun doit en choisir un autre avant toute chose.
+        $user = $request->user();
+        if (TemporaryPassword::supported() && ! $user->must_change_password && TemporaryPassword::isLegacy($user)) {
+            $user->forceFill(TemporaryPassword::flag(true))->save();
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

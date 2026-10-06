@@ -26,15 +26,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Mot de passe par défaut
+    | Mots de passe des accès au portail
     |--------------------------------------------------------------------------
     |
-    | Attribué lors de la création de l'accès au portail d'un élève, d'un enseignant ou d'un parent. Les
-    | acteurs sont censés le modifier depuis leur propre espace (voir le lien « Mot de passe » de chaque
-    | portail), ce qui explique qu'il n'ait pas besoin d'être aléatoire.
+    | Il n'y a plus de mot de passe commun : chaque accès élève, enseignant ou parent reçoit un mot de passe
+    | provisoire aléatoire (App\Support\TemporaryPassword) à changer à la première connexion.
     |
     */
-    'default_password' => 'eeht2026',
 
     /*
     |--------------------------------------------------------------------------
