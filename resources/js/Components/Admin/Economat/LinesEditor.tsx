@@ -53,7 +53,9 @@ export default function LinesEditor({
                             <th className="w-32 px-3 py-2.5">Quantité</th>
                             {withCost && <th className="w-36 px-3 py-2.5">Prix unitaire</th>}
                             {withCost && <th className="w-36 px-3 py-2.5 text-right">Montant</th>}
-                            <th className="w-12 px-3 py-2.5" />
+                            <th className="w-12 px-3 py-2.5">
+                                <span className="sr-only">Actions</span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-ink-100">
