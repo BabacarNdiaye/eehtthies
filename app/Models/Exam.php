@@ -28,8 +28,8 @@ class Exam extends Model
 
                 User::whereIn('id', $userIds)->get()->each(
                     fn (User $user) => $user->notify(new PushAlert(
-                        'Notes disponibles',
-                        "Les notes de « {$exam->title} » ont été publiées.",
+                        'Notes publiées',
+                        $exam->title,
                         '/espace-eleve/notes'
                     ))
                 );

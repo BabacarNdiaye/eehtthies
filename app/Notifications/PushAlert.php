@@ -20,16 +20,16 @@ class PushAlert extends Notification
     ) {}
 
     /**
-     * Rubriques de notification : bouton principal, vibration et bandeau illustré. Les messages et les appels n'ont
-     * pas de bandeau (ils doivent rester discrets, ou sonner) ; la rubrique se déduit de l'adresse ouverte au clic.
+     * Rubriques de notification : bouton principal et vibration. Style sobre, sans illustration : le titre, une ligne
+     * d'information et un seul bouton. La rubrique se déduit de l'adresse ouverte au clic.
      */
     private const CATEGORIES = [
-        'finance' => ['action' => 'Voir la facture', 'image' => '/images/push/finance.jpg', 'vibrate' => [200, 80, 200]],
-        'resultats' => ['action' => 'Voir mes notes', 'image' => '/images/push/resultats.jpg', 'vibrate' => [120, 60, 120]],
-        'conseil' => ['action' => 'Ouvrir', 'image' => '/images/push/conseil.jpg', 'vibrate' => [120, 60, 120]],
-        'rh' => ['action' => 'Voir ma demande', 'image' => '/images/push/rh.jpg', 'vibrate' => [120, 60, 120]],
-        'messages' => ['action' => 'Répondre', 'image' => null, 'vibrate' => [80, 40, 80]],
-        'general' => ['action' => 'Ouvrir', 'image' => null, 'vibrate' => [120, 60, 120]],
+        'finance' => ['action' => 'Consulter', 'vibrate' => [120, 60, 120]],
+        'resultats' => ['action' => 'Consulter', 'vibrate' => [120, 60, 120]],
+        'conseil' => ['action' => 'Consulter', 'vibrate' => [120, 60, 120]],
+        'rh' => ['action' => 'Consulter', 'vibrate' => [120, 60, 120]],
+        'messages' => ['action' => 'Répondre', 'vibrate' => [80, 40, 80]],
+        'general' => ['action' => 'Ouvrir', 'vibrate' => [120, 60, 120]],
     ];
 
     private function category(): string
@@ -70,9 +70,9 @@ class PushAlert extends Notification
             ->vibrate($category['vibrate'])
             ->data(['url' => $this->url, 'sent_at' => now()->getTimestampMs()] + ($this->extra['data'] ?? []));
 
-        // Bandeau illustré de la rubrique (affiché sous le texte sur Android et dans Chrome), ou image choisie.
-        if ($image = $this->extra['image'] ?? $category['image']) {
-            $message->image($image);
+        // Image facultative, uniquement si l'appelant en fournit une (aucune par défaut : sobriété).
+        if (isset($this->extra['image'])) {
+            $message->image($this->extra['image']);
         }
 
         // Options facultatives (appels : sonnerie persistante, boutons, priorité haute).

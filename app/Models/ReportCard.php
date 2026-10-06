@@ -38,7 +38,7 @@ class ReportCard extends Model
             if ($reportCard->wasChanged('is_published') && $reportCard->is_published) {
                 $reportCard->student?->user?->notify(new PushAlert(
                     'Bulletin disponible',
-                    "Votre bulletin ({$reportCard->term}) est disponible.",
+                    "{$reportCard->term} · consultable dans votre espace",
                     '/espace-eleve/notes'
                 ));
             }

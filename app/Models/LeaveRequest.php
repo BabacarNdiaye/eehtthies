@@ -53,7 +53,7 @@ class LeaveRequest extends Model
 
             $leave->user?->notify(new PushAlert(
                 "Demande de congé {$verb}",
-                'Votre demande du '.$leave->start_date->format('d/m/Y').' au '.$leave->end_date->format('d/m/Y')." a été {$verb}.",
+                'Du '.$leave->start_date->format('d/m/Y').' au '.$leave->end_date->format('d/m/Y'),
                 $url
             ));
         });

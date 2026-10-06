@@ -23,8 +23,8 @@ class PushAlertTest extends TestCase
     public function test_the_category_is_deduced_from_the_url(): void
     {
         $invoice = (new PushAlert('Nouvelle facture', 'Mensualité', '/espace-eleve/factures'))->toWebPush(null, null)->toArray();
-        $this->assertSame('/images/push/finance.jpg', $invoice['image']);
-        $this->assertSame('Voir la facture', $invoice['actions'][0]['title']);
+        $this->assertArrayNotHasKey('image', $invoice);
+        $this->assertSame('Consulter', $invoice['actions'][0]['title']);
 
         $chat = (new PushAlert('Awa', 'Bonjour', '/connect?section=messages'))->toWebPush(null, null)->toArray();
         $this->assertArrayNotHasKey('image', $chat);
