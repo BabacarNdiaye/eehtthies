@@ -25,6 +25,7 @@ use Database\Seeders\FormationsCatalogSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Données FICTIVES pour essayer le conseil de classe en local (séance, visioconférence, vote, tableau de bord).
@@ -131,6 +132,11 @@ class LocalDemoSeeder extends Seeder
             );
         }
 
+        // Comptes de connexion et photos pour les huit premiers élèves : la page « Élèves en ligne » a de quoi s'afficher.
+        foreach (array_slice($students, 0, 8) as $index => $student) {
+            $this->giveAccountAndPhoto($student, $index);
+        }
+
         foreach (['Semestre 1', 'Semestre 2'] as $term) {
             foreach ($subjects as $subject) {
                 $exam = Exam::firstOrCreate(
@@ -148,6 +154,62 @@ class LocalDemoSeeder extends Seeder
         }
 
         return $class;
+    }
+
+    /**
+     * Compte de connexion (eleve-<matricule>@demo.local, mot de passe « password ») et photo fictive d'un élève, avec des
+     * dernières activités variées : en ligne (moins de 2 min), actif récemment, hors ligne, jamais connecté. Relancer le
+     * seeder « rafraîchit » les heures : les élèves redeviennent « en ligne » pendant deux minutes.
+     */
+    private function giveAccountAndPhoto(Student $student, int $index): void
+    {
+        $lastSeen = match ($index % 4) {
+            0 => now()->subSeconds(20 + $index),
+            1 => now()->subMinutes(7),
+            2 => now()->subHours(3),
+            default => null,
+        };
+
+        $user = User::firstOrNew(['email' => 'eleve-'.strtolower($student->matricule).'@demo.local']);
+        $user->forceFill(['name' => $student->first_name.' '.$student->last_name, 'password' => Hash::make(self::PASSWORD), 'email_verified_at' => now(), 'last_seen_at' => $lastSeen])->save();
+        $user->syncRoles(['eleve']);
+
+        $update = ['user_id' => $user->id];
+
+        if ($portrait = $this->portrait($index + (int) $student->id)) {
+            $path = 'students/photos/demo-'.strtolower($student->matricule).'.jpg';
+            Storage::disk('public')->put($path, $portrait);
+            $update['photo'] = $path;
+        }
+
+        $student->update($update);
+    }
+
+    /** Portrait fictif (silhouette sur fond de couleur) dessiné avec GD ; null si GD n'est pas disponible. */
+    private function portrait(int $seed): ?string
+    {
+        if (! function_exists('imagecreatetruecolor')) {
+            return null;
+        }
+
+        $backgrounds = [[217, 199, 163], [188, 211, 201], [226, 196, 196], [196, 205, 226], [225, 218, 176], [205, 196, 226]];
+        $skins = [[138, 90, 59], [91, 58, 41], [59, 42, 34], [168, 117, 82], [112, 74, 51]];
+        [$br, $bg, $bb] = $backgrounds[$seed % count($backgrounds)];
+        [$sr, $sg, $sb] = $skins[$seed % count($skins)];
+
+        $image = imagecreatetruecolor(240, 300);
+        imagefill($image, 0, 0, imagecolorallocate($image, $br, $bg, $bb));
+        $body = imagecolorallocate($image, max(0, $sr - 30), max(0, $sg - 30), max(0, $sb - 30));
+        $head = imagecolorallocate($image, $sr, $sg, $sb);
+        imagefilledellipse($image, 120, 330, 260, 280, $body);
+        imagefilledellipse($image, 120, 118, 104, 124, $head);
+
+        ob_start();
+        imagejpeg($image, null, 85);
+        $binary = (string) ob_get_clean();
+        imagedestroy($image);
+
+        return $binary;
     }
 
     /** Un conseil par état (brouillon, programmé, en séance avec membres présents, clôturé) + une séance commune. */

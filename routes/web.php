@@ -67,6 +67,7 @@ use App\Http\Controllers\Admin\SkillAssessmentController;
 use App\Http\Controllers\Admin\SkillController;
 use App\Http\Controllers\Admin\SliderController as AdminSliderController;
 use App\Http\Controllers\Admin\StatisticsController;
+use App\Http\Controllers\Admin\StorageDiagnosticController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\StudentPresenceController;
 use App\Http\Controllers\Admin\StudentDocumentController;
@@ -129,6 +130,9 @@ Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 // Photos et fichiers publics quand le raccourci public/storage est absent (voir PublicStorageController).
 Route::get('/storage/{path}', PublicStorageController::class)->where('path', '.*')->name('public.storage');
+
+// Diagnostic des photos (direction) : dit pourquoi elles ne s'affichent pas, sans terminal. Hors du menu d'administration.
+Route::get('/diagnostic/photos', StorageDiagnosticController::class)->middleware(['auth', 'verified', 'role:super-admin|direction'])->name('diagnostic.storage');
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('/a-propos', [PageController::class, 'about'])->name('pages.about');
