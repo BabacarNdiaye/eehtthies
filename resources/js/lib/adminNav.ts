@@ -156,11 +156,10 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        label: 'Gestion pédagogique',
-        icon: School,
+        label: 'Admissions',
+        icon: UserPlus,
         items: [
             {
-                section: 'Admissions',
                 label: 'Candidatures',
                 href: 'admin.candidatures.index',
                 icon: FileUser,
@@ -168,8 +167,13 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_candidatures',
                 keywords: 'admissions dossiers inscription candidats pre-inscription',
             },
+        ],
+    },
+    {
+        label: 'Scolarité',
+        icon: Users,
+        items: [
             {
-                section: 'Scolarité',
                 label: 'Élèves',
                 href: 'admin.students.index',
                 icon: IdCard,
@@ -179,7 +183,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'etudiants apprenants inscrits matricule dossiers en ligne connectes presence en direct',
             },
             {
-                section: 'Scolarité',
                 label: 'Classes',
                 href: 'admin.school-classes.index',
                 icon: Group,
@@ -189,7 +192,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'promotions groupes effectifs annee academique annees scolaires',
             },
             {
-                section: 'Scolarité',
                 label: 'Présences',
                 href: 'admin.pointage.index',
                 icon: ClipboardCheck,
@@ -199,7 +201,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'presence appel absences retards registre statistiques taux de presence absenteisme scanner cartes entree borne qr',
             },
             {
-                section: 'Scolarité',
                 label: 'Discipline',
                 href: 'admin.discipline.index',
                 icon: ShieldAlert,
@@ -208,7 +209,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'sanctions avertissement blame exclusion conduite vie scolaire',
             },
             {
-                section: 'Scolarité',
                 label: 'Passation de classe',
                 href: 'admin.class-promotion.index',
                 icon: ArrowUpCircle,
@@ -216,8 +216,13 @@ export const navGroups: NavGroup[] = [
                 permission: 'modifier_eleves',
                 keywords: 'passage promotion redoublement fin d annee exclusion',
             },
+        ],
+    },
+    {
+        label: 'Pédagogie',
+        icon: School,
+        items: [
             {
-                section: 'Pédagogie',
                 label: 'Formations',
                 href: 'admin.formations.index',
                 icon: GraduationCap,
@@ -227,7 +232,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'filieres diplomes programmes cursus niveaux regles de passage referentiel de competences niveaux regles de passage referentiel de competences bibliotheque ressources',
             },
             {
-                section: 'Pédagogie',
                 label: 'Matières',
                 href: 'admin.subjects.index',
                 icon: BookOpen,
@@ -236,7 +240,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'cours disciplines coefficients',
             },
             {
-                section: 'Pédagogie',
                 label: 'Emploi du temps',
                 href: 'admin.timetable.index',
                 icon: Clock,
@@ -246,7 +249,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'planning horaires cours seances cahier de texte seances contenu devoirs cahier de texte seances contenu devoirs',
             },
             {
-                section: 'Pédagogie',
                 label: 'Salles & ateliers',
                 href: 'admin.rooms.index',
                 icon: DoorOpen,
@@ -256,7 +258,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'locaux ateliers amphitheatre ateliers pratiques travaux pratiques',
             },
             {
-                section: 'Pédagogie',
                 label: 'Fiches enseignants',
                 href: 'admin.teachers.index',
                 icon: Contact,
@@ -264,8 +265,13 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_enseignants',
                 keywords: 'professeurs formateurs intervenants vacataires',
             },
+        ],
+    },
+    {
+        label: 'Évaluations',
+        icon: Award,
+        items: [
             {
-                section: 'Évaluations',
                 label: 'Examens & devoirs',
                 href: 'admin.exams.index',
                 icon: PenSquare,
@@ -274,7 +280,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'epreuves controles notes interrogations compositions',
             },
             {
-                section: 'Évaluations',
                 label: 'Évaluations de compétences',
                 href: 'admin.skill-assessments.index',
                 icon: ListChecks,
@@ -283,7 +288,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'competences fiches grilles',
             },
             {
-                section: 'Évaluations',
                 label: 'Bulletins',
                 href: 'admin.report-cards.index',
                 icon: ScrollText,
@@ -292,7 +296,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'releves notes moyennes semestre',
             },
             {
-                section: 'Évaluations',
                 label: 'Conseils de classe',
                 href: 'admin.councils.index',
                 icon: Gavel,
@@ -302,7 +305,6 @@ export const navGroups: NavGroup[] = [
                 keywords: 'conseil de classe deliberation decisions proces verbal pv seance appreciations actions de suivi entretiens actions de suivi entretiens bilan tableau de bord reglages seuils',
             },
             {
-                section: 'Évaluations',
                 label: 'Diplômes & attestations',
                 href: 'admin.certificates.index',
                 icon: BadgeCheck,
