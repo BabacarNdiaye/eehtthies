@@ -32,7 +32,7 @@ class AdminMenuCoverageTest extends TestCase
     ];
 
     private const CRUMBS = [
-        'admin.invoices.monthly', 'admin.invoices.overdue', 'admin.invoices.show', 'admin.exams.grades',
+        'admin.invoices.monthly', 'admin.invoices.overdue', 'admin.payment-plans.index', 'admin.online-payments.index', 'admin.invoices.show', 'admin.exams.grades',
         'admin.settings.reset.index', 'admin.products.movements', 'admin.finance.settings',
     ];
 
@@ -147,14 +147,19 @@ class AdminMenuCoverageTest extends TestCase
     {
         $crumbs = $this->report()['crumbs'];
 
-        // Les pages de suivi ont leur propre rubrique : ce ne sont plus des sous-pages de « Factures » ou de « Finance ».
-        foreach (['admin.invoices.monthly' => 'Suivi des mensualités', 'admin.invoices.overdue' => 'Impayés', 'admin.products.movements' => 'Mouvements de stock', 'admin.finance.settings' => 'Réglages des paiements'] as $page => $label) {
+        // Les pages de suivi des élèves sont des onglets de la rubrique « Factures & suivi » ; « Mouvements de stock » et
+        // « Réglages des paiements » gardent leur propre rubrique.
+        foreach (['admin.invoices.monthly', 'admin.invoices.overdue', 'admin.payment-plans.index', 'admin.online-payments.index'] as $page) {
+            $this->assertSame('Factures & suivi', $crumbs[$page]['item'], "{$page} devrait appartenir à « Factures & suivi ».");
+        }
+
+        foreach (['admin.products.movements' => 'Mouvements de stock', 'admin.finance.settings' => 'Réglages des paiements'] as $page => $label) {
             $this->assertSame($label, $crumbs[$page]['item'], "{$page} devrait avoir sa propre rubrique.");
             $this->assertFalse($crumbs[$page]['isSubPage'], "{$page} est une page du menu, pas une sous-page.");
             $this->assertNull($crumbs[$page]['leaf']);
         }
 
-        $this->assertSame('Factures', $crumbs['admin.invoices.show']['item']);
+        $this->assertSame('Factures & suivi', $crumbs['admin.invoices.show']['item']);
         $this->assertSame('Détail', $crumbs['admin.invoices.show']['leaf']);
         $this->assertSame('Examens & devoirs', $crumbs['admin.exams.grades']['item']);
         $this->assertSame('Notes', $crumbs['admin.exams.grades']['leaf']);

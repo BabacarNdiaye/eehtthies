@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import FinanceTabs from '@/Components/Admin/FinanceTabs';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Checkbox, Field, Select } from '@/Components/Admin/Field';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
@@ -195,6 +196,7 @@ export default function Monthly({ students, totals, formations, academicYears, s
                     </Link>
                 )}
             </PageHeader>
+            <FinanceTabs current="monthly" />
 
             {canEdit && missingDueDates > 0 && (
                 <div role="status" className="mb-6 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">

@@ -1,6 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import { SearchField } from '@/Components/Admin/FilterBar';
+import FinanceTabs from '@/Components/Admin/FinanceTabs';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { Field, Select, TextInput } from '@/Components/Admin/Field';
@@ -126,6 +127,7 @@ export default function Index({ invoices, stats, can, formations, academicYears,
                     <Plus className="h-4 w-4" aria-hidden="true" /> Nouvelle facture
                 </Link>
             </PageHeader>
+            <FinanceTabs current="invoices" />
 
             <section aria-label="Synthèse des factures" className="mb-6 grid gap-4 lg:grid-cols-[1.4fr_1fr_1fr]">
                 <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 p-6 text-white shadow-elevated">

@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import FinanceTabs from '@/Components/Admin/FinanceTabs';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { SearchField } from '@/Components/Admin/FilterBar';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
@@ -107,6 +108,7 @@ export default function Overdue({ invoices, totalOutstanding, totalOverdue, fami
         <AdminLayout>
             <Head title="Impayés" />
             <PageHeader title="Situation des impayés" subtitle="Ce qui reste à percevoir, classé par ancienneté, avec la dernière relance envoyée à chaque famille." />
+            <FinanceTabs current="overdue" />
 
             <section aria-label="Synthèse des impayés" className="mb-6 grid gap-4 lg:grid-cols-[1fr_1.4fr]">
                 <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 p-6 text-white shadow-elevated">

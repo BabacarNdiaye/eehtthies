@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import FinanceTabs from '@/Components/Admin/FinanceTabs';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { Paginated } from '@/types';
@@ -43,6 +44,7 @@ export default function Index({ plans }: Props) {
                 subtitle="Étalez les frais de scolarité en tranches et suivez l'avancement du règlement de chaque famille."
                 action={{ label: 'Nouvel échéancier', href: route('admin.payment-plans.create') }}
             />
+            <FinanceTabs current="plans" />
 
             <Card className="overflow-hidden">
                 <div className="hidden overflow-x-auto md:block">
