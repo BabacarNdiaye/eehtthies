@@ -40,7 +40,7 @@ interface Props {
 }
 
 /** Délai entre deux rafraîchissements automatiques de la liste. */
-const REFRESH_MS = 20_000;
+const REFRESH_MS = 3_000;
 
 const initialsOf = (name: string) =>
     name
@@ -89,7 +89,7 @@ function PresenceBadge({ state }: { state: PresenceState }) {
     );
 }
 
-/** « Élèves en ligne » : qui est connecté à l'application, avec mise à jour automatique toutes les 20 secondes. */
+/** « Élèves en ligne » : qui est connecté à l'application, avec mise à jour automatique (REFRESH_MS, 3 secondes). */
 export default function Online({ students, counts, byClass, filters, formations, classes, minutes, serverTime }: Props) {
     const [search, setSearch] = useState(filters.q);
     const [tick, setTick] = useState(0);
@@ -110,6 +110,7 @@ export default function Online({ students, counts, byClass, filters, formations,
         }
     };
     const loaded = useRef(Date.now());
+    const spinner = useRef<number | undefined>(undefined);
 
     const go = (overrides: Partial<Filters>) => {
         const next = { ...filters, q: search, ...overrides };
@@ -127,13 +128,24 @@ export default function Online({ students, counts, byClass, filters, formations,
         setTick(0);
         const timer = window.setInterval(() => {
             if (document.hidden) return;
-            router.reload({ only: ['students', 'counts', 'byClass', 'serverTime'], onStart: () => setRefreshing(true), onFinish: () => setRefreshing(false) });
+            router.reload({
+                only: ['students', 'counts', 'byClass', 'serverTime'],
+                // L'indicateur n'apparaît que si le rechargement traîne : à ce rythme, il clignoterait sans arrêt.
+                onStart: () => {
+                    spinner.current = window.setTimeout(() => setRefreshing(true), 700);
+                },
+                onFinish: () => {
+                    window.clearTimeout(spinner.current);
+                    setRefreshing(false);
+                },
+            });
         }, REFRESH_MS);
-        const clock = window.setInterval(() => setTick(Date.now() - loaded.current), 15_000);
+        const clock = window.setInterval(() => setTick(Date.now() - loaded.current), 1_000);
 
         return () => {
             window.clearInterval(timer);
             window.clearInterval(clock);
+            window.clearTimeout(spinner.current);
         };
     }, [serverTime]);
 
@@ -167,7 +179,7 @@ export default function Online({ students, counts, byClass, filters, formations,
     return (
         <AdminLayout>
             <Head title="Élèves en ligne" />
-            <PageHeader title="Élèves en ligne" subtitle="Qui est connecté à l’application en ce moment. La liste se met à jour toute seule toutes les 20 secondes." />
+            <PageHeader title="Élèves en ligne" subtitle={`Qui est connecté à l’application en ce moment. La liste se met à jour toute seule toutes les ${REFRESH_MS / 1000} secondes.`} />
 
             <section aria-label="Aperçu en direct" className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 p-6 text-white shadow-elevated sm:p-8">
                 <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" aria-hidden="true" />
