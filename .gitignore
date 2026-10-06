@@ -23,3 +23,6 @@ Thumbs.db
 npm-debug.log
 yarn-error.log
 /database/*.sqlite*
+
+# Export des données de production (généré par app:export-data-for-production) : ne jamais versionner
+/production-data.sql
