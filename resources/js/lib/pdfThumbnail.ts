@@ -4,7 +4,7 @@ const THUMBNAIL_WIDTH = 400;
  * pdfjs pèse plus de 300 Ko : on ne le télécharge qu'au moment où l'on choisit réellement un PDF, pas à l'ouverture de
  * la page de la bibliothèque.
  */
-async function loadPdfjs() {
+export async function loadPdfjs() {
     const [pdfjsLib, worker] = await Promise.all([import('pdfjs-dist'), import('pdfjs-dist/build/pdf.worker.min.mjs?url')]);
     pdfjsLib.GlobalWorkerOptions.workerSrc = worker.default;
 

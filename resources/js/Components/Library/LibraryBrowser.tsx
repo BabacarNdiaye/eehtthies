@@ -1,4 +1,5 @@
 import BookCover, { extensionOf } from '@/Components/Library/BookCover';
+import DocumentViewer, { fileUrl, isViewable } from '@/Components/Library/DocumentViewer';
 import { ArrowUpRight, LayoutGrid, LibraryBig, List, Search } from 'lucide-react';
 import { ReactNode, useMemo, useState } from 'react';
 
@@ -24,7 +25,7 @@ const normalize = (value: string) =>
         .normalize('NFD')
         .replace(/[̀-ͯ]/g, '');
 
-const hrefOf = (r: LibraryResourceRow) => (r.type === 'document' ? `/storage/${(r.file_path ?? '').replace(/^\/+/, '')}` : r.url ?? '#');
+const hrefOf = (r: LibraryResourceRow) => (r.type === 'document' ? fileUrl(r) : r.url ?? '#');
 const dateFr = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 const kindLabel = (r: LibraryResourceRow) => (r.type === 'lien' ? 'Lien' : extensionOf(r.file_path).toUpperCase() || 'Fichier');
 
@@ -39,6 +40,15 @@ export default function LibraryBrowser({
     const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
     const [sort, setSort] = useState<Sort>('recent');
     const [view, setView] = useState<View>('shelf');
+    const [reading, setReading] = useState<LibraryResourceRow | null>(null);
+
+    /** Un document s'ouvre dans le lecteur de la page ; Ctrl/Cmd+clic, clic milieu et les liens gardent le comportement du navigateur. */
+    const open = (r: LibraryResourceRow) => (e: React.MouseEvent) => {
+        if (!isViewable(r) || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+
+        e.preventDefault();
+        setReading(r);
+    };
 
     const counts = useMemo(
         () => ({
@@ -131,12 +141,14 @@ export default function LibraryBrowser({
                 <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                     {filtered.map((r) => (
                         <article key={r.id} className="group flex flex-col">
-                            <a href={hrefOf(r)} target="_blank" rel="noreferrer" aria-label={`Ouvrir ${r.title}`} className="block rounded-lg outline-none transition duration-200 group-hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2">
+                            <a href={hrefOf(r)} onClick={open(r)} target="_blank" rel="noreferrer" aria-label={`Ouvrir ${r.title}`} className="block rounded-lg outline-none transition duration-200 group-hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2">
                                 <BookCover type={r.type} title={r.title} filePath={r.file_path} thumbnailPath={r.thumbnail_path} />
                             </a>
                             <div className="mt-3 min-w-0 flex-1">
                                 <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-ink-900" title={r.title}>
-                                    {r.title}
+                                    <a href={hrefOf(r)} onClick={open(r)} target="_blank" rel="noreferrer" className="outline-none hover:text-gold-700 focus-visible:underline">
+                                        {r.title}
+                                    </a>
                                 </h3>
                                 {r.description && <p className="mt-1 line-clamp-2 text-xs text-ink-500">{r.description}</p>}
                                 <p className="mt-1.5 truncate text-[11px] text-ink-400">
@@ -151,7 +163,7 @@ export default function LibraryBrowser({
                 <ul className="divide-y divide-ink-100 overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft">
                     {filtered.map((r) => (
                         <li key={r.id} className="flex items-center gap-4 p-3 sm:p-4">
-                            <a href={hrefOf(r)} target="_blank" rel="noreferrer" aria-label={`Ouvrir ${r.title}`} className="w-14 shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-gold-500">
+                            <a href={hrefOf(r)} onClick={open(r)} target="_blank" rel="noreferrer" aria-label={`Ouvrir ${r.title}`} className="w-14 shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-gold-500">
                                 <BookCover type={r.type} title={r.title} filePath={r.file_path} thumbnailPath={r.thumbnail_path} />
                             </a>
                             <div className="min-w-0 flex-1">
@@ -161,7 +173,7 @@ export default function LibraryBrowser({
                                     {kindLabel(r)} · {r.uploaded_by?.name ?? '—'} · {dateFr(r.created_at)}
                                 </p>
                             </div>
-                            <a href={hrefOf(r)} target="_blank" rel="noreferrer" className="hidden items-center gap-1 rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-700 hover:bg-ink-50 sm:inline-flex">
+                            <a href={hrefOf(r)} onClick={open(r)} target="_blank" rel="noreferrer" className="hidden items-center gap-1 rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-700 hover:bg-ink-50 sm:inline-flex">
                                 Ouvrir <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
                             </a>
                             {renderActions && <div className="flex items-center gap-1">{renderActions(r)}</div>}
@@ -169,6 +181,7 @@ export default function LibraryBrowser({
                     ))}
                 </ul>
             )}
+            <DocumentViewer resource={reading} onClose={() => setReading(null)} />
         </div>
     );
 }

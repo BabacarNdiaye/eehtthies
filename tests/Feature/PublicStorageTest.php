@@ -47,4 +47,16 @@ class PublicStorageTest extends TestCase
         $this->get('/storage/.gitignore')->assertNotFound();
         $this->get('/storage/backups/dump.sql')->assertNotFound();
     }
+
+    public function test_served_files_carry_their_own_restrictive_policy_that_still_allows_the_pdf_viewer(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('library/cours.pdf', '%PDF-1.4 test');
+
+        $csp = $this->get('/storage/library/cours.pdf')->assertOk()->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString("default-src 'none'", $csp);
+        $this->assertStringContainsString("object-src 'self'", $csp);
+        $this->assertStringNotContainsString('script-src', $csp);
+    }
 }

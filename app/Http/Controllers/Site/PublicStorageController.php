@@ -38,6 +38,9 @@ class PublicStorageController extends Controller
         return $disk->response($path, null, [
             'Cache-Control' => 'public, max-age=604800',
             'X-Content-Type-Options' => 'nosniff',
+            // Un fichier téléversé ne peut ni exécuter de script ni charger quoi que ce soit ; l'objet « self » laisse le lecteur
+            // PDF du navigateur s'afficher dans le lecteur de la bibliothèque.
+            'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; object-src 'self'; frame-ancestors 'self'",
         ]);
     }
 }

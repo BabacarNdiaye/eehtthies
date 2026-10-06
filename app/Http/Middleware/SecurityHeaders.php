@@ -30,18 +30,21 @@ class SecurityHeaders
         // variables CSS du thème sont injectées dans un bloc <style> en ligne et Tailwind/React s'appuient
         // sur des attributs style en ligne — le risque de XSS par les styles est bien plus faible que par les
         // scripts.
-        $response->headers->set('Content-Security-Policy', implode('; ', [
-            "default-src 'self'",
-            "script-src 'self' 'nonce-{$nonce}'",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-            "font-src 'self' https://fonts.gstatic.com",
-            "img-src 'self' data:",
-            "connect-src 'self'",
-            "object-src 'none'",
-            "base-uri 'self'",
-            "frame-ancestors 'self'",
-            "form-action 'self'",
-        ]));
+        // Une réponse qui fixe sa propre politique (fichiers servis par /storage) la garde.
+        if (! $response->headers->has('Content-Security-Policy')) {
+            $response->headers->set('Content-Security-Policy', implode('; ', [
+                "default-src 'self'",
+                "script-src 'self' 'nonce-{$nonce}'",
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                "font-src 'self' https://fonts.gstatic.com",
+                "img-src 'self' data:",
+                "connect-src 'self'",
+                "object-src 'none'",
+                "base-uri 'self'",
+                "frame-ancestors 'self'",
+                "form-action 'self'",
+            ]));
+        }
 
         return $response;
     }
