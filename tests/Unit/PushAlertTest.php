@@ -19,4 +19,15 @@ class PushAlertTest extends TestCase
         $this->assertSame('/espace-eleve/factures', $payload['data']['url']);
         $this->assertSame('open', $payload['actions'][0]['action']);
     }
+
+    public function test_the_category_is_deduced_from_the_url(): void
+    {
+        $invoice = (new PushAlert('Nouvelle facture', 'Mensualité', '/espace-eleve/factures'))->toWebPush(null, null)->toArray();
+        $this->assertSame('/images/push/finance.jpg', $invoice['image']);
+        $this->assertSame('Voir la facture', $invoice['actions'][0]['title']);
+
+        $chat = (new PushAlert('Awa', 'Bonjour', '/connect?section=messages'))->toWebPush(null, null)->toArray();
+        $this->assertArrayNotHasKey('image', $chat);
+        $this->assertSame('Répondre', $chat['actions'][0]['title']);
+    }
 }
