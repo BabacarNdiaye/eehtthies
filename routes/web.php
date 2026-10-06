@@ -100,6 +100,7 @@ use App\Http\Controllers\Portal\TeacherPayslipController;
 use App\Http\Controllers\Portal\TeacherPortalController;
 use App\Http\Controllers\Portal\TeacherPreCouncilController;
 use App\Http\Controllers\Portal\TeacherSkillController;
+use App\Http\Controllers\Portal\TeacherSupplyRequestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\PwaManifestController;
@@ -805,6 +806,10 @@ Route::prefix('espace-enseignant')->name('teacher.')->middleware(['auth', 'verif
 
     Route::get('/competences', [TeacherSkillController::class, 'index'])->name('skills.index');
     Route::post('/competences', [TeacherSkillController::class, 'store'])->name('skills.store');
+
+    Route::get('/materiel', [TeacherSupplyRequestController::class, 'index'])->name('supplies.index');
+    Route::post('/materiel', [TeacherSupplyRequestController::class, 'store'])->name('supplies.store');
+    Route::delete('/materiel/{supplyRequest}', [TeacherSupplyRequestController::class, 'cancel'])->name('supplies.cancel');
 
     Route::get('/bibliotheque', [TeacherLibraryController::class, 'index'])->name('library.index');
     Route::post('/bibliotheque', [TeacherLibraryController::class, 'store'])->name('library.store');

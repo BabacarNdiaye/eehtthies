@@ -19,6 +19,7 @@ export const teacherNav: PortalNavItem[] = [
     { label: 'Présences', href: 'teacher.attendance.index', active: (c) => c.startsWith('teacher.attendance') },
     { label: 'Congés', href: 'teacher.leave.index', active: (c) => c.startsWith('teacher.leave') },
     { label: 'Compétences', href: 'teacher.skills.index', active: (c) => c.startsWith('teacher.skills') },
+    { label: 'Matériel', href: 'teacher.supplies.index', active: (c) => c.startsWith('teacher.supplies') },
     { label: 'Bibliothèque', href: 'teacher.library.index', active: (c) => c.startsWith('teacher.library') },
     { label: 'Devoirs', href: 'teacher.exams.index', active: (c) => c.startsWith('teacher.exams') },
     { label: 'Conseils de classe', href: 'teacher.councils.index', active: (c) => c.startsWith('teacher.councils') },
@@ -34,6 +35,7 @@ const shortcuts = [
     { label: 'Présences', href: 'teacher.attendance.index' },
     { label: 'Congés', href: 'teacher.leave.index' },
     { label: 'Compétences', href: 'teacher.skills.index' },
+    { label: 'Matériel', href: 'teacher.supplies.index' },
     { label: 'Bibliothèque', href: 'teacher.library.index' },
 ];
 
