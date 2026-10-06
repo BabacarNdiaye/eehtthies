@@ -169,7 +169,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'admissions dossiers inscription candidats pre-inscription',
             },
             {
-                section: 'Admissions',
+                section: 'Scolarité',
                 label: 'Élèves',
                 href: 'admin.students.index',
                 icon: IdCard,
