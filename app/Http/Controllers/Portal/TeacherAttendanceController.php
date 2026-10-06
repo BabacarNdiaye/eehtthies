@@ -32,7 +32,7 @@ class TeacherAttendanceController extends Controller
     /** Paires (classe, matière) distinctes que cet enseignant enseigne réellement, d'après l'emploi du temps. */
     private function classSubjectPairs(Teacher $teacher): Collection
     {
-        return TimetableEntry::where('teacher_id', $teacher->id)
+        return TimetableEntry::taughtBy($teacher)
             ->with('schoolClass:id,name', 'subject:id,name')
             ->get(['school_class_id', 'subject_id'])
             ->unique(fn ($e) => $e->school_class_id.'-'.$e->subject_id)
@@ -47,7 +47,7 @@ class TeacherAttendanceController extends Controller
      */
     private function currentPair(Teacher $teacher): ?array
     {
-        $next = ClassSchedule::next(TimetableEntry::where('teacher_id', $teacher->id)->get(), now());
+        $next = ClassSchedule::next(TimetableEntry::taughtBy($teacher)->get(), now());
 
         if (! $next) {
             return null;

@@ -34,7 +34,7 @@ class TeacherExamController extends Controller
     /** Paires (classe, matière) distinctes que cet enseignant enseigne réellement, d'après l'emploi du temps. */
     private function classSubjectPairs(Teacher $teacher): Collection
     {
-        return TimetableEntry::where('teacher_id', $teacher->id)
+        return TimetableEntry::taughtBy($teacher)
             ->with('schoolClass:id,name', 'subject:id,name')
             ->get(['school_class_id', 'subject_id'])
             ->unique(fn ($e) => $e->school_class_id.'-'.$e->subject_id)
@@ -62,15 +62,20 @@ class TeacherExamController extends Controller
     public function index(Request $request): Response
     {
         $teacher = $this->teacher($request);
-        $classIds = TimetableEntry::where('teacher_id', $teacher->id)->distinct()->pluck('school_class_id');
+        $pairs = $this->classSubjectPairs($teacher);
 
-        $exams = Exam::whereIn('school_class_id', $classIds)
-            ->whereIn('type', config('eeht.exam_category_devoir'))
+        // Uniquement les devoirs des matières de l'enseignant, dans les classes où il les enseigne.
+        $exams = Exam::whereIn('type', config('eeht.exam_category_devoir'))
+            ->where(function ($query) use ($pairs) {
+                $query->whereRaw('1 = 0');
+
+                foreach ($pairs as $pair) {
+                    $query->orWhere(fn ($q) => $q->where('school_class_id', $pair->school_class_id)->where('subject_id', $pair->subject_id));
+                }
+            })
             ->with('schoolClass:id,name', 'subject:id,name')
             ->orderByDesc('exam_date')
             ->paginate(15);
-
-        $pairs = $this->classSubjectPairs($teacher);
 
         $exams->getCollection()->transform(function (Exam $exam) use ($request, $pairs) {
             $exam->is_mine = $exam->created_by === $request->user()->id;

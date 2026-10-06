@@ -28,7 +28,7 @@ class TeacherLessonLogController extends Controller
         $date = $request->string('date')->toString() ?: now()->toDateString();
         $dayOfWeek = Carbon::parse($date)->dayOfWeekIso;
 
-        $entries = TimetableEntry::where('teacher_id', $teacher->id)
+        $entries = TimetableEntry::taughtBy($teacher)
             ->where('day_of_week', $dayOfWeek)
             ->with('schoolClass:id,name', 'subject:id,name', 'room:id,name')
             ->orderBy('start_time')

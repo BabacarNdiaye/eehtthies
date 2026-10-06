@@ -12,6 +12,21 @@ class TimetableEntry extends Model
         'day_of_week', 'start_time', 'end_time',
     ];
 
+    /**
+     * Les créneaux qu'un enseignant voit dans sa plateforme : les siens, limités aux matières qui lui sont affectées
+     * (fiche enseignant). Sans matière affectée (anciennes fiches), tous ses créneaux restent visibles.
+     */
+    public function scopeTaughtBy($query, Teacher $teacher)
+    {
+        $query->where('teacher_id', $teacher->id);
+
+        if ($subjectIds = $teacher->assignedSubjectIds()) {
+            $query->whereIn('subject_id', $subjectIds);
+        }
+
+        return $query;
+    }
+
     protected static function booted(): void
     {
         // Changements publiés dans le groupe EEHT Connect de la classe

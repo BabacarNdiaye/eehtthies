@@ -26,7 +26,7 @@ class TeacherSkillController extends Controller
 
     private function classIds(Teacher $teacher): array
     {
-        return TimetableEntry::where('teacher_id', $teacher->id)->distinct()->pluck('school_class_id')->all();
+        return TimetableEntry::taughtBy($teacher)->distinct()->pluck('school_class_id')->all();
     }
 
     public function index(Request $request): Response

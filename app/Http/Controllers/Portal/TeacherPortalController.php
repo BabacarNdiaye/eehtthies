@@ -26,7 +26,7 @@ class TeacherPortalController extends Controller
 
     private function classIds(Teacher $teacher): array
     {
-        return TimetableEntry::where('teacher_id', $teacher->id)->distinct()->pluck('school_class_id')->all();
+        return TimetableEntry::taughtBy($teacher)->distinct()->pluck('school_class_id')->all();
     }
 
     public function dashboard(Request $request, PortalFeed $feed): Response
@@ -40,7 +40,7 @@ class TeacherPortalController extends Controller
         // l'enseignant — ainsi « Saisir les notes » mène toujours là où la saisie lui est permise, et pas
         // vers n'importe quel examen simplement organisé dans l'une de ses classes (possiblement dans une
         // matière qu'il n'y enseigne pas).
-        $pairs = TimetableEntry::where('teacher_id', $teacher->id)
+        $pairs = TimetableEntry::taughtBy($teacher)
             ->get(['school_class_id', 'subject_id'])
             ->unique(fn ($e) => $e->school_class_id.'-'.$e->subject_id);
 
@@ -60,13 +60,13 @@ class TeacherPortalController extends Controller
                 ->take(5)
                 ->get();
 
-        $entriesToday = TimetableEntry::where('teacher_id', $teacher->id)
+        $entriesToday = TimetableEntry::taughtBy($teacher)
             ->where('day_of_week', now()->dayOfWeekIso)
             ->with('schoolClass:id,name', 'subject:id,name', 'room:id,name')
             ->orderBy('start_time')
             ->get();
 
-        $weekEntries = TimetableEntry::where('teacher_id', $teacher->id)
+        $weekEntries = TimetableEntry::taughtBy($teacher)
             ->with('schoolClass:id,name', 'subject:id,name', 'room:id,name')
             ->orderBy('day_of_week')
             ->orderBy('start_time')
@@ -101,7 +101,7 @@ class TeacherPortalController extends Controller
     {
         $teacher = $this->teacher($request);
 
-        $entries = TimetableEntry::where('teacher_id', $teacher->id)
+        $entries = TimetableEntry::taughtBy($teacher)
             ->with('schoolClass:id,name', 'subject:id,name', 'room:id,name')
             ->orderBy('day_of_week')
             ->orderBy('start_time')
@@ -117,7 +117,7 @@ class TeacherPortalController extends Controller
     {
         $teacher = $this->teacher($request);
 
-        $entries = TimetableEntry::where('teacher_id', $teacher->id)
+        $entries = TimetableEntry::taughtBy($teacher)
             ->with('schoolClass:id,name', 'subject:id,name', 'room:id,name')
             ->orderBy('day_of_week')
             ->orderBy('start_time')

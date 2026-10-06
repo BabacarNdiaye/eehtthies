@@ -202,14 +202,23 @@ class TeacherController extends Controller
             'payment_type' => ['required', 'in:fixe,horaire'],
             'monthly_salary' => ['nullable', 'numeric', 'min:0'],
             'hourly_rate' => ['nullable', 'numeric', 'min:0'],
-            'subject_ids' => ['nullable', 'array'],
+            // Chaque enseignant a au moins une matière dès que le catalogue en compte : c'est elle qui limite ce qu'il voit.
+            'subject_ids' => [\Illuminate\Validation\Rule::requiredIf(fn () => \App\Models\Subject::exists()), 'nullable', 'array', 'min:'.(\App\Models\Subject::exists() ? 1 : 0)],
             'subject_ids.*' => ['exists:subjects,id'],
+        ];
+    }
+
+    private function messages(): array
+    {
+        return [
+            'subject_ids.required' => 'Choisissez au moins une matière pour cet enseignant.',
+            'subject_ids.min' => 'Choisissez au moins une matière pour cet enseignant.',
         ];
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate($this->rules() + $this->payoutRules($request));
+        $data = $request->validate($this->rules() + $this->payoutRules($request), $this->messages());
         $subjectIds = $data['subject_ids'] ?? [];
         unset($data['subject_ids']);
 
@@ -233,7 +242,7 @@ class TeacherController extends Controller
 
     public function update(Request $request, Teacher $teacher)
     {
-        $data = $request->validate($this->rules($teacher) + $this->payoutRules($request));
+        $data = $request->validate($this->rules($teacher) + $this->payoutRules($request), $this->messages());
         $subjectIds = $data['subject_ids'] ?? [];
         unset($data['subject_ids']);
 

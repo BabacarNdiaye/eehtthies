@@ -308,9 +308,12 @@ export default function Form({ teacher, subjects, salaryPayments, monthLabels, p
                 )}
 
                 <Card className="p-6">
-                    <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">
-                        Matières enseignées
+                    <h2 className="font-serif text-lg font-bold text-ink-900">
+                        Matières enseignées{subjects.length > 0 && <span className="text-red-600"> *</span>}
                     </h2>
+                    <p className="mb-4 mt-1 text-sm text-ink-500">
+                        Choisissez au moins une matière : l'enseignant ne verra, dans sa plateforme, que ses matières et les devoirs qui s'y rapportent.
+                    </p>
                     {subjects.length > 0 ? (
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                             {subjects.map((subject) => (
@@ -333,6 +336,11 @@ export default function Form({ teacher, subjects, salaryPayments, monthLabels, p
                     ) : (
                         <p className="text-sm text-ink-500">
                             Aucune matière disponible.
+                        </p>
+                    )}
+                    {(errors as Record<string, string>).subject_ids && (
+                        <p role="alert" className="mt-3 text-sm font-medium text-red-600">
+                            {(errors as Record<string, string>).subject_ids}
                         </p>
                     )}
                 </Card>
