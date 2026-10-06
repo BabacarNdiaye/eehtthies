@@ -1,9 +1,15 @@
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
-
 const THUMBNAIL_WIDTH = 400;
+
+/**
+ * pdfjs pèse plus de 300 Ko : on ne le télécharge qu'au moment où l'on choisit réellement un PDF, pas à l'ouverture de
+ * la page de la bibliothèque.
+ */
+async function loadPdfjs() {
+    const [pdfjsLib, worker] = await Promise.all([import('pdfjs-dist'), import('pdfjs-dist/build/pdf.worker.min.mjs?url')]);
+    pdfjsLib.GlobalWorkerOptions.workerSrc = worker.default;
+
+    return pdfjsLib;
+}
 
 /**
  * Génère la miniature PNG de la première page d'un PDF entièrement dans le navigateur. La production n'a ni
@@ -13,6 +19,7 @@ const THUMBNAIL_WIDTH = 400;
  */
 export async function generatePdfThumbnail(file: File): Promise<File | null> {
     try {
+        const pdfjsLib = await loadPdfjs();
         const buffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
         const page = await pdf.getPage(1);
