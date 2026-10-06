@@ -14,7 +14,6 @@ import {
     Briefcase,
     Building,
     Building2,
-    Calculator,
     Calendar,
     CalendarCheck,
     CalendarClock,
@@ -105,12 +104,14 @@ import {
  * présences, on organise les formations et les classes, on enseigne, on évalue et on diplôme, puis viennent
  * l'argent (frais de scolarité, comptabilité, stocks), l'insertion professionnelle, la communication, le site, les
  * statistiques, le personnel et l'administration du logiciel. Un métier retrouve ses pages au même endroit : le
- * caissier dans « Frais de scolarité », le magasinier dans « Stocks & achats ».
+ * caissier dans « Finance », le magasinier dans « Stocks & achats ».
  *
  * Une page appartient à une seule rubrique (les fonctions `active` ne se recouvrent pas) : AdminMenuCoverageTest le
  * vérifie pour toutes les pages d'administration, y compris celles que l'on ajoutera.
  */
 export interface NavItem {
+    /** Intertitre affiché au-dessus de cet élément quand il change d'un élément à l'autre (grands groupes). */
+    section?: string;
     label: string;
     /** Nom de la route Laravel (et non son adresse). */
     href: string;
@@ -420,10 +421,11 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        label: 'Frais de scolarité',
+        label: 'Finance',
         icon: CreditCard,
         items: [
             {
+                section: 'Au guichet',
                 label: 'Encaisser',
                 href: 'admin.cashier.create',
                 icon: HandCoins,
@@ -432,6 +434,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'caisse guichet paiement mensualite scolarite recu wave orange money cheque',
             },
             {
+                section: 'Au guichet',
                 label: 'Factures',
                 href: 'admin.invoices.index',
                 icon: ReceiptText,
@@ -440,6 +443,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'paiements scolarite frais recus mensualites inscription',
             },
             {
+                section: 'Au guichet',
                 label: 'Suivi des mensualités',
                 href: 'admin.invoices.monthly',
                 icon: CalendarRange,
@@ -448,6 +452,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'mensualites mois a jour retards echeances tableau scolarite generer',
             },
             {
+                section: 'Au guichet',
                 label: 'Impayés',
                 href: 'admin.invoices.overdue',
                 icon: BellRing,
@@ -456,6 +461,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'retards de paiement echeance relances relancer dettes arrieres soldes',
             },
             {
+                section: 'Au guichet',
                 label: 'Échéanciers',
                 href: 'admin.payment-plans.index',
                 icon: CalendarClock,
@@ -464,28 +470,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'mensualites tranches paiement plans etalement echeance',
             },
             {
-                label: 'Paiements en ligne',
-                href: 'admin.online-payments.index',
-                icon: Smartphone,
-                active: (c) => c.startsWith('admin.online-payments'),
-                permission: 'voir_comptabilite',
-                keywords: 'wave orange money carte fournisseur tentatives anomalies reconcilier simulation',
-            },
-            {
-                label: 'Réglages des paiements',
-                href: 'admin.finance.settings',
-                icon: SlidersHorizontal,
-                active: (c) => c.startsWith('admin.finance.settings'),
-                permission: 'modifier_comptabilite',
-                keywords: 'echeance jour du mois relances rappels generation automatique mensualites',
-            },
-        ],
-    },
-    {
-        label: 'Comptabilité',
-        icon: Calculator,
-        items: [
-            {
+                section: 'Pilotage',
                 label: 'Tableau de bord financier',
                 href: 'admin.finance.dashboard',
                 icon: Wallet,
@@ -494,14 +479,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'finance tresorerie argent budget recettes depenses',
             },
             {
-                label: 'Dépenses',
-                href: 'admin.expenses.index',
-                icon: TrendingDown,
-                active: (c) => c.startsWith('admin.expenses'),
-                permission: 'voir_comptabilite',
-                keywords: 'achats charges frais',
-            },
-            {
+                section: 'Pilotage',
                 label: 'Journal de caisse',
                 href: 'admin.finance.cash-journal',
                 icon: Vault,
@@ -510,6 +488,34 @@ export const navGroups: NavGroup[] = [
                 keywords: 'caisse tresorerie recettes depenses solde livre de caisse',
             },
             {
+                section: 'Pilotage',
+                label: 'Dépenses',
+                href: 'admin.expenses.index',
+                icon: TrendingDown,
+                active: (c) => c.startsWith('admin.expenses'),
+                permission: 'voir_comptabilite',
+                keywords: 'achats charges frais',
+            },
+            {
+                section: 'Pilotage',
+                label: 'Paiements en ligne',
+                href: 'admin.online-payments.index',
+                icon: Smartphone,
+                active: (c) => c.startsWith('admin.online-payments'),
+                permission: 'voir_comptabilite',
+                keywords: 'wave orange money carte fournisseur tentatives anomalies reconcilier simulation',
+            },
+            {
+                section: 'Pilotage',
+                label: 'Réglages des paiements',
+                href: 'admin.finance.settings',
+                icon: SlidersHorizontal,
+                active: (c) => c.startsWith('admin.finance.settings'),
+                permission: 'modifier_comptabilite',
+                keywords: 'echeance jour du mois relances rappels generation automatique mensualites',
+            },
+            {
+                section: 'Comptabilité',
                 label: 'Écritures comptables',
                 href: 'admin.accounting.journal-entries.index',
                 icon: FileSpreadsheet,
@@ -518,6 +524,7 @@ export const navGroups: NavGroup[] = [
                 keywords: 'journal debit credit',
             },
             {
+                section: 'Comptabilité',
                 label: 'Grand livre',
                 href: 'admin.accounting.ledger',
                 icon: BookMarked,
@@ -525,6 +532,7 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_comptabilite',
             },
             {
+                section: 'Comptabilité',
                 label: 'Balance générale',
                 href: 'admin.accounting.trial-balance',
                 icon: Scale,
@@ -532,6 +540,7 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_comptabilite',
             },
             {
+                section: 'Comptabilité',
                 label: 'Bilan',
                 href: 'admin.accounting.balance-sheet',
                 icon: Landmark,
@@ -539,6 +548,7 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_comptabilite',
             },
             {
+                section: 'Comptabilité',
                 label: 'Compte de résultat',
                 href: 'admin.accounting.income-statement',
                 icon: TrendingUp,
@@ -546,6 +556,7 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_comptabilite',
             },
             {
+                section: 'Comptabilité',
                 label: 'Plan comptable',
                 href: 'admin.accounting.accounts.index',
                 icon: ListTree,

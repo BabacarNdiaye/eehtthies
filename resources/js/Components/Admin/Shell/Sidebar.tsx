@@ -3,7 +3,7 @@ import { sidebarMemory } from '@/lib/adminMemory';
 import { NavGroup } from '@/lib/adminNav';
 import { Link } from '@inertiajs/react';
 import { ChevronDown, KeyRound, LogOut, Wallet } from 'lucide-react';
-import { useId, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useId, useLayoutEffect, useRef, useState } from 'react';
 
 interface Props {
     groups: NavGroup[];
@@ -118,13 +118,15 @@ export default function Sidebar({ groups, current, name, role }: Props) {
                             >
                                 <div className="overflow-hidden">
                                     <div className="mt-1 space-y-0.5 rounded-xl bg-black/25 p-1.5 shadow-inner shadow-black/20 ring-1 ring-inset ring-white/5">
-                                        {group.items.map((item) => {
+                                        {group.items.map((item, position) => {
                                             const Icon = item.icon;
                                             const isActive = item.active(current);
+                                            const heading = item.section && item.section !== group.items[position - 1]?.section ? item.section : null;
 
                                             return (
+                                                <Fragment key={item.href}>
+                                                {heading && <p className="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[0.16em] text-gold-300/70">{heading}</p>}
                                                 <Link
-                                                    key={item.href}
                                                     href={route(item.href)}
                                                     aria-current={isActive ? 'page' : undefined}
                                                     className={`relative flex items-center gap-3 rounded-lg px-3 py-2 text-balance text-sm font-medium transition-colors duration-200 ${focusRing} ${
@@ -135,6 +137,7 @@ export default function Sidebar({ groups, current, name, role }: Props) {
                                                     <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-gold-300' : ''}`} aria-hidden="true" />
                                                     {item.label}
                                                 </Link>
+                                                </Fragment>
                                             );
                                         })}
                                     </div>
