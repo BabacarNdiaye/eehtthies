@@ -65,9 +65,12 @@ class TeacherSupplyRequestController extends Controller
         ]);
         $supplyRequest->lines()->createMany($data['lines']);
 
-        foreach (User::permission('modifier_stocks')->get() as $keeper) {
-            SafePush::send($keeper, 'Demande de matériel', "{$supplyRequest->purpose} · {$request->user()->name}", route('admin.supply-requests.show', $supplyRequest, false));
-        }
+        // L'économe est prévenu ; une alerte qui ne part pas ne doit jamais empêcher l'enregistrement de la demande.
+        rescue(function () use ($supplyRequest, $request) {
+            foreach (User::permission('modifier_stocks')->get() as $keeper) {
+                SafePush::send($keeper, 'Demande de matériel', "{$supplyRequest->purpose} · {$request->user()->name}", route('admin.supply-requests.show', $supplyRequest, false));
+            }
+        });
 
         return back()->with('success', 'Demande '.$supplyRequest->number.' envoyée à l\'économat.');
     }
