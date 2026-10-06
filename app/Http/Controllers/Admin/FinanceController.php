@@ -45,7 +45,55 @@ class FinanceController extends Controller
             ->orderBy('quantity_in_stock')
             ->get(['id', 'name', 'quantity_in_stock', 'min_threshold', 'unit']);
 
+        $today = Carbon::today();
+        $thisMonth = (float) Payment::whereYear('paid_at', $today->year)->whereMonth('paid_at', $today->month)->sum('amount');
+        $lastMonthDate = $today->copy()->subMonthNoOverflow();
+        $lastMonth = (float) Payment::whereYear('paid_at', $lastMonthDate->year)->whereMonth('paid_at', $lastMonthDate->month)->sum('amount');
+        $todayPayments = Payment::whereDate('paid_at', $today);
+
+        $open = Invoice::outstanding();
+        $overdue = $open->filter(fn (Invoice $i) => $i->due_date && $i->due_date->lt($today));
+        $overdueByStudent = $overdue->groupBy('student_id')->map(fn ($rows) => [
+            'name' => trim(($rows->first()->student?->first_name ?? '').' '.($rows->first()->student?->last_name ?? '')) ?: '—',
+            'matricule' => $rows->first()->student?->matricule,
+            'balance' => round($rows->sum('computed_balance'), 2),
+            'invoices' => $rows->count(),
+            'days' => (int) $rows->max(fn (Invoice $i) => $i->daysPastDue($today) ?? 0),
+        ])->sortByDesc('balance')->values()->take(6);
+
+        $byType = Payment::join('invoices', 'invoices.id', '=', 'payments.invoice_id')
+            ->selectRaw('invoices.type as type, sum(payments.amount) as total')
+            ->groupBy('invoices.type')->pluck('total', 'type');
+        $byMethod = Payment::selectRaw('method, sum(amount) as total')->groupBy('method')->pluck('total', 'method');
+
+        $recent = Payment::with('invoice:id,label,type,student_id', 'invoice.student:id,first_name,last_name')
+            ->latest('id')->limit(8)->get()->map(fn (Payment $p) => [
+                'id' => $p->id,
+                'receipt' => $p->receipt_number,
+                'student' => trim(($p->invoice?->student?->first_name ?? '').' '.($p->invoice?->student?->last_name ?? '')) ?: '—',
+                'label' => $p->invoice?->label,
+                'method' => Payment::METHODS[$p->method] ?? $p->method,
+                'amount' => (float) $p->amount,
+                'date' => $p->paid_at?->toDateString(),
+            ]);
+
         return Inertia::render('Admin/Finance/Dashboard', [
+            'insight' => [
+                'thisMonth' => $thisMonth,
+                'lastMonth' => $lastMonth,
+                'todayTotal' => (float) (clone $todayPayments)->sum('amount'),
+                'todayCount' => (clone $todayPayments)->count(),
+                'invoiced' => round($totalInvoiced, 2),
+                'collectionRate' => $totalInvoiced > 0 ? round(min(100, $totalRevenue / $totalInvoiced * 100), 1) : null,
+                'overdueTotal' => round($overdue->sum('computed_balance'), 2),
+                'overdueCount' => $overdue->count(),
+                'overdueStudents' => $overdue->pluck('student_id')->unique()->count(),
+                'toCollect' => round($open->sum('computed_balance'), 2),
+                'byType' => collect(Invoice::TYPES)->map(fn ($label, $key) => ['key' => $key, 'label' => $label, 'total' => (float) ($byType[$key] ?? 0)])->values(),
+                'byMethod' => collect(Payment::METHODS)->map(fn ($label, $key) => ['key' => $key, 'label' => $label, 'total' => (float) ($byMethod[$key] ?? 0)])->filter(fn ($m) => $m['total'] > 0)->values(),
+                'topOverdue' => $overdueByStudent,
+                'recent' => $recent,
+            ],
             'kpis' => [
                 'total_revenue' => $totalRevenue,
                 'total_expenses' => $totalExpenses,
