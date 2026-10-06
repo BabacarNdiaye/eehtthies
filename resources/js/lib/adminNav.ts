@@ -92,6 +92,7 @@ import {
     Vault,
     Wallet,
     Warehouse,
+    Wifi,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -169,9 +170,18 @@ export const navGroups: NavGroup[] = [
                 label: 'Élèves',
                 href: 'admin.students.index',
                 icon: IdCard,
-                active: (c) => c.startsWith('admin.students'),
+                // « Élèves en ligne » a sa propre rubrique : même préfixe de route, une page = une seule rubrique.
+                active: (c) => c.startsWith('admin.students') && c !== 'admin.students.online',
                 permission: 'voir_eleves',
                 keywords: 'etudiants apprenants inscrits matricule dossiers',
+            },
+            {
+                label: 'Élèves en ligne',
+                href: 'admin.students.online',
+                icon: Wifi,
+                active: (c) => c === 'admin.students.online',
+                permission: 'voir_eleves',
+                keywords: 'connectes presence connexion actifs maintenant qui est en ligne',
             },
         ],
     },

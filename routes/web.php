@@ -68,6 +68,7 @@ use App\Http\Controllers\Admin\SkillController;
 use App\Http\Controllers\Admin\SliderController as AdminSliderController;
 use App\Http\Controllers\Admin\StatisticsController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\StudentPresenceController;
 use App\Http\Controllers\Admin\StudentDocumentController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\SupplierController;
@@ -315,6 +316,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     Route::patch('candidatures/{candidature}/status', [AdminCandidatureController::class, 'updateStatus'])->name('candidatures.updateStatus')->middleware('permission:valider_candidatures');
     Route::post('candidatures/{candidature}/convert', [AdminCandidatureController::class, 'convertToStudent'])->name('candidatures.convert')->middleware('permission:valider_candidatures');
 
+    // « Élèves en ligne » : déclarée avant la ressource (students/{student}) ; mêmes droits que la liste des élèves.
+    Route::get('students/online', [StudentPresenceController::class, 'index'])->name('students.online')->middleware('permission:voir_eleves');
     PermissionRouting::gate(Route::resource('students', StudentController::class)->except('show'), 'eleves');
     Route::post('students/{student}/access', [StudentController::class, 'createAccess'])->name('students.access')->middleware('permission:modifier_eleves');
     Route::post('students/{student}/parent-access', [StudentController::class, 'createParentAccess'])->name('students.parentAccess')->middleware('permission:modifier_eleves');
