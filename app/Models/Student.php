@@ -11,6 +11,19 @@ class Student extends Model
 {
     use LogsActivity;
 
+    /**
+     * Statuts d'un élève, dans l'ordre où l'administration les présente : clé enregistrée => libellé. « exclu » est écrit
+     * par la passation de classe ; la liste sert à valider le formulaire et à compter les élèves par statut.
+     */
+    public const STATUSES = [
+        'actif' => 'Actif',
+        'suspendu' => 'Suspendu',
+        'diplome' => 'Diplômé',
+        'transfere' => 'Transféré',
+        'abandon' => 'Abandon',
+        'exclu' => 'Exclu',
+    ];
+
     private const DURATION_PHRASES = [
         '6 mois' => 'de six (6) mois',
         '1 an' => "d'un (1) an",
@@ -113,6 +126,11 @@ class Student extends Model
     public function reportCards()
     {
         return $this->hasMany(ReportCard::class);
+    }
+
+    public function disciplineRecords()
+    {
+        return $this->hasMany(DisciplineRecord::class);
     }
 
     public function invoices()

@@ -4,7 +4,7 @@ import { NavGroup } from '@/lib/adminNav';
 import { haptic } from '@/lib/portal';
 import { promptInstall, useCanInstall } from '@/lib/pwa';
 import { Link } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Download, Globe, KeyRound, LayoutDashboard, LogOut, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Globe, KeyRound, LayoutDashboard, LogOut, Search, Wallet } from 'lucide-react';
 import { useLayoutEffect, useRef, useState } from 'react';
 
 interface Props {
@@ -144,7 +144,7 @@ export default function AdminMenuSheet({ open, onClose, onSearch, groups, curren
                                             <span className={`${tileIcon} ${tileTone(isActive)}`}>
                                                 <LayoutDashboard className="h-6 w-6" aria-hidden="true" />
                                             </span>
-                                            <span className={`text-xs leading-tight ${isActive ? 'font-bold text-ink-900' : 'font-medium text-ink-700'}`}>
+                                            <span className={`text-balance text-xs leading-tight ${isActive ? 'font-bold text-ink-900' : 'font-medium text-ink-700'}`}>
                                                 {item.label}
                                             </span>
                                         </Link>
@@ -173,7 +173,7 @@ export default function AdminMenuSheet({ open, onClose, onSearch, groups, curren
                                                 <span className={`${tileIcon} ${tileTone(isActive)}`}>
                                                     <only.icon className="h-6 w-6" aria-hidden="true" />
                                                 </span>
-                                                <span className={`text-xs leading-tight ${isActive ? 'font-bold text-ink-900' : 'font-medium text-ink-700'}`}>
+                                                <span className={`text-balance text-xs leading-tight ${isActive ? 'font-bold text-ink-900' : 'font-medium text-ink-700'}`}>
                                                     {only.label}
                                                 </span>
                                             </Link>
@@ -187,7 +187,7 @@ export default function AdminMenuSheet({ open, onClose, onSearch, groups, curren
                                             <span className={`${tileIcon} ${tileTone(isActive)}`}>
                                                 <Icon className="h-6 w-6" aria-hidden="true" />
                                             </span>
-                                            <span className={`text-xs leading-tight ${isActive ? 'font-bold text-ink-900' : 'font-medium text-ink-700'}`}>
+                                            <span className={`text-balance text-xs leading-tight ${isActive ? 'font-bold text-ink-900' : 'font-medium text-ink-700'}`}>
                                                 {candidate.label}
                                             </span>
                                         </button>
@@ -197,6 +197,14 @@ export default function AdminMenuSheet({ open, onClose, onSearch, groups, curren
                         </ul>
 
                         <ul className="mx-5 mt-6 grid grid-cols-3 gap-x-3 gap-y-5 border-t border-ink-100 pt-5">
+                            <li>
+                                <Link href={route('admin.my-payslips.index')} onClick={onClose} className={tileLink}>
+                                    <span className={`${tileIcon} border-ink-100 bg-ink-50 text-ink-700`}>
+                                        <Wallet className="h-6 w-6" aria-hidden="true" />
+                                    </span>
+                                    <span className="text-xs font-medium leading-tight text-ink-700">Ma paie</span>
+                                </Link>
+                            </li>
                             <li>
                                 <Link href={route('admin.password')} onClick={onClose} className={tileLink}>
                                     <span className={`${tileIcon} border-ink-100 bg-ink-50 text-ink-700`}>

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Reçu {{ $payment->receipt_number }}</title>
+    <title>Reçu {{ $primary->receipt_number }}</title>
     <style>
         @page { margin: 30px 40px; }
         body { font-family: DejaVu Sans, sans-serif; color: #15263a; font-size: 13px; }
@@ -20,6 +20,14 @@
         .amount-box { margin-top: 24px; text-align: center; padding: 20px; background: #fdf9ec; border: 1px solid #f3dd97; border-radius: 8px; }
         .amount-box .value { font-family: serif; font-size: 30px; font-weight: bold; color: #0b1728; }
         .amount-box .label { font-size: 11px; color: #6c86a3; text-transform: uppercase; letter-spacing: 1px; }
+        .more { display: block; margin-top: 4px; font-size: 10px; font-weight: normal; color: #6c86a3; }
+        table.lines { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+        table.lines th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #6c86a3; padding: 8px 10px; border-bottom: 2px solid #e6eaef; }
+        table.lines td { padding: 8px 10px; border-bottom: 1px solid #e6eaef; }
+        table.lines .num { text-align: right; white-space: nowrap; }
+        .verify { display: table; width: 100%; margin-top: 26px; }
+        .verify-qr { display: table-cell; width: 86px; vertical-align: middle; }
+        .verify-text { display: table-cell; vertical-align: middle; font-size: 10px; color: #6c86a3; }
         .footer { margin-top: 40px; font-size: 10px; color: #6c86a3; text-align: center; }
     </style>
 </head>
@@ -37,38 +45,80 @@
             </div>
         </div>
         <div class="header-right">
-            Émis le {{ \Illuminate\Support\Carbon::parse($payment->paid_at)->translatedFormat('d F Y') }}
+            Émis le {{ \Illuminate\Support\Carbon::parse($paidAt)->translatedFormat('d F Y') }}
         </div>
     </div>
 
     <h1>Reçu de paiement</h1>
-    <p class="receipt-number">N° {{ $payment->receipt_number }}</p>
+    <p class="receipt-number">
+        N° {{ $primary->receipt_number }}
+        @if($payments->count() > 1)
+            <span class="more">et {{ $payments->count() - 1 }} autre(s) : {{ $payments->skip(1)->pluck('receipt_number')->implode(', ') }}</span>
+        @endif
+    </p>
 
     <table class="info">
         <tr>
             <td class="label">Élève</td>
-            <td>{{ $invoice->student->first_name }} {{ $invoice->student->last_name }} ({{ $invoice->student->matricule }})</td>
+            <td>{{ $student->first_name }} {{ $student->last_name }} ({{ $student->matricule }})</td>
         </tr>
         <tr>
-            <td class="label">Facture</td>
-            <td>{{ $invoice->reference }} — {{ $invoice->label }}</td>
+            <td class="label">Date de paiement</td>
+            <td>{{ \Illuminate\Support\Carbon::parse($paidAt)->translatedFormat('d F Y') }}</td>
         </tr>
         <tr>
             <td class="label">Mode de paiement</td>
-            <td>{{ \App\Models\Payment::METHODS[$payment->method] ?? $payment->method }}</td>
+            <td>{{ $channelLabel }}</td>
         </tr>
-        @if($payment->reference)
+        @if($reference)
         <tr>
             <td class="label">Référence</td>
-            <td>{{ $payment->reference }}</td>
+            <td>{{ $reference }}</td>
+        </tr>
+        @endif
+        @if($receivedBy)
+        <tr>
+            <td class="label">Reçu par</td>
+            <td>{{ $receivedBy }}</td>
         </tr>
         @endif
     </table>
 
+    <table class="lines">
+        <thead>
+            <tr>
+                <th>Facture</th>
+                <th class="num">Montant payé</th>
+                @if($showBalance)<th class="num">Reste à payer</th>@endif
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($payments as $item)
+                <tr>
+                    <td>{{ $item->invoice->reference }} — {{ $item->invoice->label }}</td>
+                    <td class="num">{{ number_format((float) $item->amount, 0, ',', ' ') }} FCFA</td>
+                    @if($showBalance)<td class="num">{{ number_format((float) $item->balance_after, 0, ',', ' ') }} FCFA</td>@endif
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
     <div class="amount-box">
-        <div class="value">{{ number_format((float) $payment->amount, 0, ',', ' ') }} FCFA</div>
+        <div class="value">{{ number_format($total, 0, ',', ' ') }} FCFA</div>
         <div class="label">Montant reçu</div>
     </div>
+
+    @if($qrCode)
+        <div class="verify">
+            <div class="verify-qr">
+                <img src="data:image/svg+xml;base64,{{ $qrCode }}" width="72" height="72" alt="QR code de vérification">
+            </div>
+            <div class="verify-text">
+                Pour vérifier l'authenticité de ce reçu, scannez ce QR code ou ouvrez :<br>
+                <strong>{{ $verificationUrl }}</strong>
+            </div>
+        </div>
+    @endif
 
     <div class="footer">
         Ce reçu atteste du paiement reçu par l'EEHT de Thiès. Document généré automatiquement.

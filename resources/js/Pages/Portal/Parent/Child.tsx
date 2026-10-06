@@ -1,5 +1,6 @@
 import Avatar from '@/Components/Connect/Avatar';
 import AttendanceRecords, { AttendanceRow, AttendanceStats } from '@/Components/Portal/AttendanceRecords';
+import CouncilResults, { FamilyCouncil } from '@/Components/Portal/CouncilResults';
 import DayPager from '@/Components/Portal/DayPager';
 import GradeList, { GradedExam } from '@/Components/Portal/GradeList';
 import InvoiceList from '@/Components/Portal/InvoiceList';
@@ -9,7 +10,7 @@ import Segmented from '@/Components/Portal/Segmented';
 import PortalLayout from '@/Layouts/PortalLayout';
 import { formatAmount, formatAverage, PortalEntry } from '@/lib/portal';
 import { parentNav } from '@/Pages/Portal/Parent/Dashboard';
-import { Grade, Invoice, ReportCard, Student } from '@/types';
+import { Grade, Invoice, OnlinePaymentConfig, ReportCard, Student } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { CalendarDays, ClipboardCheck, GraduationCap, Receipt } from 'lucide-react';
 import { useState } from 'react';
@@ -23,12 +24,15 @@ interface Props {
     attendanceStats: Record<string, number>;
     attendanceRecords: AttendanceRow[];
     reportCards: ReportCard[];
+    councils: FamilyCouncil[];
     exams: GradedExam[];
     grades: Record<number, Grade>;
     timetable: PortalEntry[];
     days: Record<string, string>;
     invoices: Invoice[];
     summary: { average: number | null; balance_due: number };
+    /** Présent seulement quand un pilote de paiement en ligne est actif. */
+    online: OnlinePaymentConfig | null;
 }
 
 /** Onglet demandé par l'adresse (?tab=factures, depuis les raccourcis de l'accueil), « notes » par défaut. */
@@ -47,7 +51,7 @@ function Kpi({ value, label }: { value: string; label: string }) {
     );
 }
 
-export default function Child({ student, attendanceStats, attendanceRecords, reportCards, exams, grades, timetable, days, invoices, summary }: Props) {
+export default function Child({ student, attendanceStats, attendanceRecords, reportCards, councils, exams, grades, timetable, days, invoices, summary, online }: Props) {
     const [tab, setTab] = useState<Tab>(initialTab);
     const absences = (attendanceStats.absent ?? 0) + (attendanceStats.absence_justifiee ?? 0);
     const name = `${student.first_name} ${student.last_name}`;
@@ -94,6 +98,10 @@ export default function Child({ student, attendanceStats, attendanceRecords, rep
             <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
                 {tab === 'notes' && (
                     <div className="space-y-8">
+                        <section id="conseils">
+                            <SectionTitle title="Conseils de classe" />
+                            <CouncilResults councils={councils} />
+                        </section>
                         <section>
                             <SectionTitle title="Bulletins" />
                             <ReportCardList reportCards={reportCards} pdfHref={(reportCard) => route('parent.report-cards.pdf', [student.id, reportCard.id])} />
@@ -116,7 +124,7 @@ export default function Child({ student, attendanceStats, attendanceRecords, rep
                 )}
 
                 {tab === 'factures' && (
-                    <InvoiceList invoices={invoices} receiptHref={(invoice, payment) => route('parent.invoices.receipt', [student.id, invoice.id, payment.id])} />
+                    <InvoiceList invoices={invoices} online={online} receiptHref={(invoice, payment) => route('parent.invoices.receipt', [student.id, invoice.id, payment.id])} />
                 )}
 
                 {tab === 'emploi' && <DayPager entries={timetable} days={days} />}

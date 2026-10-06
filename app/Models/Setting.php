@@ -16,6 +16,12 @@ class Setting extends Model
         });
     }
 
+    /** Réglage « oui/non » (stocké « 1 » ou « 0 ») : `$default` tant qu'il n'a jamais été enregistré. */
+    public static function flag(string $key, bool $default = false): bool
+    {
+        return filter_var(static::get($key, $default ? '1' : '0'), FILTER_VALIDATE_BOOLEAN);
+    }
+
     public static function set(string $key, mixed $value, string $group = 'general'): void
     {
         static::updateOrCreate(['key' => $key], ['value' => $value, 'group' => $group]);

@@ -1,6 +1,8 @@
+import PayOnline from '@/Components/Portal/PayOnline';
+import { paymentChannelLabel } from '@/lib/paymentChannels';
 import { formatAmount } from '@/lib/portal';
-import { Invoice, Payment } from '@/types';
-import { Receipt, Wallet } from 'lucide-react';
+import { Invoice, OnlinePaymentConfig, Payment } from '@/types';
+import { CheckCircle2, Clock, Receipt, Wallet } from 'lucide-react';
 
 const statusStyles: Record<string, string> = {
     payee: 'bg-emerald-100 text-emerald-700',
@@ -21,8 +23,8 @@ const typeLabels: Record<string, string> = {
     autre: 'Autre',
 };
 
-/** Factures d'un élève : statut, montants, barre de règlement et paiements reçus avec lien vers le reçu PDF. */
-export default function InvoiceList({ invoices, receiptHref }: { invoices: Invoice[]; receiptHref: (invoice: Invoice, payment: Payment) => string }) {
+/** Une carte par facture : statut, échéance, montants, barre de règlement et paiements reçus avec lien vers le reçu PDF. */
+function InvoiceCards({ invoices, receiptHref }: { invoices: Invoice[]; receiptHref: (invoice: Invoice, payment: Payment) => string }) {
     if (invoices.length === 0) {
         return (
             <div className="flex flex-col items-center gap-2 rounded-3xl bg-white px-4 py-10 text-center ring-1 ring-ink-100">
@@ -40,6 +42,7 @@ export default function InvoiceList({ invoices, receiptHref }: { invoices: Invoi
                 const paid = invoice.computed_paid ?? 0;
                 const balance = invoice.computed_balance ?? 0;
                 const progress = net > 0 ? Math.min(1, paid / net) : 1;
+                const due = balance > 0 ? dueBadge(invoice.due_date) : null;
 
                 return (
                     <li key={invoice.id} className="rounded-2xl bg-white p-4 shadow-soft ring-1 ring-ink-100">
@@ -52,7 +55,15 @@ export default function InvoiceList({ invoices, receiptHref }: { invoices: Invoi
                                     {invoice.due_date && <> · Échéance {new Date(invoice.due_date).toLocaleDateString('fr-FR')}</>}
                                 </p>
                             </div>
-                            <span className={`inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles[status]}`}>{statusLabels[status]}</span>
+                            <div className="flex shrink-0 flex-col items-end gap-1.5">
+                                <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles[status]}`}>{statusLabels[status]}</span>
+                                {due && (
+                                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${due.tone}`}>
+                                        <Clock className="h-3 w-3" aria-hidden="true" />
+                                        {due.label}
+                                    </span>
+                                )}
+                            </div>
                         </div>
 
                         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ink-100" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} aria-label="Part réglée">
@@ -83,6 +94,7 @@ export default function InvoiceList({ invoices, receiptHref }: { invoices: Invoi
                                     <li key={payment.id} className="flex items-center justify-between gap-3 text-sm text-ink-600">
                                         <span>
                                             {new Date(payment.paid_at).toLocaleDateString('fr-FR')} — {formatAmount(Number(payment.amount))}
+                                            <span className="text-ink-500"> · {paymentChannelLabel(payment.channel, payment.method)}</span>
                                         </span>
                                         <a
                                             href={receiptHref(invoice, payment)}
@@ -100,5 +112,115 @@ export default function InvoiceList({ invoices, receiptHref }: { invoices: Invoi
                 );
             })}
         </ul>
+    );
+}
+
+/** « 2026-10-05 » ou « 2026-10-05T00:00:00Z » en date locale, sans décalage de fuseau. */
+function localDate(iso: string): Date {
+    const [year, month, day] = iso.slice(0, 10).split('-').map(Number);
+
+    return new Date(year, month - 1, day);
+}
+
+/** Jours entre aujourd'hui et la date : négatif quand elle est passée. */
+function daysUntil(iso: string): number {
+    const now = new Date();
+
+    return Math.round((localDate(iso).getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) / 86400000);
+}
+
+/** Pastille d'échéance d'une facture à régler : en retard, ou proche (une semaine) ; rien quand l'échéance est lointaine. */
+function dueBadge(dueDate?: string | null): { label: string; tone: string } | null {
+    if (!dueDate) return null;
+
+    const days = daysUntil(dueDate);
+
+    if (days < 0) return { label: `En retard de ${-days} j`, tone: 'bg-red-100 text-red-700' };
+    if (days === 0) return { label: "Échéance aujourd'hui", tone: 'bg-amber-100 text-amber-800' };
+    if (days <= 7) return { label: `Dans ${days} j`, tone: 'bg-amber-100 text-amber-800' };
+
+    return null;
+}
+
+/** Synthèse en tête de liste : solde à régler, factures en retard, prochaine échéance. */
+function Summary({ invoices }: { invoices: Invoice[] }) {
+    if (invoices.length === 0) return null;
+
+    const open = invoices.filter((invoice) => (invoice.computed_balance ?? 0) > 0);
+    const totalDue = open.reduce((sum, invoice) => sum + (invoice.computed_balance ?? 0), 0);
+
+    if (totalDue <= 0) {
+        return (
+            <div role="status" className="mb-5 flex items-center gap-3 rounded-2xl bg-emerald-50 p-4 text-emerald-800">
+                <CheckCircle2 className="h-6 w-6 shrink-0" aria-hidden="true" />
+                <div>
+                    <p className="text-xs font-medium opacity-80">Scolarité</p>
+                    <p className="text-lg font-bold leading-tight">À jour</p>
+                </div>
+            </div>
+        );
+    }
+
+    const overdue = open.filter((invoice) => invoice.due_date && daysUntil(invoice.due_date) < 0);
+    const overdueTotal = overdue.reduce((sum, invoice) => sum + (invoice.computed_balance ?? 0), 0);
+    const next = open
+        .filter((invoice) => invoice.due_date && daysUntil(invoice.due_date) >= 0)
+        .sort((a, b) => daysUntil(a.due_date as string) - daysUntil(b.due_date as string))[0];
+
+    return (
+        <div role="status" className={`mb-5 rounded-2xl p-4 ${overdue.length > 0 ? 'bg-red-50 text-red-800' : 'bg-amber-50 text-amber-900'}`}>
+            <div className="flex items-center gap-3">
+                <Wallet className="h-6 w-6 shrink-0" aria-hidden="true" />
+                <div>
+                    <p className="text-xs font-medium opacity-80">Solde à régler</p>
+                    <p className="text-lg font-bold leading-tight">{formatAmount(totalDue)}</p>
+                </div>
+            </div>
+            {overdue.length > 0 && (
+                <p className="mt-2 text-sm">
+                    {overdue.length} facture(s) en retard, soit {formatAmount(overdueTotal)}.
+                </p>
+            )}
+            {next?.due_date && (
+                <p className="mt-1 text-sm">
+                    Prochaine échéance : {localDate(next.due_date).toLocaleDateString('fr-FR')} — {formatAmount(next.computed_balance ?? 0)}.
+                </p>
+            )}
+        </div>
+    );
+}
+
+/** À régler d'abord, l'échéance la plus ancienne en tête (un retard se voit tout de suite) ; puis les factures soldées, les plus récentes d'abord. */
+function byUrgency(invoices: Invoice[]): Invoice[] {
+    const isOpen = (invoice: Invoice) => (invoice.computed_balance ?? 0) > 0;
+    const dueTime = (invoice: Invoice, fallback: number) => (invoice.due_date ? localDate(invoice.due_date).getTime() : fallback);
+
+    return [...invoices].sort((a, b) => {
+        if (isOpen(a) !== isOpen(b)) return isOpen(a) ? -1 : 1;
+
+        return isOpen(a) ? dueTime(a, Number.MAX_SAFE_INTEGER) - dueTime(b, Number.MAX_SAFE_INTEGER) : dueTime(b, 0) - dueTime(a, 0);
+    });
+}
+
+/** Factures d'un élève : synthèse (solde, retards, prochaine échéance) puis une carte par facture, les plus urgentes en premier. */
+export default function InvoiceList({
+    invoices,
+    receiptHref,
+    online,
+}: {
+    invoices: Invoice[];
+    receiptHref: (invoice: Invoice, payment: Payment) => string;
+    /** Présent seulement quand un pilote de paiement en ligne est actif : « Payer en ligne » n'apparaît pas sinon. */
+    online?: OnlinePaymentConfig | null;
+}) {
+    const ordered = byUrgency(invoices);
+    const open = ordered.filter((invoice) => (invoice.computed_balance ?? 0) > 0);
+
+    return (
+        <>
+            <Summary invoices={invoices} />
+            {online && open.length > 0 && <PayOnline key={open.map((invoice) => invoice.id).join('-')} invoices={open} online={online} />}
+            <InvoiceCards invoices={ordered} receiptHref={receiptHref} />
+        </>
     );
 }

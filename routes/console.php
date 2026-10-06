@@ -38,6 +38,15 @@ Schedule::command('app:send-absence-alerts')->dailyAt('08:15')->onOneServer();
 // Récapitulatif financier mensuel (le 1er du mois, 07h30) aux membres du personnel ayant voir_statistiques.
 Schedule::command('app:send-financial-digest')->monthlyOn(1, '07:30')->onOneServer();
 
+// Génération automatique des mensualités (le 1er du mois, 06h00, donc avant le récapitulatif et les relances). La
+// commande ne fait rien tant que « Génération automatique des mensualités » n'est pas cochée dans les réglages des
+// paiements ; activée, elle crée la mensualité du mois en cours de chaque élève actif, sans jamais en doubler une.
+Schedule::command('app:generate-monthly-invoices')->monthlyOn(1, '06:00')->onOneServer();
+
+// Paiement en ligne : interroge le fournisseur sur les tentatives restées sans nouvelle (sa notification a pu se perdre) et
+// expire celles qui ont dépassé leur délai. Sans pilote actif, il ne fait qu'expirer les tentatives oubliées.
+Schedule::command('app:reconcile-payment-attempts')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
+
 // Rappel quotidien de saisie des notes à l'enseignant ou aux enseignants responsables d'un examen dont les
 // notes sont encore incomplètes — limité par seuils (3/7 jours après la date de l'examen), donc la lancer
 // chaque jour n'inonde pas un enseignant de messages.
@@ -53,6 +62,10 @@ Schedule::command('app:send-candidature-followups')->dailyAt('09:00')->onOneServ
 // Rappels automatiques EEHT Connect (examens J-7 / veille, changements
 // d'emploi du temps regroupés). Les devoirs et absences partent à
 // l'enregistrement.
+// Conseil de classe : rappel du pré-conseil (J-3) aux enseignants qui n'ont pas fini, et des actions de suivi (J-7,
+// échéance) à leurs responsables. Chaque rappel ne tombe qu'un jour.
+Schedule::command('app:council-reminders')->dailyAt('07:45')->onOneServer();
+
 Schedule::command('app:connect-reminders')->everyFifteenMinutes()->withoutOverlapping()->onOneServer();
 
 Schedule::command('app:push-pending-messages')->everyMinute()->withoutOverlapping()->onOneServer();

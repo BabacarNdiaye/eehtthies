@@ -2,21 +2,25 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import AttachmentsPanel from '@/Components/Admin/AttachmentsPanel';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
-import { Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
+import { Checkbox, Field, Select, Textarea, TextInput } from '@/Components/Admin/Field';
 import { IconAnchor, IconButton } from '@/Components/Admin/IconButton';
-import { Invoice } from '@/types';
+import { Invoice, PageProps } from '@/types';
 import { confirmAction } from '@/lib/confirm';
-import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Download, Inbox, Trash2 } from 'lucide-react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Download, HandCoins, Inbox, Trash2 } from 'lucide-react';
 
 interface Props {
     invoice: Invoice;
-    methods: Record<string, string>;
+    /** Canaux proposés pour un nouveau paiement (Wave, chèque…). */
+    channels: Record<string, string>;
+    /** Libellé de tout ce qu'on peut lire en base : canaux et anciennes familles (« Mobile Money »). */
+    channelLabels: Record<string, string>;
 }
 
 const fcfa = (v: number | string) => `${new Intl.NumberFormat('fr-FR').format(Math.round(Number(v)))} FCFA`;
 
-export default function Show({ invoice, methods }: Props) {
+export default function Show({ invoice, channels, channelLabels }: Props) {
+    const canCollect = usePage<PageProps>().props.auth.permissions.includes('ajouter_comptabilite');
     const paid = (invoice.payments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
     const net = Number(invoice.amount) - Number(invoice.discount);
     const balance = Math.max(0, round2(net - paid));
@@ -35,10 +39,11 @@ export default function Show({ invoice, methods }: Props) {
 
     const paymentForm = useForm({
         amount: balance > 0 ? balance : '',
-        method: 'especes',
+        channel: 'especes',
         reference: '',
         paid_at: new Date().toISOString().slice(0, 10),
         notes: '',
+        send_receipt: true,
     });
 
     const submitEdit = (e: React.FormEvent) => {
@@ -118,7 +123,7 @@ export default function Show({ invoice, methods }: Props) {
                                         <tr key={p.id}>
                                             <td className="px-5 py-3 font-medium text-ink-900">{p.receipt_number}</td>
                                             <td className="px-5 py-3 text-ink-600">{new Date(p.paid_at).toLocaleDateString('fr-FR')}</td>
-                                            <td className="px-5 py-3 text-ink-600">{methods[p.method]}</td>
+                                            <td className="px-5 py-3 text-ink-600">{channelLabels[p.channel ?? p.method] ?? p.method}</td>
                                             <td className="px-5 py-3 font-medium text-ink-900">{fcfa(p.amount)}</td>
                                             <td className="px-5 py-3">
                                                 <div className="flex justify-end gap-2">
@@ -205,9 +210,9 @@ export default function Show({ invoice, methods }: Props) {
                                         onChange={(e) => paymentForm.setData('amount', e.target.value ? Number(e.target.value) : '')}
                                     />
                                 </Field>
-                                <Field label="Mode de paiement" required error={paymentForm.errors.method}>
-                                    <Select value={paymentForm.data.method} onChange={(e) => paymentForm.setData('method', e.target.value)}>
-                                        {Object.entries(methods).map(([key, label]) => (
+                                <Field label="Mode de paiement" required error={paymentForm.errors.channel}>
+                                    <Select value={paymentForm.data.channel} onChange={(e) => paymentForm.setData('channel', e.target.value)}>
+                                        {Object.entries(channels).map(([key, label]) => (
                                             <option key={key} value={key}>
                                                 {label}
                                             </option>
@@ -220,6 +225,17 @@ export default function Show({ invoice, methods }: Props) {
                                 <Field label="Date de paiement" required error={paymentForm.errors.paid_at}>
                                     <TextInput type="date" value={paymentForm.data.paid_at} onChange={(e) => paymentForm.setData('paid_at', e.target.value)} />
                                 </Field>
+                                <label className="flex items-start gap-3">
+                                    <Checkbox
+                                        className="mt-0.5"
+                                        checked={paymentForm.data.send_receipt}
+                                        onChange={(e) => paymentForm.setData('send_receipt', e.target.checked)}
+                                    />
+                                    <span className="text-sm text-ink-700">
+                                        Envoyer le reçu à la famille
+                                        <span className="block text-xs text-ink-500">E-mail, notification et EEHT Connect, selon les contacts de l'élève.</span>
+                                    </span>
+                                </label>
                                 <button
                                     type="submit"
                                     disabled={paymentForm.processing}
@@ -227,6 +243,14 @@ export default function Show({ invoice, methods }: Props) {
                                 >
                                     Enregistrer le paiement
                                 </button>
+                                {canCollect && invoice.student_id && (
+                                    <Link
+                                        href={route('admin.cashier.create', { student: invoice.student_id, invoice: invoice.id })}
+                                        className="flex items-center justify-center gap-2 text-sm font-medium text-ink-600 hover:text-ink-900"
+                                    >
+                                        <HandCoins className="h-4 w-4" aria-hidden="true" /> Régler plusieurs factures d'un coup
+                                    </Link>
+                                )}
                             </form>
                         )}
                     </Card>

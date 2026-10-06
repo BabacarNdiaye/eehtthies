@@ -3,6 +3,7 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Field, TextInput, Checkbox, Select } from '@/Components/Admin/Field';
 import FormActions from '@/Components/Admin/FormActions';
+import PayoutFields from '@/Components/Admin/PayoutFields';
 import { User } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { UserRound } from 'lucide-react';
@@ -10,15 +11,19 @@ import { ChangeEvent, useState } from 'react';
 
 type EditableUser = User & { roles: { id: number; name: string }[] };
 type Manager = { id: number; name: string; position: string | null };
+/** Mode et compte de versement : envoyés seulement à ceux qui peuvent modifier les salaires. */
+type Payout = { channel: string | null; account: string | null; options: Record<string, string> };
 
 export default function Form({
     editUser,
     roles,
     managers,
+    payout,
 }: {
     editUser?: EditableUser;
     roles: string[];
     managers: Manager[];
+    payout?: Payout;
 }) {
     const isEdit = !!editUser;
     const currentRoleNames = editUser?.roles.map((r) => r.name) ?? [];
@@ -34,6 +39,8 @@ export default function Form({
         department: editUser?.department ?? '',
         hire_date: editUser?.hire_date?.slice(0, 10) ?? '',
         monthly_salary: editUser?.monthly_salary != null ? String(editUser.monthly_salary) : '',
+        payout_channel: payout?.channel ?? '',
+        payout_account: payout?.account ?? '',
         manager_id: editUser?.manager_id ? String(editUser.manager_id) : '',
         password: '',
         is_active: editUser?.is_active ?? true,
@@ -158,6 +165,15 @@ export default function Form({
                                 onChange={(e) => setData('monthly_salary', e.target.value)}
                             />
                         </Field>
+                        {payout && (
+                            <PayoutFields
+                                channel={data.payout_channel}
+                                account={data.payout_account}
+                                options={payout.options}
+                                errors={errors}
+                                onChange={(field, value) => setData(field, value)}
+                            />
+                        )}
                         <Field label="Supérieur hiérarchique" error={errors.manager_id} hint="Utilisé pour construire l'organigramme.">
                             <Select value={data.manager_id} onChange={(e) => setData('manager_id', e.target.value)}>
                                 <option value="">Aucun (sommet de la hiérarchie)</option>

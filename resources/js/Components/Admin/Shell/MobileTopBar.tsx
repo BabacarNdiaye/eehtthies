@@ -4,7 +4,7 @@ import { Link } from '@inertiajs/react';
 import { Bell, ChevronLeft, Search } from 'lucide-react';
 
 interface Props {
-    /** Groupe de la page (« Pédagogie — Scolarité »), ou null sur le tableau de bord. */
+    /** Groupe de la page (« Frais de scolarité »), ou null sur le tableau de bord. */
     caption: string | null;
     /** Adresse de retour d'une fiche, d'un formulaire de création ou de modification ; null sur une page d'index. */
     backHref: string | null;
@@ -61,7 +61,8 @@ export default function MobileTopBar({ caption, backHref, unread, onSearch }: Pr
                 >
                     <Bell className="h-5 w-5" aria-hidden="true" />
                     {unread > 0 && (
-                        <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                        // Le nom du lien donne déjà le nombre : le badge n'est que visuel (« 9+ » ne figurerait pas dans le nom).
+                        <span aria-hidden="true" className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white ring-2 ring-white">
                             {unread > 9 ? '9+' : unread}
                         </span>
                     )}

@@ -54,7 +54,8 @@ class StudentListByClassTest extends TestCase
         $this->student('Ba', $b);
         $this->student('Fall', $a);
 
-        $response = $this->actingAs($user)->get(route('admin.students.index'));
+        // La page s'ouvre sur l'aperçu des promotions : la liste de toute l'école se demande (list=1).
+        $response = $this->actingAs($user)->get(route('admin.students.index', ['list' => 1]));
 
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
@@ -73,7 +74,7 @@ class StudentListByClassTest extends TestCase
         $this->student('Diop', $a);
         $this->student('Zidane', null);
 
-        $response = $this->actingAs($user)->get(route('admin.students.index'));
+        $response = $this->actingAs($user)->get(route('admin.students.index', ['list' => 1]));
 
         $response->assertInertia(fn ($page) => $page
             ->where("classCounts.{$a->id}", 2)

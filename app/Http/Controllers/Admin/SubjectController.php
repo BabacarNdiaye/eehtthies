@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Formation;
 use App\Models\Subject;
+use App\Support\CouncilGuards;
 use App\Support\Exportable;
 use App\Support\ReadsCsv;
 use Illuminate\Http\Request;
@@ -103,6 +104,10 @@ class SubjectController extends Controller
 
     public function destroy(Subject $subject)
     {
+        if ($reason = CouncilGuards::reason($subject)) {
+            return back()->with('error', $reason);
+        }
+
         $subject->delete();
 
         return back()->with('success', 'Matière supprimée.');

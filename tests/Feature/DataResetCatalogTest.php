@@ -197,6 +197,7 @@ class DataResetCatalogTest extends TestCase
         }
 
         $this->assertTrue(DataResetCatalog::find('plan_comptable')['restore_forced']);
-        $this->assertSame(['faq', 'formations', 'plan_comptable'], DataResetCatalog::restorableKeys());
+        $this->assertSame(['faq', 'formations', 'conseils_reglages', 'plan_comptable'], DataResetCatalog::restorableKeys());
+        $this->assertTrue(DataResetCatalog::find('conseils_reglages')['restore_forced'], 'Les réglages du conseil reviennent toujours à leurs valeurs de départ.');
     }
 }

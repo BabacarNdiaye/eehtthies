@@ -1,16 +1,22 @@
 @extends('mail.layout')
 
-@section('title', 'Rappel de paiement — '.$student->full_name)
-@section('eyebrow', 'Comptabilité · Rappel de paiement')
+@section('title', ($upcoming ? 'Échéance proche — ' : 'Rappel de paiement — ').$student->full_name)
+@section('eyebrow', $upcoming ? 'Comptabilité · Échéance proche' : 'Comptabilité · Rappel de paiement')
 
 @section('content')
     @if($recipientName)
         <p style="margin: 0 0 16px; font-size: 15px; color: #15263a;">Bonjour {{ $recipientName }},</p>
     @endif
     <p style="margin: 0 0 24px; font-size: 15px; line-height: 1.7; color: #15263a;">
-        Nous vous rappelons que le compte de <strong>{{ $student->full_name }}</strong> présente
-        {{ $invoices->count() > 1 ? 'des factures impayées' : 'une facture impayée' }} au-delà de la date d'échéance.
-        Merci de régulariser dès que possible.
+        @if($upcoming)
+            Nous vous informons que sur le compte de <strong>{{ $student->full_name }}</strong>,
+            {{ $invoices->count() > 1 ? 'des factures arrivent' : 'une facture arrive' }} à échéance dans les prochains jours.
+            Merci de prévoir le règlement avant cette date.
+        @else
+            Nous vous rappelons que le compte de <strong>{{ $student->full_name }}</strong> présente
+            {{ $invoices->count() > 1 ? 'des factures impayées' : 'une facture impayée' }} au-delà de la date d'échéance.
+            Merci de régulariser dès que possible.
+        @endif
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #eef1f4; border-radius: 10px; overflow: hidden;">
@@ -33,7 +39,7 @@
     </p>
 
     <p style="margin: 24px 0 0; font-size: 13px; line-height: 1.7; color: #445a72;">
-        Le paiement peut être effectué en espèces, par virement bancaire ou mobile money auprès du service de comptabilité de l'établissement.
-        Si ce rappel ne vous concerne plus (paiement déjà effectué), merci de nous en excuser et de ne pas en tenir compte.
+        Le paiement peut être effectué en espèces, par virement, par mobile money (Wave, Orange Money, Free Money) ou par chèque auprès du service de comptabilité de l'établissement.
+        Si ce message ne vous concerne plus (paiement déjà effectué), merci de nous en excuser et de ne pas en tenir compte.
     </p>
 @endsection

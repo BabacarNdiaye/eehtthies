@@ -7,6 +7,7 @@ use App\Models\Candidature;
 use App\Models\Invoice;
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Support\TermSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -139,27 +140,17 @@ class SearchController extends Controller
      */
     private function whereEveryTerm(Builder $query, array $terms, array $columns): Builder
     {
-        foreach ($terms as $term) {
-            $query->where(fn (Builder $where) => $this->orLike($where, $columns, $term));
-        }
-
-        return $query;
+        return TermSearch::whereEveryTerm($query, $terms, $columns);
     }
 
     /**
-     * « colonne LIKE %mot% » pour chaque colonne, reliées par OU. Le mot est protégé : « % » et « _ » n'y sont plus des
-     * jokers. Le caractère d'échappement est déclaré (ESCAPE '!') car MySQL et SQLite n'ont pas le même par défaut.
+     * « colonne LIKE %mot% » pour chaque colonne, reliées par OU (voir TermSearch::orLike, que partage l'écran d'encaissement).
      *
      * @param  list<string>  $columns
      */
     private function orLike(Builder $query, array $columns, string $term): void
     {
-        $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term).'%';
-        $grammar = $query->getQuery()->getGrammar();
-
-        foreach ($columns as $column) {
-            $query->orWhereRaw($grammar->wrap($column)." LIKE ? ESCAPE '!'", [$pattern]);
-        }
+        TermSearch::orLike($query, $columns, $term);
     }
 
     /** @param  array<int, string|null>  $parts */

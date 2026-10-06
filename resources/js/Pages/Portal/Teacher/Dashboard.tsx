@@ -21,6 +21,9 @@ export const teacherNav: PortalNavItem[] = [
     { label: 'Compétences', href: 'teacher.skills.index', active: (c) => c.startsWith('teacher.skills') },
     { label: 'Bibliothèque', href: 'teacher.library.index', active: (c) => c.startsWith('teacher.library') },
     { label: 'Devoirs', href: 'teacher.exams.index', active: (c) => c.startsWith('teacher.exams') },
+    { label: 'Conseils de classe', href: 'teacher.councils.index', active: (c) => c.startsWith('teacher.councils') },
+    { label: 'Mes actions', href: 'teacher.follow-ups.index', active: (c) => c.startsWith('teacher.follow-ups') },
+    { label: 'Ma paie', href: 'teacher.payslips.index', active: (c) => c.startsWith('teacher.payslips') },
     { label: 'EEHT Connect', href: 'connect.index', active: (c) => c.startsWith('connect.') },
 ];
 

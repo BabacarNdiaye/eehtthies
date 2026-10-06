@@ -231,7 +231,11 @@ class DataResetService
      */
     private function tableExists(string $table): bool
     {
-        $this->existingTables ??= array_fill_keys(Schema::getTableListing(schemaQualified: false), true);
+        // Sur MySQL/MariaDB, sans schéma précisé, la liste comprend les tables de TOUTES les bases accessibles (fréquent
+        // sur cPanel) : une table d'une autre base passerait pour présente. SQLite n'a qu'une base.
+        $connection = DB::connection();
+        $schema = $connection->getDriverName() === 'sqlite' ? null : $connection->getDatabaseName();
+        $this->existingTables ??= array_fill_keys(Schema::getTableListing($schema, schemaQualified: false), true);
 
         return isset($this->existingTables[$table]);
     }

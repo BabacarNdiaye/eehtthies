@@ -3,11 +3,13 @@ import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import ExportButtons from '@/Components/Admin/ExportButtons';
 import { Field, Select, TextInput, Textarea } from '@/Components/Admin/Field';
+import { IconAnchor, IconButton } from '@/Components/Admin/IconButton';
 import Modal from '@/Components/Modal';
 import { confirmAction } from '@/lib/confirm';
-import { Head, router, useForm } from '@inertiajs/react';
+import { fcfa as formatFcfa } from '@/lib/money';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { CheckCircle2, Clock3, Coins, Printer, Trash2, Users, Wallet } from 'lucide-react';
+import { Banknote, CheckCircle2, Clock3, Coins, Printer, Trash2, Users, Wallet } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 interface MonthCell {
@@ -36,10 +38,6 @@ interface Props {
     monthLabels: Record<string, string>;
     paymentMethods: Record<string, string>;
     paymentTypes: Record<string, string>;
-}
-
-function formatFcfa(amount: number) {
-    return new Intl.NumberFormat('fr-FR').format(Math.round(amount)) + ' FCFA';
 }
 
 function initials(name: string) {
@@ -161,6 +159,22 @@ export default function Index({ staff, year, months, monthLabels, paymentMethods
                     pdfHref={route('admin.salaries.export.pdf', { year })}
                 />
             </PageHeader>
+
+            <div className="mb-6 flex flex-col gap-3 rounded-xl border border-gold-300 bg-gold-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3 text-ink-800">
+                    <Banknote className="mt-0.5 h-5 w-5 shrink-0 text-gold-700" aria-hidden="true" />
+                    <p className="text-sm">
+                        <strong>La paie se prépare désormais mois par mois.</strong> Préparez le cycle, vérifiez les heures, primes et retenues, validez, puis versez : chaque
+                        bulletin est détaillé. Ce registre garde l'historique et permet un versement exceptionnel.
+                    </p>
+                </div>
+                <Link
+                    href={route('admin.payroll.index')}
+                    className="shrink-0 whitespace-nowrap rounded-lg bg-ink-900 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-ink-800"
+                >
+                    Ouvrir la paie mensuelle
+                </Link>
+            </div>
 
             <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card className="p-5">
@@ -310,7 +324,7 @@ export default function Index({ staff, year, months, monthLabels, paymentMethods
                                                 className={`px-3 py-3 text-center ${month === currentMonth ? 'bg-gold-50/40' : ''}`}
                                             >
                                                 {cell.status === 'payee' ? (
-                                                    <div className="group relative inline-flex">
+                                                    <div className="inline-flex flex-col items-center gap-1">
                                                         <span className="inline-flex flex-col items-center gap-0.5 rounded-lg bg-emerald-100 px-2.5 py-1.5 text-xs font-medium text-emerald-700">
                                                             <CheckCircle2 className="h-3.5 w-3.5" />
                                                             {cell.amount != null && (
@@ -320,23 +334,24 @@ export default function Index({ staff, year, months, monthLabels, paymentMethods
                                                                 <span className="text-[10px] font-normal text-emerald-700">{cell.hours_worked}h</span>
                                                             )}
                                                         </span>
-                                                        <a
-                                                            href={payslipUrl(row, cell.salary_payment_id!)}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="absolute -left-2 -top-2 hidden rounded-full bg-white p-0.5 text-ink-500 shadow ring-1 ring-ink-100 transition-colors duration-150 hover:bg-ink-50 group-hover:block"
-                                                            title="Imprimer le bulletin de salaire"
-                                                        >
-                                                            <Printer className="h-3 w-3" />
-                                                        </a>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => cancelPayment(row, cell.salary_payment_id!)}
-                                                            className="absolute -right-2 -top-2 hidden rounded-full bg-white p-0.5 text-red-500 shadow ring-1 ring-ink-100 transition-colors duration-150 hover:bg-red-50 group-hover:block"
-                                                            title="Annuler ce paiement"
-                                                        >
-                                                            <Trash2 className="h-3 w-3" />
-                                                        </button>
+                                                        {/* Toujours visibles : au toucher il n'y a pas de survol, et le clavier ne peut pas atteindre un bouton masqué. */}
+                                                        <span className="flex items-center">
+                                                            <IconAnchor
+                                                                href={payslipUrl(row, cell.salary_payment_id!)}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                label={`Imprimer le bulletin de ${row.name}, ${monthLabels[month]}`}
+                                                            >
+                                                                <Printer className="h-4 w-4" />
+                                                            </IconAnchor>
+                                                            <IconButton
+                                                                tone="danger"
+                                                                onClick={() => cancelPayment(row, cell.salary_payment_id!)}
+                                                                label={`Annuler le paiement de ${row.name}, ${monthLabels[month]}`}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </IconButton>
+                                                        </span>
                                                     </div>
                                                 ) : (
                                                     <button

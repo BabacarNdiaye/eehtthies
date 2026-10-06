@@ -25,7 +25,7 @@ export default function DayTimeline({ entries, showClass = false, emptyLabel = "
     const now = useNow(60000);
 
     if (entries.length === 0) {
-        return <p className="rounded-2xl bg-ink-50 px-4 py-5 text-center text-sm text-ink-400">{emptyLabel}</p>;
+        return <p className="rounded-2xl bg-ink-50 px-4 py-5 text-center text-sm text-ink-500">{emptyLabel}</p>;
     }
 
     const current = seconds(new Date(now).toISOString().slice(11, 19));

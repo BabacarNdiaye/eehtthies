@@ -23,11 +23,11 @@ export default function Guest({ children }: PropsWithChildren) {
                 </Link>
             </div>
 
-            <div className="relative z-10 mx-auto -mt-8 w-full max-w-md px-4 pb-12 sm:px-6">
+            <main className="relative z-10 mx-auto -mt-8 w-full max-w-md px-4 pb-12 sm:px-6">
                 <div className="overflow-hidden rounded-3xl bg-white px-6 py-8 shadow-2xl sm:px-8">
                     {children}
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

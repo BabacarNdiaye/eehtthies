@@ -50,7 +50,8 @@ export default function ConnectLauncher({ initialPage }: { initialPage: Page<Pag
     );
 
     const loggedIn = !!page.props.auth?.user;
-    const hidden = !loggedIn || page.component.startsWith('Connect/') || page.component.startsWith('Auth/');
+    // Séance et vue projetée du conseil de classe : plein écran, le bouton couvrirait la barre « Suivant ».
+    const hidden = !loggedIn || page.component.startsWith('Connect/') || page.component.startsWith('Auth/') || page.component.startsWith('Council/');
 
     useEffect(() => {
         if (!loggedIn) return;

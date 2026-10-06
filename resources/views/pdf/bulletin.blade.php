@@ -194,6 +194,9 @@
                 <tr><td>Autorisé(e) à redoubler</td><td class="check">{{ $reportCard->decision === 'redouble' ? 'X' : '' }}</td></tr>
                 <tr><td>Exclusion</td><td class="check">{{ $reportCard->decision === 'exclu' ? 'X' : '' }}</td></tr>
             </table>
+            @if ($reportCard->decision_provisional)
+                <p style="margin: 4px 0 0; font-size: 9px; font-style: italic;">Décision provisoire : un recours est en cours d’examen.</p>
+            @endif
         </div>
         <div class="col">
             <table class="checklist">

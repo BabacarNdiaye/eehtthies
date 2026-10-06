@@ -13,7 +13,7 @@ class ReportCard extends Model
         'average', 'rank', 'class_size', 'decision', 'mention', 'class_average',
         'previous_term_average', 'annual_average', 'annual_rank',
         'retard_count', 'absence_count', 'unjustified_absence_count',
-        'general_appreciation', 'qr_token', 'is_published', 'generated_at',
+        'general_appreciation', 'council_id', 'decision_provisional', 'qr_token', 'is_published', 'generated_at',
     ];
 
     protected $casts = [
@@ -22,6 +22,7 @@ class ReportCard extends Model
         'previous_term_average' => 'decimal:2',
         'annual_average' => 'decimal:2',
         'is_published' => 'boolean',
+        'decision_provisional' => 'boolean',
         'generated_at' => 'datetime',
     ];
 
@@ -57,5 +58,11 @@ class ReportCard extends Model
     public function academicYear()
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    /** Conseil de classe qui a fixé l'appréciation, la mention et la décision de ce bulletin. */
+    public function council()
+    {
+        return $this->belongsTo(Council::class);
     }
 }

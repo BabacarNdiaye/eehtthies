@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\Exportable;
 use App\Support\InstitutionalEmail;
+use App\Support\PayoutAccount;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -102,12 +103,24 @@ class UserController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         return Inertia::render('Admin/Users/Form', [
             'roles' => $this->adminStaffRoles(),
             'managers' => $this->possibleManagers(),
+            ...$this->payoutProps($request),
         ]);
+    }
+
+    /** Le mode et le compte de versement n'existent dans la page que pour qui peut modifier les salaires. */
+    private function payoutProps(Request $request, ?User $user = null): array
+    {
+        return PayoutAccount::canManage($request->user()) ? ['payout' => PayoutAccount::formValues($user)] : [];
+    }
+
+    private function payoutRules(Request $request): array
+    {
+        return PayoutAccount::canManage($request->user()) ? PayoutAccount::rules() : [];
     }
 
     private function rules(?User $user = null): array
@@ -151,7 +164,7 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate($this->rules());
+        $data = $request->validate($this->rules() + $this->payoutRules($request));
 
         $roles = $data['roles'] ?? [];
         unset($data['roles']);
@@ -174,18 +187,19 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'Membre du personnel créé avec succès.');
     }
 
-    public function edit(User $user): Response
+    public function edit(Request $request, User $user): Response
     {
         return Inertia::render('Admin/Users/Form', [
             'editUser' => $user->load('roles:id,name'),
             'roles' => $this->adminStaffRoles(),
             'managers' => $this->possibleManagers($user),
+            ...$this->payoutProps($request, $user),
         ]);
     }
 
     public function update(Request $request, User $user)
     {
-        $data = $request->validate($this->rules($user));
+        $data = $request->validate($this->rules($user) + $this->payoutRules($request));
 
         $roles = $data['roles'] ?? [];
         unset($data['roles']);

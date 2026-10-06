@@ -1,0 +1,1 @@
+var e=new Intl.NumberFormat(`fr-FR`,{maximumFractionDigits:0});function t(t){return`${e.format(Math.round(Number(t))).replace(/ /g,`\xA0`)} FCFA`}export{t};

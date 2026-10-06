@@ -7,8 +7,10 @@ import {
     CalendarOff,
     ChefHat,
     ClipboardCheck,
+    ClipboardList,
     ConciergeBell,
     Croissant,
+    Gavel,
     Dumbbell,
     Globe,
     GraduationCap,
@@ -28,6 +30,7 @@ import {
     ShieldCheck,
     Users,
     UtensilsCrossed,
+    Wallet,
     Wine,
 } from 'lucide-react';
 
@@ -216,7 +219,10 @@ export function navIcon(href: string): LucideIcon {
     if (href.includes('skills')) return Medal;
     if (href.includes('library')) return Library;
     if (href.includes('invoices')) return Receipt;
+    if (href.includes('payslips')) return Wallet;
     if (href.includes('connect')) return MessageCircle;
+    if (href.includes('councils')) return Gavel;
+    if (href.includes('follow-ups')) return ClipboardList;
     if (href.includes('classes') || href.includes('child')) return Users;
 
     return Home;

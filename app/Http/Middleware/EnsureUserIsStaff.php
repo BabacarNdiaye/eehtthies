@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,12 +25,19 @@ class EnsureUserIsStaff
      */
     private const PORTAL_ONLY_ROLES = ['eleve', 'parent', 'enseignant'];
 
+    /**
+     * Faire partie du personnel : avoir au moins un rôle autre que ceux des portails. Les rôles élève et parent peuvent
+     * porter des permissions (les données de départ les leur donnent toutes) : une permission seule ne prouve donc jamais
+     * qu'on est du personnel, hors de /admin il faut aussi cette règle.
+     */
+    public static function isStaff(?User $user): bool
+    {
+        return $user !== null && $user->roles->pluck('name')->diff(self::PORTAL_ONLY_ROLES)->isNotEmpty();
+    }
+
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
-        $hasStaffRole = $user && $user->roles->pluck('name')->diff(self::PORTAL_ONLY_ROLES)->isNotEmpty();
-
-        abort_unless($hasStaffRole, 403);
+        abort_unless(self::isStaff($request->user()), 403);
 
         return $next($request);
     }

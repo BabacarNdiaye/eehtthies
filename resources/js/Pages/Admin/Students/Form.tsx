@@ -18,6 +18,8 @@ type ArchivedReportCard = ReportCard & {
 
 interface Props {
     student?: Student;
+    /** Formation, classe et année proposées à un nouvel élève ajouté depuis une promotion (vide sinon). */
+    defaults?: { formation_id?: number; school_class_id?: number; academic_year_id?: number };
     formations: { id: number; name: string }[];
     schoolClasses: { id: number; name: string; formation_id: number | null }[];
     academicYears: { id: number; label: string }[];
@@ -31,10 +33,12 @@ const statusOptions: { value: Student['status']; label: string }[] = [
     { value: 'abandon', label: 'Abandon' },
     { value: 'diplome', label: 'Diplômé' },
     { value: 'transfere', label: 'Transféré' },
+    { value: 'exclu', label: 'Exclu' },
 ];
 
 export default function Form({
     student,
+    defaults,
     formations,
     schoolClasses,
     academicYears,
@@ -53,9 +57,9 @@ export default function Form({
         address: student?.address ?? '',
         phone: student?.phone ?? '',
         email: student?.email ?? '',
-        formation_id: student?.formation_id ?? '',
-        school_class_id: student?.school_class_id ?? '',
-        academic_year_id: student?.academic_year_id ?? '',
+        formation_id: student?.formation_id ?? defaults?.formation_id ?? '',
+        school_class_id: student?.school_class_id ?? defaults?.school_class_id ?? '',
+        academic_year_id: student?.academic_year_id ?? defaults?.academic_year_id ?? '',
         guardian_name: student?.guardian_name ?? '',
         guardian_phone: student?.guardian_phone ?? '',
         guardian_email: student?.guardian_email ?? '',

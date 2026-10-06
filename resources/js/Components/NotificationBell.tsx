@@ -57,12 +57,13 @@ export default function NotificationBell({ href }: { href: string }) {
     return (
         <Link
             href={href}
-            aria-label="Messages"
+            aria-label={count > 0 ? `Messages (${count} non lus)` : 'Messages'}
             className="relative flex h-9 w-9 items-center justify-center rounded-full text-ink-500 hover:bg-ink-50"
         >
-            <Bell className="h-5 w-5" />
+            <Bell className="h-5 w-5" aria-hidden="true" />
             {count > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                // Le nom du lien donne déjà le nombre : le badge n'est que visuel (« 9+ » ne figurerait pas dans le nom).
+                <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                     {count > 9 ? '9+' : count}
                 </span>
             )}

@@ -8,17 +8,31 @@ use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\CandidatureController as AdminCandidatureController;
+use App\Http\Controllers\Admin\CashierController;
 use App\Http\Controllers\Admin\CertificateController;
 use App\Http\Controllers\Admin\ClassDiscussionController;
 use App\Http\Controllers\Admin\ClassPromotionController;
 use App\Http\Controllers\Admin\ContactMessageController;
+use App\Http\Controllers\Admin\CouncilAuditController;
+use App\Http\Controllers\Admin\CouncilController;
+use App\Http\Controllers\Admin\CouncilDashboardController;
+use App\Http\Controllers\Admin\CouncilDocumentController;
+use App\Http\Controllers\Admin\CouncilFamilyNoticeController;
+use App\Http\Controllers\Admin\CouncilFollowUpController;
+use App\Http\Controllers\Admin\CouncilInternshipController;
+use App\Http\Controllers\Admin\CouncilMinutesController;
+use App\Http\Controllers\Admin\CouncilRectificationController;
+use App\Http\Controllers\Admin\CouncilSettingsController;
+use App\Http\Controllers\Admin\CouncilSittingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataResetController;
+use App\Http\Controllers\Admin\DisciplineController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\ExamController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\FinanceController;
+use App\Http\Controllers\Admin\FinanceSettingsController;
 use App\Http\Controllers\Admin\FormationController as AdminFormationController;
 use App\Http\Controllers\Admin\FormationLevelController;
 use App\Http\Controllers\Admin\GalleryController as AdminGalleryController;
@@ -32,11 +46,14 @@ use App\Http\Controllers\Admin\LeaveController;
 use App\Http\Controllers\Admin\LessonLogController;
 use App\Http\Controllers\Admin\LibraryResourceController;
 use App\Http\Controllers\Admin\MailController;
+use App\Http\Controllers\Admin\MyPayslipController;
 use App\Http\Controllers\Admin\NewsArticlePhotoController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
+use App\Http\Controllers\Admin\OnlinePaymentController as AdminOnlinePaymentController;
 use App\Http\Controllers\Admin\OrgChartController;
 use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Admin\PaymentPlanController;
+use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\PracticalSessionController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReportCardController;
@@ -61,14 +78,21 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\CallController;
 use App\Http\Controllers\ConnectController;
+use App\Http\Controllers\Council\MeetingController as CouncilMeetingController;
+use App\Http\Controllers\Council\SessionController as CouncilSessionController;
+use App\Http\Controllers\Council\VoteController as CouncilVoteController;
 use App\Http\Controllers\Portal\ParentPortalController;
+use App\Http\Controllers\Portal\PaymentAttemptController;
 use App\Http\Controllers\Portal\StudentPortalController;
 use App\Http\Controllers\Portal\TeacherAttendanceController;
+use App\Http\Controllers\Portal\TeacherCouncilController;
 use App\Http\Controllers\Portal\TeacherExamController;
 use App\Http\Controllers\Portal\TeacherLeaveController;
 use App\Http\Controllers\Portal\TeacherLessonLogController;
 use App\Http\Controllers\Portal\TeacherLibraryController;
+use App\Http\Controllers\Portal\TeacherPayslipController;
 use App\Http\Controllers\Portal\TeacherPortalController;
+use App\Http\Controllers\Portal\TeacherPreCouncilController;
 use App\Http\Controllers\Portal\TeacherSkillController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PushSubscriptionController;
@@ -84,6 +108,8 @@ use App\Http\Controllers\Site\InternshipOfferController;
 use App\Http\Controllers\Site\JobOfferController;
 use App\Http\Controllers\Site\NewsController;
 use App\Http\Controllers\Site\PageController;
+use App\Http\Controllers\Site\PaymentWebhookController;
+use App\Http\Controllers\Site\ReceiptVerificationController;
 use App\Http\Controllers\Site\ReportCardVerificationController;
 use App\Http\Controllers\Site\SitemapController;
 use App\Support\PermissionRouting;
@@ -128,6 +154,18 @@ Route::post('/suivi-candidature', [CandidatureController::class, 'track'])->midd
 
 Route::get('/bulletins/verifier/{token}', ReportCardVerificationController::class)->name('bulletins.verify');
 Route::get('/diplomes/verifier/{diplomaNumber}', DiplomaVerificationController::class)->name('diplomas.verify');
+Route::get('/recus/verifier/{token}', ReceiptVerificationController::class)->middleware('throttle:60,1')->name('receipts.verify');
+
+// Paiement en ligne. Les notifications du fournisseur n'ont ni connexion ni jeton CSRF (bootstrap/app.php) : leur signature
+// les authentifie, et seul le pilote actif répond. Les pages de suivi et de simulation exigent une connexion et un lien
+// avec l'élève (ou la comptabilité) : il n'existe aucun lien de paiement utilisable sans compte.
+Route::post('/paiements/webhook/{driver}', PaymentWebhookController::class)->middleware('throttle:120,1')->name('payments.webhook');
+
+Route::middleware(['auth', 'verified'])->prefix('paiements')->name('payments.')->group(function () {
+    Route::get('{attempt}', [PaymentAttemptController::class, 'show'])->name('show');
+    Route::get('{attempt}/simulation', [PaymentAttemptController::class, 'simulation'])->name('simulation.show');
+    Route::post('{attempt}/simulation', [PaymentAttemptController::class, 'completeSimulation'])->middleware('throttle:30,1')->name('simulation.complete');
+});
 
 Route::get('/offres-de-stage', [InternshipOfferController::class, 'index'])->name('careers.internships.index');
 Route::get('/offres-emploi', [JobOfferController::class, 'index'])->name('careers.jobs.index');
@@ -145,7 +183,7 @@ Route::get('/dashboard', function () {
     if ($user?->hasAnyRole([
         'super-admin', 'direction', 'administration', 'responsable-pedagogique',
         'comptable', 'caissier', 'responsable-stocks', 'responsable-communication',
-        'responsable-marketing',
+        'responsable-marketing', 'vie-scolaire', 'secretariat',
     ])) {
         return redirect()->route('admin.dashboard');
     }
@@ -170,6 +208,32 @@ Route::get('/dashboard', function () {
 // /borne/pointage/open?token=VOTRE_JETON&mode=gate
 Route::get('/borne/pointage/open', [AttendanceController::class, 'kioskOpen'])->name('borne.pointage.open');
 Route::post('/borne/pointage/scan/open', [AttendanceController::class, 'qrScanOpen'])->name('borne.pointage.scan.open');
+
+// Conseil de classe : mode séance (E05) et vue projetée (E06), hors de /admin pour qu'un président enseignant y accède.
+// Les droits sont ceux de CouncilPolicy (lecture : membre ou personnel habilité ; écriture : conduct).
+Route::middleware(['auth', 'verified'])->prefix('conseils/{council}')->name('council.')->group(function () {
+    Route::get('/seance', [CouncilSessionController::class, 'show'])->name('session.show');
+    Route::put('/seance/eleves/{councilStudent}', [CouncilSessionController::class, 'save'])->middleware('throttle:240,1,council-session.save')->name('session.save');
+    Route::post('/seance/focus', [CouncilSessionController::class, 'focus'])->middleware('throttle:240,1,council-session.focus')->name('session.focus');
+    Route::put('/seance/notes', [CouncilSessionController::class, 'notes'])->middleware('throttle:120,1,council-session.notes')->name('session.notes');
+    Route::post('/seance/terminer', [CouncilSessionController::class, 'end'])->name('session.end');
+    Route::get('/projection', [CouncilSessionController::class, 'projection'])->name('projection.show');
+    Route::get('/projection/etat', [CouncilSessionController::class, 'state'])->middleware('throttle:120,1,council-projection.state')->name('projection.state');
+    // Lot V3 : votes (VOT-01 à VOT-05). Page de vote des membres au téléphone, sondée toutes les 3 s.
+    Route::get('/vote', [CouncilVoteController::class, 'show'])->name('vote.show');
+    Route::get('/votes/etat', [CouncilVoteController::class, 'state'])->middleware('throttle:120,1,council-votes.state')->name('votes.state');
+    Route::post('/votes', [CouncilVoteController::class, 'store'])->middleware('throttle:60,1,council-votes.store')->name('votes.store');
+    Route::post('/votes/{vote}/bulletin', [CouncilVoteController::class, 'ballot'])->middleware('throttle:60,1,council-votes.ballot')->name('votes.ballot');
+    Route::post('/votes/{vote}/cloture', [CouncilVoteController::class, 'close'])->middleware('throttle:60,1,council-votes.close')->name('votes.close');
+    // Visioconférence du conseil (pendant la séance) : présence et mise en relation interrogées chaque seconde.
+    Route::get('/visio', [CouncilMeetingController::class, 'show'])->name('meeting.show');
+    Route::post('/visio', [CouncilMeetingController::class, 'start'])->middleware('throttle:20,1,council-meeting.start')->name('meeting.start');
+    Route::post('/visio/rejoindre', [CouncilMeetingController::class, 'join'])->middleware('throttle:30,1,council-meeting.join')->name('meeting.join');
+    Route::post('/visio/etat', [CouncilMeetingController::class, 'poll'])->middleware('throttle:240,1,council-meeting.poll')->name('meeting.poll');
+    Route::post('/visio/signal', [CouncilMeetingController::class, 'signal'])->middleware('throttle:1200,1,council-meeting.signal')->name('meeting.signal');
+    Route::post('/visio/quitter', [CouncilMeetingController::class, 'leave'])->name('meeting.leave');
+    Route::post('/visio/terminer', [CouncilMeetingController::class, 'end'])->name('meeting.end');
+});
 
 Route::middleware(['auth', 'verified'])->prefix('documents')->name('attachments.')->group(function () {
     Route::post('/', [AttachmentController::class, 'store'])->name('store')->middleware('throttle:30,1');
@@ -364,6 +428,29 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
         ->name('salaries.payslip.teacher')
         ->middleware('permission:exporter_salaires');
 
+    // Paie mensuelle : préparer, vérifier, valider, puis verser. Valider est une permission distincte (« valider_salaires »)
+    // pour pouvoir séparer celui qui prépare de celui qui approuve ; l'ordre de paiement contient des comptes : « exporter ».
+    Route::prefix('payroll')->name('payroll.')->group(function () {
+        Route::get('/', [PayrollController::class, 'index'])->name('index')->middleware('permission:voir_salaires');
+        Route::post('/', [PayrollController::class, 'store'])->name('store')->middleware('permission:ajouter_salaires');
+        Route::get('{payrollRun}', [PayrollController::class, 'show'])->name('show')->middleware('permission:voir_salaires');
+        Route::delete('{payrollRun}', [PayrollController::class, 'destroy'])->name('destroy')->middleware('permission:supprimer_salaires');
+        Route::post('{payrollRun}/refresh', [PayrollController::class, 'refresh'])->name('refresh')->middleware('permission:modifier_salaires');
+        Route::put('{payrollRun}/lines/{payrollLine}', [PayrollController::class, 'updateLine'])->name('lines.update')->middleware('permission:modifier_salaires');
+        Route::post('{payrollRun}/validate', [PayrollController::class, 'approve'])->name('validate')->middleware('permission:valider_salaires');
+        Route::post('{payrollRun}/reopen', [PayrollController::class, 'reopen'])->name('reopen')->middleware('permission:valider_salaires');
+        Route::post('{payrollRun}/pay', [PayrollController::class, 'payAll'])->name('pay')->middleware('permission:ajouter_salaires');
+        Route::post('{payrollRun}/lines/{payrollLine}/pay', [PayrollController::class, 'payLine'])->name('lines.pay')->middleware('permission:ajouter_salaires');
+        Route::get('{payrollRun}/lines/{payrollLine}/bulletin', [PayrollController::class, 'payslip'])->name('lines.payslip')->middleware('permission:exporter_salaires');
+        Route::get('{payrollRun}/ordre-de-paiement.csv', [PayrollController::class, 'payoutCsv'])->name('payout.csv')->middleware('permission:exporter_salaires');
+        Route::get('{payrollRun}/ordre-de-paiement.pdf', [PayrollController::class, 'payoutPdf'])->name('payout.pdf')->middleware('permission:exporter_salaires');
+    });
+
+    // « Ma paie » : libre-service, ouvert à tout membre du personnel comme « mot-de-passe » ; chaque bulletin est vérifié
+    // contre son propriétaire dans le contrôleur.
+    Route::get('ma-paie', [MyPayslipController::class, 'index'])->name('my-payslips.index');
+    Route::get('ma-paie/{payrollLine}', [MyPayslipController::class, 'download'])->name('my-payslips.download');
+
     Route::get('academic-years', [AcademicYearController::class, 'index'])->name('academic-years.index')->middleware('permission:voir_classes');
     Route::post('academic-years', [AcademicYearController::class, 'store'])->name('academic-years.store')->middleware('permission:ajouter_classes');
     Route::patch('academic-years/{academicYear}', [AcademicYearController::class, 'update'])->name('academic-years.update')->middleware('permission:modifier_classes');
@@ -420,6 +507,95 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     Route::get('attendance/register', [AttendanceController::class, 'register'])->name('attendance.register')->middleware('permission:voir_presences');
     Route::get('pointage/registre/pdf', [AttendanceController::class, 'registerPdf'])->name('pointage.register.pdf')->middleware('permission:exporter_presences');
 
+    // Conseils de classe (E01–E03) : droits fins dans CouncilPolicy (permission ET fonction dans le conseil).
+    Route::get('councils/proposal', [CouncilController::class, 'proposal'])->name('councils.proposal');
+    // Séance commune de plusieurs classes (un conseil et un PV par classe, tenus ensemble).
+    Route::get('council-sittings/create', [CouncilSittingController::class, 'create'])->name('council-sittings.create');
+    Route::post('council-sittings', [CouncilSittingController::class, 'store'])->name('council-sittings.store');
+    Route::get('council-sittings/{councilSitting}', [CouncilSittingController::class, 'show'])->name('council-sittings.show');
+    Route::post('council-sittings/{councilSitting}/schedule', [CouncilSittingController::class, 'schedule'])->name('council-sittings.schedule');
+    Route::patch('council-sittings/{councilSitting}/attendance', [CouncilSittingController::class, 'attendance'])->name('council-sittings.attendance');
+    Route::post('council-sittings/{councilSitting}/start', [CouncilSittingController::class, 'start'])->name('council-sittings.start');
+    Route::get('councils', [CouncilController::class, 'index'])->name('councils.index')->middleware('permission:voir_conseils');
+    Route::resource('councils', CouncilController::class)->except('index');
+    Route::post('councils/{council}/schedule', [CouncilController::class, 'schedule'])->name('councils.schedule');
+    Route::post('councils/{council}/unschedule', [CouncilController::class, 'unschedule'])->name('councils.unschedule');
+    Route::post('councils/{council}/snapshot', [CouncilController::class, 'refreshSnapshot'])->name('councils.snapshot');
+    Route::post('councils/{council}/start', [CouncilController::class, 'start'])->name('councils.start');
+    Route::patch('councils/{council}/members/{member}/attendance', [CouncilController::class, 'attendance'])->name('councils.attendance');
+
+    // Procès-verbal et validation (E07), journal d'audit (E08).
+    Route::get('councils/minutes/{minute}/shared', [CouncilMinutesController::class, 'shared'])->middleware('signed')->name('councils.minutes.shared');
+    Route::get('councils/{council}/minutes', [CouncilMinutesController::class, 'show'])->name('councils.minutes');
+    Route::prefix('councils/{council}/minutes')->name('councils.minutes.')->group(function () {
+        Route::get('draft', [CouncilMinutesController::class, 'draft'])->name('draft');
+        Route::put('observations', [CouncilMinutesController::class, 'saveObservations'])->name('observations');
+        Route::post('submit', [CouncilMinutesController::class, 'submit'])->name('submit');
+        Route::post('validate', [CouncilMinutesController::class, 'validatePedagogical'])->name('validate');
+        Route::post('return', [CouncilMinutesController::class, 'returnToDrafting'])->name('return');
+        Route::post('close', [CouncilMinutesController::class, 'close'])->name('close');
+        Route::get('{minute}/pdf', [CouncilMinutesController::class, 'download'])->name('download');
+        Route::get('{minute}/link', [CouncilMinutesController::class, 'link'])->name('link');
+        Route::post('{minute}/scan', [CouncilMinutesController::class, 'uploadScan'])->name('scan');
+        Route::get('{minute}/scan', [CouncilMinutesController::class, 'downloadScan'])->name('scan.download');
+    });
+    // Lot V2 : stage, rectification et recours, documents, convocations, duplication ; actions de suivi (E09, E10).
+    Route::get('councils/{council}/internship', [CouncilInternshipController::class, 'show'])->name('councils.internship');
+    Route::put('councils/{council}/internship/{councilStudent}', [CouncilInternshipController::class, 'save'])->name('councils.internship.save');
+    Route::post('councils/{council}/students/{councilStudent}/rectify', [CouncilRectificationController::class, 'rectify'])->name('councils.rectify');
+    Route::post('councils/{council}/decisions/{decision}/appeals', [CouncilRectificationController::class, 'fileAppeal'])->name('councils.appeals.store');
+    Route::post('council-appeals/{appeal}/decide', [CouncilRectificationController::class, 'decideAppeal'])->name('councils.appeals.decide');
+    Route::get('councils/{council}/documents/convocation', [CouncilDocumentController::class, 'convocation'])->name('councils.documents.convocation');
+    Route::get('councils/{council}/documents/preparatory', [CouncilDocumentController::class, 'preparatory'])->name('councils.documents.preparatory');
+    Route::get('councils/{council}/documents/students/{councilStudent}', [CouncilDocumentController::class, 'decisionRecord'])->name('councils.documents.record');
+    Route::post('councils/{council}/convocations', [CouncilDocumentController::class, 'sendConvocations'])->name('councils.convocations');
+    Route::post('councils/{council}/duplicate', [CouncilDocumentController::class, 'duplicate'])->name('councils.duplicate');
+    Route::post('councils/{council}/family-notices', [CouncilFamilyNoticeController::class, 'store'])->middleware('throttle:10,1')->name('councils.family-notices.store');
+    // Lot V3 : tableau de bord Direction (E11).
+    Route::get('council-dashboard', [CouncilDashboardController::class, 'index'])->name('council-dashboard.index')->middleware('permission:voir_conseils_direction');
+    Route::get('council-dashboard/export', [CouncilDashboardController::class, 'export'])->name('council-dashboard.export')->middleware('permission:voir_conseils_direction');
+    Route::get('follow-ups', [CouncilFollowUpController::class, 'index'])->name('follow-ups.index')->middleware('permission:voir_conseils');
+    Route::get('follow-ups/mine', [CouncilFollowUpController::class, 'mine'])->name('follow-ups.mine');
+    Route::patch('follow-ups/{followUp}', [CouncilFollowUpController::class, 'update'])->name('follow-ups.update');
+    Route::get('follow-ups/{followUp}/interview', [CouncilFollowUpController::class, 'interviewPdf'])->name('follow-ups.interview');
+    Route::get('councils/{council}/audit', [CouncilAuditController::class, 'index'])->name('councils.audit');
+    Route::get('councils/{council}/audit/csv', [CouncilAuditController::class, 'exportCsv'])->name('councils.audit.csv');
+
+    // Conseil de classe — paramétrage (E12) : référentiels, seuils d'alerte, groupes de matières, règles du PV.
+    Route::prefix('council-settings')->name('council-settings.')->group(function () {
+        Route::get('/', [CouncilSettingsController::class, 'index'])->name('index')->middleware('permission:voir_parametrage_conseils');
+
+        Route::middleware('permission:modifier_parametrage_conseils')->group(function () {
+            Route::post('decision-types', [CouncilSettingsController::class, 'storeDecisionType'])->name('decision-types.store');
+            Route::patch('decision-types/{decisionType}', [CouncilSettingsController::class, 'updateDecisionType'])->name('decision-types.update');
+            Route::delete('decision-types/{decisionType}', [CouncilSettingsController::class, 'destroyDecisionType'])->name('decision-types.destroy');
+            Route::put('decision-types/{decisionType}/incompatibilities', [CouncilSettingsController::class, 'syncIncompatibilities'])->name('decision-types.incompatibilities');
+
+            Route::put('alert-thresholds', [CouncilSettingsController::class, 'updateThresholds'])->name('alert-thresholds.update');
+            Route::delete('alert-thresholds/{formation}', [CouncilSettingsController::class, 'resetThresholds'])->name('alert-thresholds.destroy');
+
+            Route::post('subject-groups', [CouncilSettingsController::class, 'storeSubjectGroup'])->name('subject-groups.store');
+            Route::put('subject-groups/assignments', [CouncilSettingsController::class, 'assignSubjects'])->name('subject-groups.assign');
+            Route::patch('subject-groups/{subjectGroup}', [CouncilSettingsController::class, 'updateSubjectGroup'])->name('subject-groups.update');
+            Route::delete('subject-groups/{subjectGroup}', [CouncilSettingsController::class, 'destroySubjectGroup'])->name('subject-groups.destroy');
+
+            Route::put('rules', [CouncilSettingsController::class, 'updateRules'])->name('rules.update');
+            Route::put('vote-rules', [CouncilSettingsController::class, 'updateVoteRules'])->name('vote-rules.update');
+            Route::put('messages', [CouncilSettingsController::class, 'updateMessages'])->name('messages.update');
+
+            Route::post('appreciations', [CouncilSettingsController::class, 'storeTemplate'])->name('appreciations.store');
+            Route::patch('appreciations/{appreciationTemplate}', [CouncilSettingsController::class, 'updateTemplate'])->name('appreciations.update');
+            Route::delete('appreciations/{appreciationTemplate}', [CouncilSettingsController::class, 'destroyTemplate'])->name('appreciations.destroy');
+            Route::post('internship-criteria', [CouncilSettingsController::class, 'storeCriterion'])->name('internship-criteria.store');
+            Route::patch('internship-criteria/{internshipCriterion}', [CouncilSettingsController::class, 'updateCriterion'])->name('internship-criteria.update');
+            Route::delete('internship-criteria/{internshipCriterion}', [CouncilSettingsController::class, 'destroyCriterion'])->name('internship-criteria.destroy');
+        });
+    });
+
+    // Registre des sanctions de la vie scolaire : lu par le conseil de classe (pastille rouge, fiche de l'élève).
+    Route::get('discipline/export/csv', [DisciplineController::class, 'exportCsv'])->name('discipline.export.csv')->middleware('permission:exporter_discipline');
+    PermissionRouting::gate(Route::resource('discipline', DisciplineController::class)->except('show')->parameters(['discipline' => 'disciplineRecord']), 'discipline');
+
     // Cahier de texte — supervision par l'administration de ce que les enseignants ont saisi depuis leur
     // propre portail.
     Route::get('cahier-de-texte', [LessonLogController::class, 'index'])->name('lesson-logs.index')->middleware('permission:voir_emploi_du_temps');
@@ -443,8 +619,18 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     // Finance
     Route::get('finance', [FinanceController::class, 'dashboard'])->name('finance.dashboard')->middleware('permission:voir_comptabilite');
     Route::get('finance/cash-journal', [FinanceController::class, 'cashJournal'])->name('finance.cash-journal')->middleware('permission:voir_comptabilite');
+    Route::get('finance/settings', [FinanceSettingsController::class, 'edit'])->name('finance.settings')->middleware('permission:modifier_comptabilite');
+    Route::put('finance/settings', [FinanceSettingsController::class, 'update'])->name('finance.settings.update')->middleware('permission:modifier_comptabilite');
     Route::get('finance/export/invoices', [FinanceController::class, 'exportInvoicesCsv'])->name('finance.export.invoices')->middleware('permission:exporter_comptabilite');
     Route::get('finance/export/expenses', [FinanceController::class, 'exportExpensesCsv'])->name('finance.export.expenses')->middleware('permission:exporter_comptabilite');
+
+    // Guichet : encaissement groupé (une somme, plusieurs factures, un reçu).
+    Route::middleware('permission:ajouter_comptabilite')->group(function () {
+        Route::get('encaissement', [CashierController::class, 'index'])->name('cashier.create');
+        Route::get('encaissement/eleves', [CashierController::class, 'students'])->name('cashier.students')->middleware('throttle:60,1');
+        Route::post('encaissement', [CashierController::class, 'store'])->name('cashier.store');
+        Route::post('encaissement/renvoyer', [CashierController::class, 'resend'])->name('cashier.resend')->middleware('throttle:10,1');
+    });
 
     Route::middleware('permission:voir_comptabilite')->group(function () {
         Route::get('invoices/overdue', [InvoiceController::class, 'overdue'])->name('invoices.overdue');
@@ -452,6 +638,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     });
     Route::post('invoices/generate-for-formation', [InvoiceController::class, 'generateForFormation'])->name('invoices.generateForFormation')->middleware('permission:ajouter_comptabilite');
     Route::post('invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])->name('invoices.generateMonthly')->middleware('permission:ajouter_comptabilite');
+    Route::post('invoices/fix-due-dates', [InvoiceController::class, 'fixDueDates'])->name('invoices.fixDueDates')->middleware('permission:modifier_comptabilite');
+    Route::post('invoices/remind', [InvoiceController::class, 'remind'])->name('invoices.remind')->middleware('permission:modifier_comptabilite');
+
+    Route::get('paiements-en-ligne', [AdminOnlinePaymentController::class, 'index'])->name('online-payments.index')->middleware('permission:voir_comptabilite');
+    Route::post('paiements-en-ligne/reconcile', [AdminOnlinePaymentController::class, 'reconcile'])->name('online-payments.reconcile')->middleware('permission:modifier_comptabilite');
     PermissionRouting::gate(Route::resource('invoices', InvoiceController::class)->except('edit'), 'comptabilite');
     Route::post('invoices/{invoice}/payments', [InvoiceController::class, 'storePayment'])->name('invoices.payments.store')->middleware('permission:ajouter_comptabilite');
     Route::delete('invoices/{invoice}/payments/{payment}', [InvoiceController::class, 'destroyPayment'])->name('invoices.payments.destroy')->middleware('permission:supprimer_comptabilite');
@@ -542,6 +733,7 @@ Route::prefix('espace-eleve')->name('student.')->middleware(['auth', 'verified',
     Route::get('/presences', [StudentPortalController::class, 'attendance'])->name('attendance');
     Route::get('/factures', [StudentPortalController::class, 'invoices'])->name('invoices');
     Route::get('/factures/{invoice}/paiements/{payment}/recu', [StudentPortalController::class, 'invoiceReceiptPdf'])->name('invoices.receipt');
+    Route::post('/paiements', [PaymentAttemptController::class, 'startForStudent'])->middleware('throttle:20,1')->name('payments.start');
     Route::get('/bibliotheque', [StudentPortalController::class, 'library'])->name('library');
     Route::get('/mot-de-passe', fn () => Inertia::render('Portal/Student/Password'))->name('password');
 });
@@ -584,6 +776,18 @@ Route::prefix('espace-enseignant')->name('teacher.')->middleware(['auth', 'verif
     Route::post('/bibliotheque', [TeacherLibraryController::class, 'store'])->name('library.store');
     Route::delete('/bibliotheque/{libraryResource}', [TeacherLibraryController::class, 'destroy'])->name('library.destroy');
 
+    Route::get('/conseils', [TeacherCouncilController::class, 'index'])->name('councils.index');
+    Route::get('/conseils/{council}', [TeacherCouncilController::class, 'show'])->name('councils.show');
+    Route::get('/conseils/{council}/preconseil', [TeacherPreCouncilController::class, 'show'])->name('councils.precouncil');
+    Route::put('/conseils/{council}/preconseil', [TeacherPreCouncilController::class, 'save'])->middleware('throttle:120,1')->name('councils.precouncil.save');
+    Route::get('/mes-actions', [CouncilFollowUpController::class, 'teacherIndex'])->name('follow-ups.index');
+    Route::patch('/mes-actions/{followUp}', [CouncilFollowUpController::class, 'update'])->name('follow-ups.update');
+    Route::get('/mes-actions/{followUp}/entretien', [CouncilFollowUpController::class, 'interviewPdf'])->name('follow-ups.interview');
+    Route::patch('/conseils/{council}/eleves/{councilStudent}/synthese', [TeacherCouncilController::class, 'updateSynthesis'])->name('councils.synthesis');
+
+    Route::get('/ma-paie', [TeacherPayslipController::class, 'index'])->name('payslips.index');
+    Route::get('/ma-paie/{payrollLine}', [TeacherPayslipController::class, 'download'])->name('payslips.download');
+
     Route::get('/mot-de-passe', fn () => Inertia::render('Portal/Teacher/Password'))->name('password');
 });
 
@@ -598,6 +802,7 @@ Route::prefix('espace-parent')->name('parent.')->middleware(['auth', 'verified',
     Route::get('/enfants/{student}', [ParentPortalController::class, 'child'])->name('child');
     Route::get('/enfants/{student}/bulletins/{reportCard}/pdf', [ParentPortalController::class, 'reportCardPdf'])->name('report-cards.pdf');
     Route::get('/enfants/{student}/factures/{invoice}/paiements/{payment}/recu', [ParentPortalController::class, 'invoiceReceiptPdf'])->name('invoices.receipt');
+    Route::post('/enfants/{student}/paiements', [PaymentAttemptController::class, 'startForChild'])->middleware('throttle:20,1')->name('payments.start');
     Route::get('/mot-de-passe', fn () => Inertia::render('Portal/Parent/Password'))->name('password');
 });
 

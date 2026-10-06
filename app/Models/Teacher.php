@@ -15,6 +15,8 @@ class Teacher extends Model
     {
         return LogOptions::defaults()
             ->logFillable()
+            // Le compte de versement est une donnée sensible : jamais au journal d'activité.
+            ->logExcept(['payout_channel', 'payout_account'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges()
             ->useLogName('enseignants');
@@ -23,8 +25,11 @@ class Teacher extends Model
     protected $fillable = [
         'user_id', 'matricule', 'first_name', 'last_name', 'photo', 'phone',
         'email', 'professional_email', 'address', 'specialty', 'diplomas', 'experience_years', 'status',
-        'payment_type', 'monthly_salary', 'hourly_rate',
+        'payment_type', 'monthly_salary', 'hourly_rate', 'payout_channel', 'payout_account',
     ];
+
+    /** Jamais sérialisés avec la fiche : le contrôleur les ajoute à part, avec les permissions des salaires. */
+    protected $hidden = ['payout_channel', 'payout_account'];
 
     protected $casts = [
         'monthly_salary' => 'decimal:2',

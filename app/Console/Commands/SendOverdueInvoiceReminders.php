@@ -2,69 +2,93 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\OverdueInvoiceReminder;
 use App\Models\Invoice;
+use App\Models\PaymentReminder;
+use App\Models\Setting;
+use App\Services\FamilyChannels;
+use App\Services\PaymentReminderSender;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Mail;
 
 class SendOverdueInvoiceReminders extends Command
 {
     protected $signature = 'app:send-overdue-invoice-reminders';
 
-    protected $description = 'Envoie une relance par e-mail au parent/tuteur pour les factures en retard, à des paliers fixes (3, 7, 15, 30, 60 jours de retard) pour éviter de spammer.';
+    protected $description = "Relance les familles pour les factures en retard, à des paliers fixes (3, 7, 15, 30, 60 jours de retard) et, si le réglage est activé, trois jours avant l'échéance. Chaque envoi est journalisé : un palier ne part jamais deux fois.";
 
-    private const MILESTONES = [3, 7, 15, 30, 60];
-
-    public function handle(): int
+    public function handle(PaymentReminderSender $sender, FamilyChannels $family): int
     {
         $today = Carbon::today();
+        $remindBefore = Setting::flag('finance_remind_before_due');
+        $horizon = $today->copy()->addDays(abs(PaymentReminder::BEFORE_DUE));
 
-        $overdueInvoices = Invoice::where('due_date', '<', $today)
-            ->whereHas('student', fn ($q) => $q->where('status', 'actif'))
-            ->with(['payments:id,invoice_id,amount', 'student.parentUser:id,name,email'])
+        // Les factures échues, plus (pour le rappel avant échéance) celles qui échoient dans les trois jours.
+        $invoices = Invoice::whereNotNull('due_date')
+            ->where('due_date', '<=', $horizon)
+            ->whereHas('student', fn ($query) => $query->where('status', 'actif'))
+            ->with(['payments:id,invoice_id,amount', 'student.parentUser', 'student.user'])
             ->get()
             ->map(function (Invoice $invoice) {
-                $invoice->computed_balance = round(
-                    (float) $invoice->amount - (float) $invoice->discount - (float) $invoice->payments->sum('amount'),
-                    2
-                );
+                $invoice->computed_balance = round($invoice->net_amount - (float) $invoice->payments->sum('amount'), 2);
 
                 return $invoice;
             })
             ->filter(fn (Invoice $invoice) => $invoice->computed_balance > 0);
 
-        $byStudent = $overdueInvoices->groupBy('student_id');
+        // Paliers déjà partis : « facture:palier ».
+        $logged = PaymentReminder::whereIn('invoice_id', $invoices->modelKeys())
+            ->whereNotNull('milestone')
+            ->get(['invoice_id', 'milestone'])
+            ->mapWithKeys(fn (PaymentReminder $reminder) => ["{$reminder->invoice_id}:{$reminder->milestone}" => true]);
 
-        $sent = 0;
-        $skippedNoContact = 0;
+        $isNew = fn (Invoice $invoice, int $milestone) => ! $logged->has("{$invoice->id}:{$milestone}");
 
-        foreach ($byStudent as $invoices) {
-            $dueTodayMilestone = $invoices->contains(
-                fn (Invoice $invoice) => in_array((int) $today->diffInDays($invoice->due_date, absolute: true), self::MILESTONES, true)
-            );
+        $sent = $before = $noContact = $failed = 0;
 
-            if (! $dueTodayMilestone) {
+        foreach ($invoices->groupBy('student_id') as $studentInvoices) {
+            $student = $studentInvoices->first()->student;
+            $overdue = $studentInvoices->filter(fn (Invoice $invoice) => $invoice->daysPastDue($today) > 0)->values();
+
+            $triggers = $overdue->filter(fn (Invoice $invoice) => in_array($invoice->daysPastDue($today), PaymentReminder::MILESTONES, true)
+                && $isNew($invoice, $invoice->daysPastDue($today)));
+
+            if ($triggers->isNotEmpty()) {
+                // Une relance de retard cite toutes les factures échues de l'élève, pas seulement celles qui ont atteint un palier.
+                $cited = $overdue;
+                $milestones = $triggers->mapWithKeys(fn (Invoice $invoice) => [$invoice->id => $invoice->daysPastDue($today)])->all();
+                $upcoming = false;
+            } elseif ($remindBefore) {
+                $cited = $studentInvoices
+                    ->filter(fn (Invoice $invoice) => $invoice->daysPastDue($today) === PaymentReminder::BEFORE_DUE && $isNew($invoice, PaymentReminder::BEFORE_DUE))
+                    ->values();
+
+                if ($cited->isEmpty()) {
+                    continue;
+                }
+
+                $milestones = $cited->mapWithKeys(fn (Invoice $invoice) => [$invoice->id => PaymentReminder::BEFORE_DUE])->all();
+                $upcoming = true;
+            } else {
                 continue;
             }
 
-            $student = $invoices->first()->student;
-            $recipientEmail = $student->parentUser?->email ?? $student->guardian_email ?? $student->email;
-
-            if (! $recipientEmail) {
-                $skippedNoContact++;
+            if (! $family->canReach($student)) {
+                $noContact++;
 
                 continue;
             }
 
-            $recipientName = $student->parentUser?->name ?? $student->guardian_name ?? $student->full_name;
-            $totalDue = $invoices->sum('computed_balance');
+            if ($sender->send($student, $cited, PaymentReminder::KIND_AUTO, $milestones) === []) {
+                $failed++;
 
-            Mail::to($recipientEmail)->send(new OverdueInvoiceReminder($student, $invoices, $totalDue, $recipientName));
+                continue;
+            }
+
             $sent++;
+            $before += $upcoming ? 1 : 0;
         }
 
-        $this->info("Relances envoyées : {$sent}. Sans contact e-mail : {$skippedNoContact}.");
+        $this->info("Relances envoyées : {$sent} (dont {$before} avant échéance). Sans contact : {$noContact}.".($failed > 0 ? " Non parties : {$failed}." : ''));
 
         return self::SUCCESS;
     }

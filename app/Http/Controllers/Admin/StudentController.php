@@ -10,8 +10,10 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\User;
+use App\Support\CouncilGuards;
 use App\Support\Exportable;
 use App\Support\InstitutionalEmail;
+use App\Support\StudentDirectory;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -39,10 +41,17 @@ class StudentController extends Controller
         ];
     }
 
-    private function exportRows()
+    /** La vue de la page que l'export reproduit : mêmes filtres ; sans aucun filtre, toute l'école (ancien comportement). */
+    private function exportView(Request $request): StudentDirectory
     {
-        return Student::with(['formation:id,name', 'schoolClass:id,name'])
-            ->orderBy('last_name')
+        return StudentDirectory::fromRequest($request, withDefaults: false);
+    }
+
+    private function exportRows(StudentDirectory $view)
+    {
+        return $view->query()
+            ->with(['formation:id,name', 'schoolClass:id,name'])
+            ->orderBy('students.last_name')
             ->get()
             ->map(fn (Student $s) => [
                 'matricule' => $s->matricule,
@@ -56,76 +65,78 @@ class StudentController extends Controller
             ]);
     }
 
-    public function exportCsv()
+    public function exportCsv(Request $request)
     {
-        return $this->csvResponse('eleves-'.now()->format('Y-m-d').'.csv', $this->exportColumns(), $this->exportRows());
+        $view = $this->exportView($request);
+
+        return $this->csvResponse($view->exportName().'-'.now()->format('Y-m-d').'.csv', $this->exportColumns(), $this->exportRows($view));
     }
 
-    public function exportPdf()
+    public function exportPdf(Request $request)
     {
+        $view = $this->exportView($request);
+
         return $this->pdfResponse(
-            'eleves-'.now()->format('Y-m-d').'.pdf',
+            $view->exportName().'-'.now()->format('Y-m-d').'.pdf',
             'Liste des élèves',
             $this->exportColumns(),
-            $this->exportRows(),
+            $this->exportRows($view),
+            $view->describe(),
         );
     }
 
+    /**
+     * L'aperçu des promotions (niveau de formation > formation > classe), ou la liste des élèves de la portée choisie :
+     * tout est décrit dans App\Support\StudentDirectory, que les exports partagent pour sortir ce que la page montre.
+     */
     public function index(Request $request): Response
     {
-        $query = Student::with(['formation:id,name', 'schoolClass:id,name']);
-
-        if ($request->filled('formation_id')) {
-            $query->where('formation_id', $request->integer('formation_id'));
-        }
-
-        if ($request->filled('school_class_id')) {
-            $query->where('school_class_id', $request->integer('school_class_id'));
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->string('status'));
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->string('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('matricule', 'like', "%{$search}%");
-            });
-        }
-
-        $classCounts = (clone $query)->toBase()
-            ->selectRaw("coalesce(school_class_id, 'none') as class_key, count(*) as total")
-            ->groupBy('school_class_id')
-            ->pluck('total', 'class_key');
-
-        $query->orderByRaw('students.school_class_id is null')
-            ->orderBy(SchoolClass::select('name')->whereColumn('school_classes.id', 'students.school_class_id'))
-            ->orderBy('last_name')
-            ->orderBy('first_name');
-
-        return Inertia::render('Admin/Students/Index', [
-            'students' => $query->paginate(15)->withQueryString(),
-            'classCounts' => $classCounts,
-            'formations' => Formation::orderBy('name')->get(['id', 'name']),
-            'schoolClasses' => SchoolClass::orderBy('name')->get(['id', 'name']),
-            'filters' => $request->only(['formation_id', 'school_class_id', 'status', 'search']),
-        ]);
+        return Inertia::render('Admin/Students/Index', StudentDirectory::fromRequest($request)->page($request->user()->can('voir_comptabilite')));
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return $this->formResponse();
+        return $this->formResponse(null, $this->formDefaults($request));
     }
 
-    private function formResponse(?Student $student = null): Response
+    /**
+     * Formation, classe et année proposées au nouvel élève quand on l'ajoute depuis une promotion (« Ajouter un élève à
+     * cette classe ») : seuls des identifiants qui existent sont retenus, et la classe complète la formation et l'année.
+     *
+     * @return array<string, int>
+     */
+    private function formDefaults(Request $request): array
+    {
+        $defaults = [];
+
+        foreach (['formation_id' => Formation::class, 'school_class_id' => SchoolClass::class, 'academic_year_id' => AcademicYear::class] as $key => $model) {
+            $id = $request->query($key);
+
+            if (is_scalar($id) && ctype_digit((string) $id) && (int) $id > 0 && $model::query()->whereKey((int) $id)->exists()) {
+                $defaults[$key] = (int) $id;
+            }
+        }
+
+        if (isset($defaults['school_class_id'])) {
+            $class = SchoolClass::query()->find($defaults['school_class_id'], ['id', 'formation_id', 'academic_year_id']);
+
+            $defaults['formation_id'] ??= $class->formation_id;
+
+            if ($class->academic_year_id !== null) {
+                $defaults['academic_year_id'] ??= $class->academic_year_id;
+            }
+        }
+
+        return array_filter($defaults, fn ($id) => $id !== null);
+    }
+
+    private function formResponse(?Student $student = null, array $defaults = []): Response
     {
         $student?->load(['documents' => fn ($q) => $q->latest(), 'documents.uploader:id,name']);
 
         return Inertia::render('Admin/Students/Form', [
             'student' => $student,
+            'defaults' => $defaults,
             'formations' => Formation::orderBy('name')->get(['id', 'name']),
             'schoolClasses' => SchoolClass::orderBy('name')->get(['id', 'name', 'formation_id']),
             'academicYears' => AcademicYear::orderByDesc('start_date')->get(['id', 'label']),
@@ -172,7 +183,7 @@ class StudentController extends Controller
             'doctor_name' => ['nullable', 'string', 'max:255'],
             'doctor_phone' => ['nullable', 'string', 'max:30'],
             'health_notes' => ['nullable', 'string', 'max:2000'],
-            'status' => ['required', 'in:actif,suspendu,abandon,diplome,transfere,exclu'],
+            'status' => ['required', 'in:'.implode(',', array_keys(Student::STATUSES))],
             'graduation_year' => ['nullable', 'integer', 'min:2000', 'max:2100'],
             'current_position' => ['nullable', 'string', 'max:255'],
             'current_employer' => ['nullable', 'string', 'max:255'],
@@ -188,9 +199,10 @@ class StudentController extends Controller
 
         $data['professional_email'] = InstitutionalEmail::generate("{$data['first_name']} {$data['last_name']}");
 
-        Student::create($data);
+        $student = Student::create($data);
 
-        return redirect()->route('admin.students.index')->with('success', 'Élève ajouté avec succès.');
+        // On revient sur la promotion de l'élève, sa fiche mise en évidence : il n'a pas à la chercher dans une liste.
+        return redirect()->route('admin.students.index', StudentDirectory::locate($student))->with('success', 'Élève ajouté avec succès.');
     }
 
     public function edit(Student $student): Response
@@ -202,11 +214,15 @@ class StudentController extends Controller
     {
         $student->update($request->validate($this->rules($student)));
 
-        return redirect()->route('admin.students.index')->with('success', 'Élève mis à jour avec succès.');
+        return redirect()->route('admin.students.index', StudentDirectory::locate($student))->with('success', 'Élève mis à jour avec succès.');
     }
 
     public function destroy(Student $student)
     {
+        if ($reason = CouncilGuards::reason($student)) {
+            return back()->with('error', $reason);
+        }
+
         $student->delete();
 
         return back()->with('success', 'Élève supprimé.');

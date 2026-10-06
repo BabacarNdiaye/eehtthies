@@ -2,7 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Head, Link } from '@inertiajs/react';
-import { Users, UsersRound, Building2, Wallet, CheckCircle2, XCircle, Network, Coins, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Users, UsersRound, Building2, Wallet, CheckCircle2, XCircle, Network, Coins, ShieldCheck, ChevronRight, Banknote } from 'lucide-react';
 
 interface DirectoryEntry {
     id: string;
@@ -35,7 +35,8 @@ const fcfa = (v: number) => `${new Intl.NumberFormat('fr-FR').format(Math.round(
 const quickLinks = [
     { label: 'Personnel administratif', href: 'admin.users.index', icon: Users, description: 'Comptes, fonctions et rattachement hiérarchique' },
     { label: 'Enseignants', href: 'admin.teachers.index', icon: UsersRound, description: 'Spécialités, matières et classes assignées' },
-    { label: 'Salaires', href: 'admin.salaries.index', icon: Coins, description: 'Paiements mensuels et export comptable' },
+    { label: 'Paie mensuelle', href: 'admin.payroll.index', icon: Banknote, description: 'Préparer, valider et verser les salaires du mois' },
+    { label: 'Registre des salaires', href: 'admin.salaries.index', icon: Coins, description: 'Historique des paiements et export comptable' },
     { label: 'Organigramme', href: 'admin.org-chart.index', icon: Network, description: 'Hiérarchie du personnel administratif' },
     { label: 'Rôles & permissions', href: 'admin.roles.index', icon: ShieldCheck, description: "Droits d'accès par rôle" },
 ];

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Formation;
+use App\Support\CouncilGuards;
 use App\Support\Exportable;
 use App\Support\ImageOptimizer;
 use App\Support\ReadsCsv;
@@ -146,6 +147,10 @@ class FormationController extends Controller
 
     public function destroy(Formation $formation)
     {
+        if ($reason = CouncilGuards::reason($formation)) {
+            return back()->with('error', $reason);
+        }
+
         $formation->delete();
 
         return back()->with('success', 'Formation supprimée.');

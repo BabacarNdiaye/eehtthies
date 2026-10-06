@@ -29,6 +29,9 @@ return [
                     // l'application se récupère depuis le contrôle de version ou un redéploiement, et la base
                     // de données est exportée séparément plus bas.
                     storage_path('app/public'),
+                    // Procès-verbaux définitifs des conseils de classe (disque privé) : jamais régénérés, leur
+                    // empreinte est en base ; un dossier absent est simplement ignoré par la sauvegarde.
+                    storage_path('app/private/councils'),
                 ],
 
                 /*

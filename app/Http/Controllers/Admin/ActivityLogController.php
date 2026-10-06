@@ -20,6 +20,8 @@ class ActivityLogController extends Controller
         'candidatures' => 'Candidatures',
         'roles' => 'Rôles & permissions',
         'administration' => 'Administration',
+        'discipline' => 'Discipline',
+        'conseils' => 'Conseils de classe',
     ];
 
     private const SUBJECT_LABELS = [
@@ -32,6 +34,9 @@ class ActivityLogController extends Controller
         'SalaryPayment' => 'Salaire',
         'JournalEntry' => 'Écriture comptable',
         'Candidature' => 'Candidature',
+        'DisciplineRecord' => 'Sanction',
+        'Council' => 'Conseil de classe',
+        'CouncilFollowUp' => 'Action de suivi',
     ];
 
     private const EVENT_LABELS = [

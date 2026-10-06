@@ -248,7 +248,7 @@ export default function PublicLayout({ children, hideBar = false }: PropsWithChi
                                 EEHT de Thiès
                             </span>
                         </div>
-                        <p className="text-sm leading-relaxed text-ink-400">
+                        <p className="text-sm leading-relaxed text-ink-300">
                             Elite École Hôtelière et Touristique de Thiès —
                             former les talents de demain dans l'hôtellerie, la
                             restauration et le tourisme.
@@ -259,7 +259,7 @@ export default function PublicLayout({ children, hideBar = false }: PropsWithChi
                         <h3 className="mb-4 font-serif text-sm font-semibold uppercase tracking-wider text-gold-400">
                             Navigation
                         </h3>
-                        <ul className="space-y-2.5 text-sm text-ink-400">
+                        <ul className="space-y-2.5 text-sm text-ink-300">
                             {mainLinks.map((link) => (
                                 <li key={link.key}>
                                     <Link
@@ -277,7 +277,7 @@ export default function PublicLayout({ children, hideBar = false }: PropsWithChi
                         <h3 className="mb-4 font-serif text-sm font-semibold uppercase tracking-wider text-gold-400">
                             Ressources
                         </h3>
-                        <ul className="space-y-2.5 text-sm text-ink-400">
+                        <ul className="space-y-2.5 text-sm text-ink-300">
                             <li>
                                 <Link href={route('pages.faq')} className="hover:text-white">
                                     FAQ
@@ -305,7 +305,7 @@ export default function PublicLayout({ children, hideBar = false }: PropsWithChi
                         <h3 className="mb-4 font-serif text-sm font-semibold uppercase tracking-wider text-gold-400">
                             Carrières
                         </h3>
-                        <ul className="space-y-2.5 text-sm text-ink-400">
+                        <ul className="space-y-2.5 text-sm text-ink-300">
                             <li>
                                 <Link href={route('careers.internships.index')} className="hover:text-white">
                                     Offres de stage
@@ -328,7 +328,7 @@ export default function PublicLayout({ children, hideBar = false }: PropsWithChi
                         <h3 className="mb-4 font-serif text-sm font-semibold uppercase tracking-wider text-gold-400">
                             Contact
                         </h3>
-                        <ul className="space-y-3 text-sm text-ink-400">
+                        <ul className="space-y-3 text-sm text-ink-300">
                             {siteSettings.site_address && (
                                 <li className="flex items-start gap-2">
                                     <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" />
@@ -356,7 +356,7 @@ export default function PublicLayout({ children, hideBar = false }: PropsWithChi
                         </ul>
                     </div>
                 </div>
-                <div className="border-t border-white/10 px-4 py-6 text-center text-xs text-ink-500">
+                <div className="border-t border-white/10 px-4 py-6 text-center text-xs text-ink-300">
                     <p>
                         © {new Date().getFullYear()} {siteSettings.site_name}. Tous droits réservés.
                     </p>

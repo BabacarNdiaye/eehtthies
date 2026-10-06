@@ -26,6 +26,17 @@ php -r 'exit(version_compare(PHP_VERSION, "8.4.1", ">=") ? 0 : 1);' || {
     exit 1
 }
 
+# Ce script n'emballe que les fichiers que git suit : un fichier nouveau, pas encore ajouté, manquerait dans l'archive et le
+# site planterait dès qu'une route, une migration ou une classe y renvoie. On refuse donc de construire plutôt que de livrer
+# une archive incomplète. Un dossier qui est lui-même un dépôt git (entrée terminée par « / ») n'est pas concerné.
+UNTRACKED="$(git ls-files --others --exclude-standard | grep -v '/$' || true)"
+if [ -n "$UNTRACKED" ]; then
+    echo "✗ Ces fichiers ne sont pas suivis par git, ils manqueraient dans l'archive :" >&2
+    echo "$UNTRACKED" | sed 's/^/    /' >&2
+    echo "  Ajoutez-les (git add) ou commitez-les, puis relancez." >&2
+    exit 1
+fi
+
 STAGE="$(mktemp -d)"
 PKG="$STAGE/eeht"
 

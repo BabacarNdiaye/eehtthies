@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
+use App\Support\CouncilGuards;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -55,6 +56,10 @@ class AcademicYearController extends Controller
 
     public function destroy(AcademicYear $academicYear)
     {
+        if ($reason = CouncilGuards::reason($academicYear)) {
+            return back()->with('error', $reason);
+        }
+
         $academicYear->delete();
 
         return back()->with('success', 'Année académique supprimée.');

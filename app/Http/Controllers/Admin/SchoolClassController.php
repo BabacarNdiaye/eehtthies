@@ -7,6 +7,7 @@ use App\Models\AcademicYear;
 use App\Models\Formation;
 use App\Models\FormationLevel;
 use App\Models\SchoolClass;
+use App\Support\CouncilGuards;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
@@ -71,6 +72,10 @@ class SchoolClassController extends Controller
 
     public function destroy(SchoolClass $schoolClass)
     {
+        if ($reason = CouncilGuards::reason($schoolClass)) {
+            return back()->with('error', $reason);
+        }
+
         $schoolClass->delete();
 
         return back()->with('success', 'Classe supprimée.');

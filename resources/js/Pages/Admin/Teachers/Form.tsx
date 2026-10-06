@@ -10,6 +10,7 @@ import {
     TextInput,
 } from '@/Components/Admin/Field';
 import FormActions from '@/Components/Admin/FormActions';
+import PayoutFields from '@/Components/Admin/PayoutFields';
 import { Teacher } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { KeyRound, Printer } from 'lucide-react';
@@ -30,6 +31,8 @@ interface Props {
     salaryPayments: SalaryPaymentRow[];
     monthLabels: Record<string, string>;
     paymentMethods: Record<string, string>;
+    /** Mode et compte de versement : envoyés seulement à ceux qui peuvent modifier les salaires. */
+    payout?: { channel: string | null; account: string | null; options: Record<string, string> };
 }
 
 function formatFcfa(amount: number) {
@@ -42,7 +45,7 @@ const statusOptions: { value: Teacher['status']; label: string }[] = [
     { value: 'suspendu', label: 'Suspendu' },
 ];
 
-export default function Form({ teacher, subjects, salaryPayments, monthLabels, paymentMethods }: Props) {
+export default function Form({ teacher, subjects, salaryPayments, monthLabels, paymentMethods, payout }: Props) {
     const isEdit = !!teacher;
 
     const { data, setData, post, put, processing, errors } = useForm({
@@ -59,6 +62,8 @@ export default function Form({ teacher, subjects, salaryPayments, monthLabels, p
         payment_type: teacher?.payment_type ?? 'fixe',
         monthly_salary: teacher?.monthly_salary ?? '',
         hourly_rate: teacher?.hourly_rate ?? '',
+        payout_channel: payout?.channel ?? '',
+        payout_account: payout?.account ?? '',
         subject_ids: teacher?.subjects?.map((s) => s.id) ?? ([] as number[]),
     });
 
@@ -226,6 +231,15 @@ export default function Form({ teacher, subjects, salaryPayments, monthLabels, p
                                     onChange={(e) => setData('hourly_rate', e.target.value)}
                                 />
                             </Field>
+                        )}
+                        {payout && (
+                            <PayoutFields
+                                channel={data.payout_channel}
+                                account={data.payout_account}
+                                options={payout.options}
+                                errors={errors}
+                                onChange={(field, value) => setData(field, value)}
+                            />
                         )}
                     </div>
                 </Card>

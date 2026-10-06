@@ -15,6 +15,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Indicatif téléphonique par défaut
+    |--------------------------------------------------------------------------
+    |
+    | Les numéros saisis sans indicatif (« 77 187 79 18 ») sont des numéros locaux : App\Support\PhoneNumber leur
+    | ajoute celui-ci pour fabriquer les liens « Appeler » et « WhatsApp » des fiches d'élèves. 221 = Sénégal.
+    |
+    */
+    'phone_country_code' => '221',
+
+    /*
+    |--------------------------------------------------------------------------
     | Mot de passe par défaut
     |--------------------------------------------------------------------------
     |
@@ -49,6 +60,19 @@ return [
     'terms' => [
         'Semestre 1',
         'Semestre 2',
+    ],
+
+    /*
+    | Période propre aux formations courtes : un seul conseil, en fin de formation, sur toute l'année scolaire. Elle
+    | n'est pas dans « terms » : le découpage en semestres des bulletins, examens et présences reste inchangé.
+    */
+    'final_term' => 'Fin de formation',
+
+    /* Périodes qu'un conseil de classe peut porter : les semestres, puis la fin de formation. */
+    'council_terms' => [
+        'Semestre 1',
+        'Semestre 2',
+        'Fin de formation',
     ],
 
     /*
@@ -92,6 +116,11 @@ return [
         'salaires' => 'Salaires',
         'sauvegardes' => 'Sauvegardes',
         'activite' => "Journal d'activité",
+        // Module Conseil de classe (voir App\Support\CouncilPermissions pour le sens de chaque action).
+        'conseils' => 'Conseils de classe',
+        'conseils_direction' => 'Conseils — clôture & rectification',
+        'parametrage_conseils' => 'Conseils — paramétrage',
+        'discipline' => 'Discipline',
     ],
 
     'permission_actions' => [

@@ -10,9 +10,12 @@ use App\Models\Payment;
 use App\Models\ReportCard;
 use App\Models\Student;
 use App\Models\TimetableEntry;
+use App\Services\Council\FamilyCouncilService;
+use App\Services\OnlinePayments;
 use App\Services\PortalFeed;
 use App\Services\ReportCardCalculator;
 use App\Support\ClassSchedule;
+use App\Support\Receipt;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -182,6 +185,8 @@ class StudentPortalController extends Controller
             'exams' => $exams,
             'grades' => $grades,
             'reportCards' => $reportCards,
+            // DIR-06 : conseils clôturés seulement, appréciation et décisions publiables (jamais d'interne).
+            'councils' => app(FamilyCouncilService::class)->forStudent($student),
             'schoolClassId' => $student->school_class_id,
         ]);
     }
@@ -249,13 +254,13 @@ class StudentPortalController extends Controller
         ]);
     }
 
-    public function invoices(Request $request): Response
+    public function invoices(Request $request, OnlinePayments $online): Response
     {
         $student = $this->student($request);
 
         $invoices = $student->invoices()
             ->withSum('payments', 'amount')
-            ->with('payments:id,invoice_id,amount,method,paid_at,receipt_number')
+            ->with('payments:id,invoice_id,amount,method,channel,paid_at,receipt_number')
             ->orderByDesc('due_date')
             ->get()
             ->map(function (Invoice $invoice) {
@@ -271,6 +276,8 @@ class StudentPortalController extends Controller
 
         return Inertia::render('Portal/Student/Invoices', [
             'invoices' => $invoices,
+            // « Payer en ligne » n'apparaît que lorsqu'un pilote de paiement est actif.
+            'online' => $online->forPortal(route('student.payments.start', [], false)),
         ]);
     }
 
@@ -279,11 +286,7 @@ class StudentPortalController extends Controller
         $student = $this->student($request);
         abort_unless($invoice->student_id === $student->id && $payment->invoice_id === $invoice->id, 403);
 
-        $pdf = Pdf::loadView('pdf.receipt', [
-            'invoice' => $invoice->load('student'),
-            'payment' => $payment,
-        ]);
-
-        return $pdf->stream("recu-{$payment->receipt_number}.pdf");
+        // Un encaissement qui a réglé plusieurs factures donne un seul reçu, quel que soit le paiement demandé.
+        return Receipt::pdf($payment)->stream(Receipt::filename($payment));
     }
 }

@@ -18,12 +18,14 @@ class OverdueInvoiceReminder extends Mailable
         public Collection $invoices,
         public float $totalDue,
         public ?string $recipientName = null,
+        /** Rappel envoyé avant l'échéance (en option) plutôt qu'une relance de retard. */
+        public bool $upcoming = false,
     ) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Rappel de paiement — {$this->student->full_name}",
+            subject: ($this->upcoming ? 'Échéance proche' : 'Rappel de paiement')." — {$this->student->full_name}",
         );
     }
 
@@ -36,6 +38,7 @@ class OverdueInvoiceReminder extends Mailable
                 'invoices' => $this->invoices,
                 'totalDue' => $this->totalDue,
                 'recipientName' => $this->recipientName,
+                'upcoming' => $this->upcoming,
             ],
         );
     }

@@ -9,9 +9,12 @@ use App\Models\Payment;
 use App\Models\ReportCard;
 use App\Models\Student;
 use App\Models\TimetableEntry;
+use App\Services\Council\FamilyCouncilService;
+use App\Services\OnlinePayments;
 use App\Services\PortalFeed;
 use App\Services\ReportCardCalculator;
 use App\Support\ClassSchedule;
+use App\Support\Receipt;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -55,7 +58,7 @@ class ParentPortalController extends Controller
         return $student;
     }
 
-    public function child(Request $request, Student $student, ReportCardCalculator $calculator): Response
+    public function child(Request $request, Student $student, ReportCardCalculator $calculator, OnlinePayments $online): Response
     {
         $student = $this->authorizeChild($request, $student)->load('formation:id,name', 'schoolClass:id,name', 'academicYear:id,label');
 
@@ -86,7 +89,7 @@ class ParentPortalController extends Controller
 
         $invoices = $student->invoices()
             ->withSum('payments', 'amount')
-            ->with('payments:id,invoice_id,amount,method,paid_at,receipt_number')
+            ->with('payments:id,invoice_id,amount,method,channel,paid_at,receipt_number')
             ->orderByDesc('due_date')
             ->get()
             ->map(function (Invoice $invoice) {
@@ -104,11 +107,15 @@ class ParentPortalController extends Controller
             'student' => $student,
             'attendanceStats' => $attendanceStats,
             'reportCards' => $reportCards,
+            // DIR-06 : conseils clôturés seulement, appréciation et décisions publiables (jamais d'interne).
+            'councils' => app(FamilyCouncilService::class)->forStudent($student),
             'exams' => $exams,
             'grades' => $grades,
             'timetable' => $timetable,
             'days' => TimetableEntry::DAYS,
             'invoices' => $invoices,
+            // « Payer en ligne » n'apparaît que lorsqu'un pilote de paiement est actif.
+            'online' => $online->forPortal(route('parent.payments.start', $student, false)),
             // Les 30 derniers pointages, du plus récent au plus ancien (les totaux sont dans attendanceStats).
             'attendanceRecords' => $student->attendances()
                 ->with('subject:id,name')
@@ -128,12 +135,8 @@ class ParentPortalController extends Controller
         $this->authorizeChild($request, $student);
         abort_unless($invoice->student_id === $student->id && $payment->invoice_id === $invoice->id, 403);
 
-        $pdf = Pdf::loadView('pdf.receipt', [
-            'invoice' => $invoice->load('student'),
-            'payment' => $payment,
-        ]);
-
-        return $pdf->stream("recu-{$payment->receipt_number}.pdf");
+        // Un encaissement qui a réglé plusieurs factures donne un seul reçu, quel que soit le paiement demandé.
+        return Receipt::pdf($payment)->stream(Receipt::filename($payment));
     }
 
     public function reportCardPdf(Request $request, Student $student, ReportCard $reportCard, ReportCardCalculator $calculator)

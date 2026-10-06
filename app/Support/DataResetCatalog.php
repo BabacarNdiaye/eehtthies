@@ -11,6 +11,7 @@ use App\Models\LeaveRequest;
 use App\Models\Payment;
 use App\Models\Teacher;
 use Database\Seeders\AccountingSeeder;
+use Database\Seeders\CouncilDefaultsSeeder;
 use Database\Seeders\FaqCatalogSeeder;
 use Database\Seeders\FormationsCatalogSeeder;
 use InvalidArgumentException;
@@ -249,7 +250,7 @@ class DataResetCatalog
                 'note' => 'Les comptes de connexion restent : cochez aussi « Comptes de connexion » pour les supprimer.',
                 'tables' => ['students'],
                 'requires' => [
-                    'documents_eleves', 'notes', 'bulletins', 'presences', 'progressions', 'competences_eleves',
+                    'documents_eleves', 'notes', 'bulletins', 'presences', 'discipline_registre', 'conseils', 'progressions', 'competences_eleves',
                     'stages', 'factures', 'echeanciers',
                 ],
                 'files' => [$public('students', 'photo')],
@@ -279,6 +280,19 @@ class DataResetCatalog
                 'description' => "Registre d'appel et pointages.",
                 'tables' => ['attendances'],
             ],
+            'conseils' => [
+                'group' => 'Scolarité',
+                'label' => 'Conseils de classe',
+                'description' => 'Conseils, membres, photos des données, décisions et procès-verbaux (fichiers compris).',
+                'tables' => ['council_meeting_signals', 'council_meeting_participants', 'council_meetings', 'council_family_notices', 'council_vote_ballots', 'council_votes', 'council_appeals', 'council_follow_ups', 'council_internship_evaluations', 'council_observations', 'council_validations', 'council_minutes', 'council_decisions', 'council_students', 'council_members', 'councils', 'council_sittings'],
+                'files' => [['council_minutes', 'file_path', ['local']], ['council_minutes', 'signed_scan_path', ['local']]],
+            ],
+            'discipline_registre' => [
+                'group' => 'Scolarité',
+                'label' => 'Sanctions',
+                'description' => 'Registre des sanctions de la vie scolaire.',
+                'tables' => ['discipline_records'],
+            ],
             'progressions' => [
                 'group' => 'Scolarité',
                 'label' => 'Passations de classe',
@@ -299,9 +313,19 @@ class DataResetCatalog
                 'description' => 'Catalogue des formations et leurs images.',
                 'note' => "Les élèves, matières, témoignages et offres de stage conservés n'auront plus de formation associée.",
                 'tables' => ['formations'],
-                'requires' => ['candidatures', 'niveaux', 'classes', 'competences'],
+                'requires' => ['candidatures', 'niveaux', 'classes', 'competences', 'conseils_reglages'],
                 'files' => [$public('formations', 'image')],
                 'restore' => FormationsCatalogSeeder::class,
+            ],
+            'conseils_reglages' => [
+                'group' => 'Pédagogie',
+                'label' => 'Réglages des conseils de classe',
+                'description' => "Types de décision, incompatibilités, seuils d'alerte, groupes de matières, banque d'appréciations et grille de stage.",
+                'note' => 'Les réglages de départ sont réinstallés aussitôt.',
+                'tables' => ['decision_type_incompatibilities', 'decision_types', 'alert_thresholds', 'subject_groups', 'appreciation_templates', 'internship_criteria'],
+                'requires' => ['conseils'],
+                'restore' => CouncilDefaultsSeeder::class,
+                'restore_forced' => true,
             ],
             'niveaux' => [
                 'group' => 'Pédagogie',
@@ -323,7 +347,7 @@ class DataResetCatalog
                 'description' => 'Matières enseignées.',
                 'note' => "Les présences et ateliers conservés n'auront plus de matière.",
                 'tables' => ['subject_teacher', 'formation_level_required_subject', 'subjects'],
-                'requires' => ['examens', 'cahier_texte', 'emplois_du_temps'],
+                'requires' => ['examens', 'cahier_texte', 'emplois_du_temps', 'conseils'],
             ],
             'salles' => [
                 'group' => 'Pédagogie',
@@ -346,7 +370,7 @@ class DataResetCatalog
                 'description' => 'Classes et affectations des enseignants.',
                 'note' => "Les élèves conservés n'auront plus de classe. Les groupes de classe d'EEHT Connect sont recréés à la prochaine ouverture.",
                 'tables' => ['school_class_teacher', 'school_classes'],
-                'requires' => ['presences', 'connect', 'examens', 'cahier_texte', 'ateliers', 'bulletins', 'emplois_du_temps'],
+                'requires' => ['presences', 'connect', 'examens', 'cahier_texte', 'ateliers', 'bulletins', 'emplois_du_temps', 'conseils'],
             ],
             'examens' => [
                 'group' => 'Pédagogie',
@@ -404,9 +428,9 @@ class DataResetCatalog
             'factures' => [
                 'group' => 'Finance et comptabilité',
                 'label' => 'Factures et paiements',
-                'description' => 'Factures, paiements et pièces jointes.',
+                'description' => 'Factures, paiements, relances, tentatives de paiement en ligne et pièces jointes.',
                 'note' => 'Supprime aussi les écritures comptables générées automatiquement pour ces factures et paiements.',
-                'tables' => ['payments', 'invoices'],
+                'tables' => ['payment_attempts', 'payment_reminders', 'payments', 'invoices'],
                 'morphs' => [Invoice::class, Payment::class],
             ],
             'echeanciers' => [
@@ -427,8 +451,8 @@ class DataResetCatalog
             'salaires' => [
                 'group' => 'Finance et comptabilité',
                 'label' => 'Salaires versés',
-                'description' => 'Salaires du personnel et des enseignants.',
-                'tables' => ['teacher_salary_payments', 'salary_payments'],
+                'description' => 'Cycles de paie, bulletins et salaires du personnel et des enseignants.',
+                'tables' => ['payroll_lines', 'payroll_runs', 'teacher_salary_payments', 'salary_payments'],
             ],
             'fournisseurs' => [
                 'group' => 'Finance et comptabilité',

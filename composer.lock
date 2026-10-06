@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "887837c490bb9a22395b2f7630120156",
+    "content-hash": "008fa269cc4ebc4eb5039bdcd7508c64",
     "packages": [
         {
             "name": "anthropic-ai/sdk",
@@ -11404,7 +11404,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.3"
+        "php": "^8.4"
     },
     "platform-dev": {},
     "plugin-api-version": "2.9.0"

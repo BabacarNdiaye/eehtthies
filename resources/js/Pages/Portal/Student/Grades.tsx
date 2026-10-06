@@ -1,4 +1,5 @@
 import Card from '@/Components/Admin/Card';
+import CouncilResults, { FamilyCouncil } from '@/Components/Portal/CouncilResults';
 import GradeList, { GradedExam } from '@/Components/Portal/GradeList';
 import PortalPageHeader from '@/Components/Portal/PortalPageHeader';
 import ReportCardList from '@/Components/Portal/ReportCardList';
@@ -14,10 +15,11 @@ interface Props {
     exams: GradedExam[];
     grades: Record<number, Grade>;
     reportCards: ReportCard[];
+    councils: FamilyCouncil[];
     schoolClassId?: number | null;
 }
 
-export default function Grades({ exams, grades, reportCards, schoolClassId }: Props) {
+export default function Grades({ exams, grades, reportCards, councils, schoolClassId }: Props) {
     return (
         <PortalLayout title="Espace Élève" nav={studentNav}>
             <Head title="Mes notes et bulletins" />
@@ -83,6 +85,11 @@ export default function Grades({ exams, grades, reportCards, schoolClassId }: Pr
                         </table>
                     </div>
                 </Card>
+            </section>
+
+            <section id="conseils" className="mb-8">
+                <SectionTitle title="Conseils de classe" />
+                <CouncilResults councils={councils} />
             </section>
 
             <section>

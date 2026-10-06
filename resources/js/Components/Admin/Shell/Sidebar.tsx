@@ -2,7 +2,7 @@ import SiteLogo from '@/Components/SiteLogo';
 import { sidebarMemory } from '@/lib/adminMemory';
 import { NavGroup } from '@/lib/adminNav';
 import { Link } from '@inertiajs/react';
-import { ChevronDown, KeyRound, LogOut } from 'lucide-react';
+import { ChevronDown, KeyRound, LogOut, Wallet } from 'lucide-react';
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 
 interface Props {
@@ -102,7 +102,7 @@ export default function Sidebar({ groups, current, name, role }: Props) {
                                 }`}
                             >
                                 {GroupIcon && <GroupIcon className="h-5 w-5 shrink-0" aria-hidden="true" />}
-                                <span className="flex-1 text-left">{group.label}</span>
+                                <span className="flex-1 text-balance text-left">{group.label}</span>
                                 <ChevronDown
                                     className={`h-4 w-4 shrink-0 transition-transform duration-300 ease-fluid motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`}
                                     aria-hidden="true"
@@ -125,7 +125,7 @@ export default function Sidebar({ groups, current, name, role }: Props) {
                                                     key={item.href}
                                                     href={route(item.href)}
                                                     aria-current={isActive ? 'page' : undefined}
-                                                    className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200 ${focusRing} ${
+                                                    className={`flex items-center gap-3 rounded-md px-3 py-2 text-balance text-sm font-medium transition-colors duration-200 ${focusRing} ${
                                                         isActive ? 'bg-gold-500 text-ink-900' : 'text-ink-300 hover:bg-white/10 hover:text-white'
                                                     }`}
                                                 >
@@ -155,6 +155,15 @@ export default function Sidebar({ groups, current, name, role }: Props) {
                         <p className="truncate text-xs text-ink-300">{role}</p>
                     </div>
                 </div>
+                <Link
+                    href={route('admin.my-payslips.index')}
+                    aria-current={current.startsWith('admin.my-payslips') ? 'page' : undefined}
+                    className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ${focusRing} ${
+                        current.startsWith('admin.my-payslips') ? 'bg-white/5 text-white' : 'text-ink-300 hover:bg-white/5 hover:text-white'
+                    }`}
+                >
+                    <Wallet className="h-4 w-4" aria-hidden="true" /> Ma paie
+                </Link>
                 <Link
                     href={route('admin.password')}
                     aria-current={current === 'admin.password' ? 'page' : undefined}

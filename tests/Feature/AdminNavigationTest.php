@@ -36,6 +36,36 @@ class AdminNavigationTest extends TestCase
         }
     }
 
+    public function test_each_menu_target_appears_once_in_the_menu(): void
+    {
+        preg_match('/export const navGroups[^=]*=\s*\[(.*?)\n\];/s', $this->navSource(), $block);
+        $this->assertNotEmpty($block, 'Le bloc navGroups est introuvable.');
+
+        preg_match_all("/href: '([a-z0-9.\-]+)'/", $block[1], $matches);
+
+        $repeated = array_keys(array_filter(array_count_values($matches[1]), fn (int $count) => $count > 1));
+
+        $this->assertSame([], $repeated, 'Ces rubriques figurent plusieurs fois dans le menu : '.implode(', ', $repeated));
+    }
+
+    public function test_pages_that_used_to_hide_behind_a_button_have_their_own_menu_entry(): void
+    {
+        preg_match_all("/href: '([a-z0-9.\-]+)'/", $this->navSource(), $matches);
+
+        $expected = [
+            'admin.invoices.monthly' => 'le suivi des mensualités',
+            'admin.invoices.overdue' => 'les impayés',
+            'admin.finance.cash-journal' => 'le journal de caisse',
+            'admin.finance.settings' => 'les réglages des paiements',
+            'admin.products.movements' => 'les mouvements de stock',
+            'admin.pointage.report' => 'les statistiques de présence',
+        ];
+
+        foreach ($expected as $name => $page) {
+            $this->assertContains($name, $matches[1], "Le menu doit mener à {$page} ({$name}) sans passer par le bouton d'une autre page.");
+        }
+    }
+
     public function test_every_navigation_permission_exists_in_the_catalog(): void
     {
         $known = [];

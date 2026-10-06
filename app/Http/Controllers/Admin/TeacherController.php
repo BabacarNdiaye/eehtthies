@@ -11,6 +11,7 @@ use App\Models\TeacherSalaryPayment;
 use App\Models\User;
 use App\Support\Exportable;
 use App\Support\InstitutionalEmail;
+use App\Support\PayoutAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -152,14 +153,16 @@ class TeacherController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return $this->formResponse();
+        return $this->formResponse($request);
     }
 
-    private function formResponse(?Teacher $teacher = null): Response
+    private function formResponse(Request $request, ?Teacher $teacher = null): Response
     {
         return Inertia::render('Admin/Teachers/Form', [
+            // Le mode et le compte de versement n'existent dans la page que pour qui peut modifier les salaires.
+            ...(PayoutAccount::canManage($request->user()) ? ['payout' => PayoutAccount::formValues($teacher)] : []),
             'teacher' => $teacher?->load('subjects', 'attachments'),
             'subjects' => Subject::orderBy('name')->get(['id', 'name']),
             'salaryPayments' => $teacher
@@ -205,7 +208,7 @@ class TeacherController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate($this->rules());
+        $data = $request->validate($this->rules() + $this->payoutRules($request));
         $subjectIds = $data['subject_ids'] ?? [];
         unset($data['subject_ids']);
 
@@ -217,14 +220,19 @@ class TeacherController extends Controller
         return redirect()->route('admin.teachers.index')->with('success', 'Enseignant ajouté avec succès.');
     }
 
-    public function edit(Teacher $teacher): Response
+    public function edit(Request $request, Teacher $teacher): Response
     {
-        return $this->formResponse($teacher);
+        return $this->formResponse($request, $teacher);
+    }
+
+    private function payoutRules(Request $request): array
+    {
+        return PayoutAccount::canManage($request->user()) ? PayoutAccount::rules() : [];
     }
 
     public function update(Request $request, Teacher $teacher)
     {
-        $data = $request->validate($this->rules($teacher));
+        $data = $request->validate($this->rules($teacher) + $this->payoutRules($request));
         $subjectIds = $data['subject_ids'] ?? [];
         unset($data['subject_ids']);
 

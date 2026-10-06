@@ -1,0 +1,1 @@
+function e(e){return e?.status??(e?.is_absent?`absent_non_justifie`:`present`)}function t(e){return e===`absent_justifie`?`Absent(e) justifié(e)`:e===`absent_non_justifie`?`Absent(e)`:null}var n=`Absent(e) non justifié(e) : la note vaut 0 et compte dans la moyenne. Absent(e) justifié(e) : l'épreuve est ignorée. Une note laissée vide compte aussi 0.`;export{n,e as r,t};

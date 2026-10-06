@@ -148,7 +148,7 @@ export default function PortalLayout({ title, nav, children }: PropsWithChildren
                 <SiteLogo size={36} tone="gold" />
                 <div className="flex flex-col leading-tight">
                     <span className="font-serif text-sm font-bold text-white">{title}</span>
-                    <span className="text-[10px] uppercase tracking-widest text-ink-400">EEHT de Thiès</span>
+                    <span className="text-[10px] uppercase tracking-widest text-ink-300">EEHT de Thiès</span>
                 </div>
             </div>
             <nav aria-label="Rubriques de l'espace" className="scrollbar-thin flex-1 space-y-1 overflow-y-auto px-3 py-4">
@@ -178,7 +178,7 @@ export default function PortalLayout({ title, nav, children }: PropsWithChildren
                     </div>
                     <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-white">{profile.name}</p>
-                        <p className="truncate text-xs text-ink-400">{auth.roles?.[0]}</p>
+                        <p className="truncate text-xs text-ink-300">{auth.roles?.[0]}</p>
                     </div>
                 </div>
                 <Link
@@ -242,7 +242,8 @@ export default function PortalLayout({ title, nav, children }: PropsWithChildren
                                 >
                                     <Bell className="h-5 w-5" />
                                     {unread > 0 && (
-                                        <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                                        // Le nom du lien donne déjà le nombre : le badge n'est que visuel (« 9+ » ne figurerait pas dans le nom).
+                                        <span aria-hidden="true" className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white ring-2 ring-white">
                                             {unread > 9 ? '9+' : unread}
                                         </span>
                                     )}

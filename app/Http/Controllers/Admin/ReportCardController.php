@@ -65,27 +65,36 @@ class ReportCardController extends Controller
             // avant, la moyenne du semestre donne une indication. Seuil : celui du niveau de la classe, 10/20 sinon.
             $decidingAverage = $isFinalTerm ? ($annualAverage ?? $result['average']) : $result['average'];
 
+            $values = [
+                'school_class_id' => $data['school_class_id'],
+                'average' => $result['average'],
+                'rank' => $result['rank'],
+                'class_size' => $result['class_size'],
+                'class_average' => $result['class_average'],
+                'previous_term_average' => $previousAverage,
+                'annual_average' => $annualAverage,
+                'decision' => $calculator->decisionFor($decidingAverage, $passAverage),
+                'mention' => $calculator->mentionFor($result['average']),
+                'retard_count' => $attendance['retard'],
+                'absence_count' => $attendance['absence'],
+                'unjustified_absence_count' => $attendance['unjustified'],
+                'generated_at' => now(),
+            ];
+
+            // Le conseil de classe a tranché (SUI-05) : décision, mention et appréciation viennent de lui, la génération
+            // ne fait plus que recalculer moyennes, rangs et assiduité.
+            $existing = ReportCard::where('student_id', $student->id)->where('academic_year_id', $data['academic_year_id'])->where('term', $data['term'])->first();
+            if ($existing?->council_id !== null && $existing->council?->isClosed()) {
+                unset($values['decision'], $values['mention']);
+            }
+
             $reportCard = ReportCard::updateOrCreate(
                 [
                     'student_id' => $student->id,
                     'academic_year_id' => $data['academic_year_id'],
                     'term' => $data['term'],
                 ],
-                [
-                    'school_class_id' => $data['school_class_id'],
-                    'average' => $result['average'],
-                    'rank' => $result['rank'],
-                    'class_size' => $result['class_size'],
-                    'class_average' => $result['class_average'],
-                    'previous_term_average' => $previousAverage,
-                    'annual_average' => $annualAverage,
-                    'decision' => $calculator->decisionFor($decidingAverage, $passAverage),
-                    'mention' => $calculator->mentionFor($result['average']),
-                    'retard_count' => $attendance['retard'],
-                    'absence_count' => $attendance['absence'],
-                    'unjustified_absence_count' => $attendance['unjustified'],
-                    'generated_at' => now(),
-                ]
+                $values
             );
 
             if ($isFinalTerm && $annualAverage !== null) {

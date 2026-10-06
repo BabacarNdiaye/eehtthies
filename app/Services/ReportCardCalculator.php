@@ -11,6 +11,7 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\TimetableEntry;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -257,7 +258,7 @@ class ReportCardCalculator
     {
         $exams = Exam::where('school_class_id', $schoolClassId)
             ->where('academic_year_id', $academicYearId)
-            ->where('term', $term)
+            ->when($term !== config('eeht.final_term'), fn ($query) => $query->where('term', $term))
             ->where('is_published', true)
             ->get();
 
@@ -296,8 +297,24 @@ class ReportCardCalculator
             fn (Student $classmate) => [$classmate->id => $this->computeSubjectRows($classmate, $subjects, $examsBySubject, $allGrades)]
         );
 
-        $targetRows = $rowsByStudent->get($student->id, []);
+        $targetRows = $this->rankSubjects($rowsByStudent->get($student->id, []), $rowsByStudent, $student->id);
 
+        return [
+            'subjects' => $targetRows,
+            'overall' => $this->overallAverage($targetRows),
+        ];
+    }
+
+    /**
+     * Ajoute à chaque ligne matière d'un élève son rang parmi les camarades (`rank`) et l'effectif classé (`class_size`).
+     * Partagé par le bulletin d'un élève et par le détail de toute la classe : les deux ne peuvent pas diverger.
+     *
+     * @param  array<int, array<string, mixed>>  $targetRows
+     * @param  Collection<int, array<int, array<string, mixed>>>  $rowsByStudent  les lignes de chaque camarade, par élève
+     * @return array<int, array<string, mixed>>
+     */
+    private function rankSubjects(array $targetRows, Collection $rowsByStudent, int $studentId): array
+    {
         foreach ($targetRows as &$row) {
             $ranking = $rowsByStudent
                 ->map(fn ($rows) => collect($rows)->firstWhere('subject_id', $row['subject_id'])['moy20'] ?? null)
@@ -306,9 +323,9 @@ class ReportCardCalculator
 
             $position = 0;
             $rank = null;
-            foreach ($ranking as $studentId => $value) {
+            foreach ($ranking as $rankedId => $value) {
                 $position++;
-                if ($studentId === $student->id) {
+                if ($rankedId === $studentId) {
                     $rank = $position;
                     break;
                 }
@@ -319,10 +336,43 @@ class ReportCardCalculator
         }
         unset($row);
 
-        return [
-            'subjects' => $targetRows,
-            'overall' => $this->overallAverage($targetRows),
-        ];
+        return $targetRows;
+    }
+
+    /**
+     * Le détail de chaque élève d'une classe pour une période, en une seule passe : exactement ce que
+     * computeDetailedForStudent() donne pour chacun (mêmes camarades de classement, mêmes lignes, mêmes rangs), sans
+     * refaire tout le calcul de la classe élève par élève. C'est ce que lit la photo du conseil de classe.
+     *
+     * @param  Collection<int, int>|null  $studentIds  les élèves à rendre ; par défaut les élèves actifs de la classe
+     * @return array<int, array{subjects: array, overall: float|null}> par identifiant d'élève
+     */
+    public function computeDetailedForClass(SchoolClass $schoolClass, int $academicYearId, string $term, ?Collection $studentIds = null): array
+    {
+        [$subjects, $examsBySubject, $allGrades] = $this->classContext($schoolClass->id, $academicYearId, $term);
+
+        $active = Student::where('school_class_id', $schoolClass->id)->where('status', 'actif')->pluck('id');
+        $requested = ($studentIds ?? $active)->values();
+
+        // Les camarades du classement : voir computeDetailedForStudent().
+        $classmateIds = $active
+            ->merge($allGrades->pluck('student_id'))
+            ->merge($requested)
+            ->unique()
+            ->values();
+
+        $rowsByStudent = Student::whereIn('id', $classmateIds)->get(['id'])->mapWithKeys(
+            fn (Student $classmate) => [$classmate->id => $this->computeSubjectRows($classmate, $subjects, $examsBySubject, $allGrades)]
+        );
+
+        $detail = [];
+
+        foreach ($requested as $studentId) {
+            $rows = $this->rankSubjects($rowsByStudent->get($studentId, []), $rowsByStudent, $studentId);
+            $detail[$studentId] = ['subjects' => $rows, 'overall' => $this->overallAverage($rows)];
+        }
+
+        return $detail;
     }
 
     /**
@@ -362,16 +412,24 @@ class ReportCardCalculator
     }
 
     /**
-     * Totaux de présence (retards / absences / absences injustifiées) d'un élève sur la fenêtre de dates
-     * approximative de la période donnée.
+     * Fenêtre de dates d'une période : l'année académique est découpée en autant de tranches égales que de périodes
+     * (config « eeht.terms »), la dernière allant jusqu'à la fin de l'année. Les bornes sont incluses des deux côtés : un
+     * jour pile entre deux périodes compte dans les deux, comme sur les bulletins. C'est la même fenêtre pour les totaux
+     * d'absence du bulletin et pour la photo du conseil de classe, afin que leurs chiffres s'accordent.
+     *
+     * @return array{0: Carbon, 1: Carbon}|null [début, fin], ou null si la période est inconnue ou l'année sans dates
      */
-    public function attendanceStatsForTerm(Student $student, AcademicYear $academicYear, string $term): array
+    public function termDateRange(AcademicYear $academicYear, string $term): ?array
     {
+        if ($term === config('eeht.final_term')) {
+            return $academicYear->start_date && $academicYear->end_date ? [$academicYear->start_date->copy(), $academicYear->end_date->copy()] : null;
+        }
+
         $terms = config('eeht.terms');
         $index = array_search($term, $terms, true);
 
         if ($index === false || ! $academicYear->start_date || ! $academicYear->end_date) {
-            return ['retard' => 0, 'absence' => 0, 'unjustified' => 0];
+            return null;
         }
 
         $totalDays = max(1, $academicYear->start_date->diffInDays($academicYear->end_date));
@@ -380,6 +438,23 @@ class ReportCardCalculator
         $to = $index === count($terms) - 1
             ? $academicYear->end_date->copy()
             : $academicYear->start_date->copy()->addDays($segment * ($index + 1));
+
+        return [$from, $to];
+    }
+
+    /**
+     * Totaux de présence (retards / absences / absences injustifiées) d'un élève sur la fenêtre de dates
+     * approximative de la période donnée.
+     */
+    public function attendanceStatsForTerm(Student $student, AcademicYear $academicYear, string $term): array
+    {
+        $window = $this->termDateRange($academicYear, $term);
+
+        if ($window === null) {
+            return ['retard' => 0, 'absence' => 0, 'unjustified' => 0];
+        }
+
+        [$from, $to] = $window;
 
         $attendances = Attendance::where('student_id', $student->id)
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
@@ -413,7 +488,7 @@ class ReportCardCalculator
     {
         $terms = config('eeht.terms');
 
-        return $term === end($terms);
+        return $term === end($terms) || $term === config('eeht.final_term');
     }
 
     /**

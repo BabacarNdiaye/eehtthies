@@ -7,9 +7,19 @@ use App\Models\AcademicYear;
 use App\Models\Formation;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\PaymentReminder;
 use App\Models\Student;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\MonthlyInvoiceGenerator;
+use App\Services\PaymentNotifier;
+use App\Services\PaymentRecorder;
+use App\Services\PaymentReminderSender;
+use App\Support\PaymentChannels;
+use App\Support\PaymentException;
+use App\Support\Receipt;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -133,7 +143,7 @@ class InvoiceController extends Controller
         return back()->with('success', "{$count} facture(s) générée(s) pour {$formation->name}.");
     }
 
-    public function generateMonthly(Request $request)
+    public function generateMonthly(Request $request, MonthlyInvoiceGenerator $generator)
     {
         $data = $request->validate([
             'formation_id' => ['required', 'exists:formations,id'],
@@ -144,37 +154,64 @@ class InvoiceController extends Controller
         ]);
 
         $formation = Formation::findOrFail($data['formation_id']);
-        $students = Student::where('formation_id', $formation->id)->where('status', 'actif')->get();
-        $months = $data['months'];
-
-        $amount = $data['amount'] ?? round(((float) $formation->tuition_fee) / max(count($months), 1), 2);
-
-        $count = 0;
-        foreach ($students as $student) {
-            foreach ($months as $month) {
-                $exists = Invoice::where('student_id', $student->id)
-                    ->where('academic_year_id', $data['academic_year_id'])
-                    ->where('type', 'mensualite')
-                    ->where('period_month', $month)
-                    ->exists();
-
-                if ($exists) {
-                    continue;
-                }
-
-                Invoice::create([
-                    'student_id' => $student->id,
-                    'academic_year_id' => $data['academic_year_id'],
-                    'type' => 'mensualite',
-                    'period_month' => $month,
-                    'label' => 'Mensualité — '.Invoice::MONTH_LABELS[$month].' — '.$formation->name,
-                    'amount' => $amount,
-                ]);
-                $count++;
-            }
-        }
+        $count = $generator->generate(
+            $formation,
+            (int) $data['academic_year_id'],
+            array_map('intval', $data['months']),
+            isset($data['amount']) ? (float) $data['amount'] : null,
+        );
 
         return back()->with('success', "{$count} mensualité(s) générée(s) pour {$formation->name}.");
+    }
+
+    /** Pose l'échéance des mensualités qui n'en ont pas (avant, la génération n'en posait jamais) ; ne touche aucune date saisie. */
+    public function fixDueDates(Request $request, MonthlyInvoiceGenerator $generator)
+    {
+        $fixed = $generator->fixMissingDueDates();
+
+        if ($fixed > 0) {
+            activity('comptabilite')
+                ->causedBy($request->user())
+                ->log("{$fixed} échéance(s) de mensualité fixée(s) au ".MonthlyInvoiceGenerator::dueDay().' du mois');
+        }
+
+        return back()->with('success', $fixed > 0
+            ? "{$fixed} échéance(s) fixée(s) au ".MonthlyInvoiceGenerator::dueDay().' du mois.'
+            : 'Aucune échéance à fixer.');
+    }
+
+    /**
+     * Relance à la main la famille d'un élève pour ses factures en retard (e-mail, notification et EEHT Connect, selon
+     * ses contacts). Une famille déjà relancée depuis moins de 24 heures, automatiquement ou non, n'est pas relancée
+     * une seconde fois : un double clic ou deux membres du personnel ne doivent pas la harceler.
+     */
+    public function remind(Request $request, PaymentReminderSender $sender): RedirectResponse
+    {
+        $data = $request->validate(['student_id' => ['required', 'integer', 'exists:students,id']]);
+        $student = Student::findOrFail($data['student_id']);
+
+        $today = Carbon::today();
+        $invoices = Invoice::openForStudent($student)
+            ->filter(fn (Invoice $invoice) => $invoice->due_date?->lt($today) === true)
+            ->values();
+
+        if ($invoices->isEmpty()) {
+            return back()->with('error', "{$student->full_name} n'a aucune facture en retard.");
+        }
+
+        if ($sender->remindedSince($student, now()->subDay())) {
+            return back()->with('error', "La famille de {$student->full_name} a déjà été relancée il y a moins de 24 heures.");
+        }
+
+        $channels = $sender->send($student, $invoices, PaymentReminder::KIND_MANUAL, [], $request->user());
+
+        if ($channels === []) {
+            return back()->with('error', "Aucun contact (e-mail ou compte) n'est enregistré pour la famille de {$student->full_name} : la relance n'a pas pu partir.");
+        }
+
+        $labels = ['mail' => 'e-mail', 'push' => 'notification', 'connect' => 'EEHT Connect'];
+
+        return back()->with('success', "Relance envoyée à la famille de {$student->full_name} (".collect($channels)->map(fn (string $channel) => $labels[$channel])->implode(', ').').');
     }
 
     public function monthlyTracker(Request $request): Response
@@ -182,51 +219,87 @@ class InvoiceController extends Controller
         $formationId = $request->integer('formation_id') ?: null;
         $academicYearId = $request->integer('academic_year_id') ?: null;
 
+        $today = Carbon::today();
         $students = collect();
 
         if ($formationId && $academicYearId) {
-            $students = Student::where('formation_id', $formationId)
+            $roster = Student::where('formation_id', $formationId)
                 ->where('status', 'actif')
                 ->orderBy('last_name')
-                ->get(['id', 'first_name', 'last_name', 'matricule'])
-                ->map(function (Student $student) use ($academicYearId) {
-                    $invoices = Invoice::where('student_id', $student->id)
-                        ->where('academic_year_id', $academicYearId)
-                        ->where('type', 'mensualite')
-                        ->withSum('payments', 'amount')
-                        ->get()
-                        ->keyBy('period_month');
+                ->get(['id', 'first_name', 'last_name', 'matricule']);
 
-                    $months = collect(Invoice::SCHOOL_MONTHS)->mapWithKeys(function ($month) use ($invoices) {
-                        $invoice = $invoices->get($month);
+            // Ce qu'une relance citerait : toutes les factures échues et impayées de l'élève, quelle que soit l'année.
+            $late = Invoice::whereIn('student_id', $roster->modelKeys())
+                ->whereNotNull('due_date')
+                ->where('due_date', '<', $today)
+                ->withSum('payments', 'amount')
+                ->get()
+                ->map(fn (Invoice $invoice) => $invoice->withComputedBalance())
+                ->filter(fn (Invoice $invoice) => $invoice->computed_balance > 0)
+                ->groupBy('student_id');
 
-                        if (! $invoice) {
-                            return [$month => ['invoice_id' => null, 'status' => 'non_genere']];
-                        }
+            $students = $roster->map(function (Student $student) use ($academicYearId, $today, $late) {
+                $invoices = Invoice::where('student_id', $student->id)
+                    ->where('academic_year_id', $academicYearId)
+                    ->where('type', 'mensualite')
+                    ->withSum('payments', 'amount')
+                    ->get()
+                    ->keyBy('period_month');
 
-                        $paid = (float) ($invoice->payments_sum_amount ?? 0);
-                        $net = (float) $invoice->amount - (float) $invoice->discount;
-                        $status = $paid >= $net ? 'payee' : ($paid > 0 ? 'partielle' : 'impayee');
+                $months = collect(Invoice::SCHOOL_MONTHS)->mapWithKeys(function ($month) use ($invoices, $today) {
+                    $invoice = $invoices->get($month);
 
-                        return [$month => ['invoice_id' => $invoice->id, 'status' => $status]];
-                    });
+                    if (! $invoice) {
+                        return [$month => ['invoice_id' => null, 'status' => 'non_genere', 'overdue' => false, 'due_date' => null, 'balance' => null]];
+                    }
 
-                    return [
-                        'id' => $student->id,
-                        'name' => "{$student->first_name} {$student->last_name}",
-                        'matricule' => $student->matricule,
-                        'months' => $months,
-                    ];
+                    $paid = (float) ($invoice->payments_sum_amount ?? 0);
+                    $net = $invoice->net_amount;
+                    $balance = max(0, round($net - $paid, 2));
+                    $status = $paid >= $net ? 'payee' : ($paid > 0 ? 'partielle' : 'impayee');
+
+                    return [$month => [
+                        'invoice_id' => $invoice->id,
+                        'status' => $status,
+                        'due_date' => $invoice->due_date?->toDateString(),
+                        'balance' => $balance,
+                        // « En retard » : l'échéance est passée et il reste quelque chose à payer ; sans échéance, jamais.
+                        'overdue' => $balance > 0 && $invoice->due_date?->lt($today) === true,
+                    ]];
                 });
+
+                $studentLate = $late->get($student->id, collect());
+
+                return [
+                    'id' => $student->id,
+                    'name' => "{$student->first_name} {$student->last_name}",
+                    'matricule' => $student->matricule,
+                    'months' => $months,
+                    // De quoi décider d'une relance : factures échues (toutes années) et montant correspondant.
+                    'overdue' => ['count' => $studentLate->count(), 'balance' => round($studentLate->sum('computed_balance'), 2)],
+                ];
+            });
         }
+
+        $byMonth = collect(Invoice::SCHOOL_MONTHS)->mapWithKeys(
+            fn ($month) => [$month => round($students->sum(fn (array $student) => $student['months'][$month]['balance'] ?? 0), 2)]
+        );
 
         return Inertia::render('Admin/Invoices/Monthly', [
             'students' => $students,
+            'totals' => [
+                'by_month' => $byMonth,
+                'balance' => round($byMonth->sum(), 2),
+                'overdue' => round($students->sum(fn (array $student) => $student['months']->where('overdue', true)->sum('balance')), 2),
+            ],
             'formations' => Formation::orderBy('name')->get(['id', 'name']),
             'academicYears' => AcademicYear::orderByDesc('start_date')->get(['id', 'label']),
             'schoolMonths' => Invoice::SCHOOL_MONTHS,
             'monthLabels' => Invoice::MONTH_LABELS,
             'filters' => $request->only(['formation_id', 'academic_year_id']),
+            // Mensualités sans échéance dont la date peut se calculer : annoncé avant de proposer de les fixer.
+            'missingDueDates' => app(MonthlyInvoiceGenerator::class)->missingDueDates()->count(),
+            'dueDay' => MonthlyInvoiceGenerator::dueDay(),
         ]);
     }
 
@@ -234,7 +307,8 @@ class InvoiceController extends Controller
     {
         return Inertia::render('Admin/Invoices/Show', [
             'invoice' => $invoice->load('student', 'academicYear', 'payments.receivedBy:id,name', 'attachments'),
-            'methods' => Payment::METHODS,
+            'channels' => PaymentChannels::options(),
+            'channelLabels' => PaymentChannels::labels(),
         ]);
     }
 
@@ -261,22 +335,33 @@ class InvoiceController extends Controller
         return redirect()->route('admin.invoices.index')->with('success', 'Facture supprimée.');
     }
 
-    public function storePayment(Request $request, Invoice $invoice)
+    public function storePayment(Request $request, Invoice $invoice, PaymentRecorder $recorder, PaymentNotifier $notifier)
     {
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'min:0.01', 'max:'.max(0.01, $invoice->balance)],
-            'method' => ['required', 'in:'.implode(',', array_keys(Payment::METHODS))],
+            // Le formulaire envoie un canal (Wave, chèque…) ; les anciens appels envoient encore une famille (« method »).
+            'channel' => ['required_without:method', 'nullable', Rule::in(PaymentChannels::acceptedKeys())],
+            'method' => ['required_without:channel', 'nullable', Rule::in(PaymentChannels::acceptedKeys())],
             'reference' => ['nullable', 'string', 'max:255'],
             'paid_at' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'send_receipt' => ['sometimes', 'boolean'],
         ]);
 
-        $payment = $invoice->payments()->create([
-            ...$data,
-            'received_by' => $request->user()->id,
-        ]);
+        try {
+            $payments = $recorder->record(
+                $invoice->student, [$invoice->id => $data['amount']], $data['channel'] ?? $data['method'], $data['paid_at'],
+                $data['reference'] ?? null, $request->user(), $data['notes'] ?? null,
+            );
+        } catch (PaymentException $e) {
+            return back()->withErrors(['amount' => $e->getMessage()]);
+        }
 
-        return back()->with('success', "Paiement enregistré. Reçu n° {$payment->receipt_number}.");
+        if ($request->boolean('send_receipt')) {
+            defer(fn () => rescue(fn () => $notifier->receipt($payments)));
+        }
+
+        return back()->with('success', "Paiement enregistré. Reçu n° {$payments->first()->receipt_number}.");
     }
 
     public function destroyPayment(Invoice $invoice, Payment $payment)
@@ -290,21 +375,28 @@ class InvoiceController extends Controller
     {
         abort_unless($payment->invoice_id === $invoice->id, 404);
 
-        $pdf = Pdf::loadView('pdf.receipt', [
-            'invoice' => $invoice->load('student'),
-            'payment' => $payment,
-        ]);
-
-        return $pdf->stream("recu-{$payment->receipt_number}.pdf");
+        // Un encaissement qui a réglé plusieurs factures donne un seul reçu, quel que soit le paiement demandé.
+        return Receipt::pdf($payment)->stream(Receipt::filename($payment));
     }
 
     public function overdue(Request $request): Response
     {
+        $today = Carbon::today();
         $invoices = Invoice::outstanding();
+        $invoices->loadCount('reminders')->loadMax('reminders', 'created_at');
+
+        $invoices->each(function (Invoice $invoice) use ($today) {
+            $invoice->setAttribute('days_past_due', $invoice->daysPastDue($today));
+            $invoice->setAttribute('last_reminder_at', $invoice->reminders_max_created_at ? Carbon::parse($invoice->reminders_max_created_at)->toIso8601String() : null);
+        });
+
+        $late = $invoices->filter(fn (Invoice $invoice) => ($invoice->days_past_due ?? 0) > 0);
 
         return Inertia::render('Admin/Invoices/Overdue', [
             'invoices' => $invoices,
             'totalOutstanding' => $invoices->sum('computed_balance'),
+            'totalOverdue' => round($late->sum('computed_balance'), 2),
+            'familiesOverdue' => $late->pluck('student_id')->unique()->count(),
         ]);
     }
 }

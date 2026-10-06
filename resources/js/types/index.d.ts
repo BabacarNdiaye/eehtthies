@@ -154,7 +154,7 @@ export interface Student {
     doctor_name?: string | null;
     doctor_phone?: string | null;
     health_notes?: string | null;
-    status: 'actif' | 'suspendu' | 'abandon' | 'diplome' | 'transfere';
+    status: 'actif' | 'suspendu' | 'abandon' | 'diplome' | 'transfere' | 'exclu';
     is_repeating?: boolean;
     diploma_number?: string | null;
     diploma_issued_at?: string | null;
@@ -501,6 +501,10 @@ export interface Payment {
     invoice_id: number;
     amount: string | number;
     method: 'especes' | 'virement' | 'mobile_money' | 'autre';
+    /** Canal précis (Wave, Orange Money, chèque…) ; absent des anciens paiements, qui n'ont que la famille `method`. */
+    channel?: string | null;
+    /** Ce qu'il restait à payer sur la facture juste après ce paiement (absent des anciens paiements). */
+    balance_after?: string | number | null;
     reference?: string | null;
     paid_at: string;
     notes?: string | null;
@@ -528,6 +532,12 @@ export interface Invoice {
     computed_status?: 'payee' | 'partielle' | 'impayee';
     computed_balance?: number;
     computed_paid?: number;
+}
+
+/** Paiement en ligne offert aux espaces élève et parent : l'adresse de démarrage et les modes que propose le pilote actif. */
+export interface OnlinePaymentConfig {
+    start_url: string;
+    channels: Record<string, string>;
 }
 
 export interface Expense {

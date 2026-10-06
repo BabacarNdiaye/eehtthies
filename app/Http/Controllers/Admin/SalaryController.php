@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\PayrollLine;
 use App\Models\SalaryPayment;
 use App\Models\Teacher;
 use App\Models\TeacherSalaryPayment;
 use App\Models\User;
+use App\Services\SalaryRecorder;
 use App\Support\Exportable;
+use App\Support\Payslip;
+use App\Support\SalaryException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -99,7 +102,7 @@ class SalaryController extends Controller
         });
     }
 
-    public function store(Request $request)
+    public function store(Request $request, SalaryRecorder $recorder)
     {
         $data = $request->validate([
             'user_id' => ['required_without:teacher_id', 'nullable', 'exists:users,id'],
@@ -113,82 +116,23 @@ class SalaryController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $recordedBy = $request->user()->id;
+        $payee = ! empty($data['teacher_id']) ? Teacher::findOrFail($data['teacher_id']) : User::findOrFail($data['user_id']);
 
-        if (! empty($data['teacher_id'])) {
-            $exists = TeacherSalaryPayment::where('teacher_id', $data['teacher_id'])
-                ->where('period_year', $data['period_year'])
-                ->where('period_month', $data['period_month'])
-                ->exists();
-
-            if ($exists) {
-                return back()->with('error', 'Le salaire de ce mois a déjà été enregistré.');
-            }
-
-            $teacher = Teacher::findOrFail($data['teacher_id']);
-
-            DB::transaction(function () use ($data, $teacher, $recordedBy) {
-                $expense = Expense::create([
-                    'category' => 'salaires',
-                    'label' => 'Salaire — '.Invoice::MONTH_LABELS[$data['period_month']].' '.$data['period_year'].' — '.$teacher->full_name,
-                    'amount' => $data['amount'],
-                    'expense_date' => $data['paid_at'],
-                    'payment_method' => $data['payment_method'],
-                    'notes' => $data['notes'] ?? null,
-                    'recorded_by' => $recordedBy,
-                ]);
-
-                TeacherSalaryPayment::create([
-                    'teacher_id' => $data['teacher_id'],
-                    'period_year' => $data['period_year'],
-                    'period_month' => $data['period_month'],
-                    'hours_worked' => $data['hours_worked'] ?? null,
-                    'amount' => $data['amount'],
-                    'paid_at' => $data['paid_at'],
-                    'payment_method' => $data['payment_method'],
-                    'notes' => $data['notes'] ?? null,
-                    'expense_id' => $expense->id,
-                    'recorded_by' => $recordedBy,
-                ]);
-            });
-
-            return back()->with('success', 'Salaire enregistré avec succès.');
+        try {
+            $recorder->record(
+                $payee,
+                (int) $data['period_year'],
+                (int) $data['period_month'],
+                (float) $data['amount'],
+                $data['paid_at'],
+                $data['payment_method'],
+                isset($data['hours_worked']) ? (float) $data['hours_worked'] : null,
+                $data['notes'] ?? null,
+                $request->user()->id,
+            );
+        } catch (SalaryException $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $exists = SalaryPayment::where('user_id', $data['user_id'])
-            ->where('period_year', $data['period_year'])
-            ->where('period_month', $data['period_month'])
-            ->exists();
-
-        if ($exists) {
-            return back()->with('error', 'Le salaire de ce mois a déjà été enregistré.');
-        }
-
-        $user = User::findOrFail($data['user_id']);
-
-        DB::transaction(function () use ($data, $user, $recordedBy) {
-            $expense = Expense::create([
-                'category' => 'salaires',
-                'label' => 'Salaire — '.Invoice::MONTH_LABELS[$data['period_month']].' '.$data['period_year'].' — '.$user->name,
-                'amount' => $data['amount'],
-                'expense_date' => $data['paid_at'],
-                'payment_method' => $data['payment_method'],
-                'notes' => $data['notes'] ?? null,
-                'recorded_by' => $recordedBy,
-            ]);
-
-            SalaryPayment::create([
-                'user_id' => $data['user_id'],
-                'period_year' => $data['period_year'],
-                'period_month' => $data['period_month'],
-                'amount' => $data['amount'],
-                'paid_at' => $data['paid_at'],
-                'payment_method' => $data['payment_method'],
-                'notes' => $data['notes'] ?? null,
-                'expense_id' => $expense->id,
-                'recorded_by' => $recordedBy,
-            ]);
-        });
 
         return back()->with('success', 'Salaire enregistré avec succès.');
     }
@@ -282,6 +226,11 @@ class SalaryController extends Controller
 
     public function payslipUser(SalaryPayment $salaryPayment)
     {
+        // Un versement issu de la paie mensuelle a son bulletin détaillé (base, primes, retenues) ; les anciens gardent le rendu minimal.
+        if ($line = PayrollLine::where('salary_payment_id', $salaryPayment->id)->first()) {
+            return Payslip::pdf($line)->stream(Payslip::filename($line));
+        }
+
         $user = $salaryPayment->user;
 
         $pdf = Pdf::loadView('pdf.payslip', [
@@ -299,6 +248,10 @@ class SalaryController extends Controller
 
     public function payslipTeacher(TeacherSalaryPayment $teacherSalaryPayment)
     {
+        if ($line = PayrollLine::where('teacher_salary_payment_id', $teacherSalaryPayment->id)->first()) {
+            return Payslip::pdf($line)->stream(Payslip::filename($line));
+        }
+
         $teacher = $teacherSalaryPayment->teacher;
 
         $pdf = Pdf::loadView('pdf.payslip', [

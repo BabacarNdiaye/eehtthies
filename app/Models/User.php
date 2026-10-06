@@ -15,8 +15,9 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'personal_email', 'password', 'phone', 'avatar', 'is_active', 'position', 'department', 'hire_date', 'monthly_salary', 'manager_id'])]
-#[Hidden(['password', 'remember_token'])]
+#[Fillable(['name', 'email', 'personal_email', 'password', 'phone', 'avatar', 'is_active', 'position', 'department', 'hire_date', 'monthly_salary', 'manager_id', 'payout_channel', 'payout_account'])]
+// Le mode et le compte de versement ne sortent jamais avec la fiche : le contrôleur les ajoute à part, avec les permissions des salaires.
+#[Hidden(['password', 'remember_token', 'payout_channel', 'payout_account'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Support\CouncilPermissions;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -56,6 +57,10 @@ class RolesAndPermissionsSeeder extends Seeder
 
             $role->syncPermissions($permissions);
         }
+
+        // Module Conseil de classe : les rôles « vie scolaire » et « secrétariat » et ce que chaque rôle reçoit
+        // du module (en production, la même chose arrive par une migration : ce seeder n'y est pas relancé).
+        CouncilPermissions::install();
 
         $admin = User::firstOrCreate(
             ['email' => 'admin@eeht-thies.sn'],

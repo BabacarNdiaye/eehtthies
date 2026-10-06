@@ -153,6 +153,143 @@ et votre identifiant) :
 - [ ] Envoyer un message interne, sans erreur 500 (extension `bcmath`/`gmp`)
 - [ ] Le lendemain : **Admin › Sauvegardes**, vérifier qu'une sauvegarde de 02:00 existe
 
+## Paiements : encaissement, relances, paie mensuelle et paiement en ligne
+
+Cette version ajoute plusieurs outils d'argent. **Aucun ne s'active tout seul** :
+tant que vous ne les réglez pas, le site se comporte comme avant.
+
+**Mise à jour.** Six migrations nouvelles (colonnes des paiements, relances,
+cycles de paie, champs de versement du personnel, tentatives de paiement en ligne,
+et le statut « exclu » ajouté à la liste des statuts d'un élève : sans lui,
+« Exclure » en fin d'année et le statut « Exclu » d'un dossier échouent sur MySQL)
+et de nouvelles routes : après avoir extrait l'archive, lancez
+`php artisan migrate --force` puis `php artisan optimize`, **tout de suite** (les
+nouvelles pages ont besoin des nouvelles tables, et le menu de l'administration
+n'affiche rien tant que les routes en cache ne sont pas rafraîchies), de préférence
+à une heure creuse. Sans Terminal, une tâche cron ponctuelle suffit :
+
+```
+cd /home/moncompte/eeht && /opt/cpanel/ea-php84/root/usr/bin/php artisan migrate --force && /opt/cpanel/ea-php84/root/usr/bin/php artisan optimize >> storage/logs/deploy.log 2>&1
+```
+
+Dans un cron, utilisez le **chemin complet de PHP 8.4** (ci-dessus, celui d'EasyApache
+sur cPanel) : un simple `php` y désigne souvent une version trop ancienne et la
+commande échoue sans bruit. Ouvrez ensuite `storage/logs/deploy.log` : les six
+migrations `2026_10_05_…` doivent y figurer en `DONE`. Supprimez la tâche cron après
+son passage.
+
+Retour arrière possible : ces six migrations ne font qu'ajouter des colonnes, des
+tables et une valeur à une liste (le statut « exclu »), l'ancienne version fonctionne
+avec la nouvelle base ; il suffit de ré-extraire l'archive précédente.
+
+Le cron `schedule:run` de l'étape 7 est déjà nécessaire : c'est lui qui relance les
+impayés, génère les mensualités si vous l'avez demandé et réconcilie les paiements
+en ligne (toutes les 5 minutes).
+
+**À régler après la mise en ligne**
+
+- *Frais de scolarité › Réglages des paiements* : jour d'échéance des
+  mensualités (le 5 par défaut), rappel avant l'échéance, génération automatique
+  des mensualités. Tout est désactivé tant que vous ne cochez rien.
+- *Ressources humaines › Paie mensuelle* : renseignez le salaire de chaque personne
+  (fiches Personnel et Enseignants) et, si vous le souhaitez, son mode et son numéro
+  de versement (Wave, Orange Money, virement…), puis préparez un mois : on vérifie,
+  on valide, on exporte l'ordre de paiement pour la banque, on verse. La validation
+  est une permission à part (« Valider » du module Salaires) : retirez-la au
+  comptable dans *Administration › Rôles & permissions* pour séparer celui qui prépare de celui qui
+  approuve. Chaque personne retrouve ses bulletins dans « Ma paie ».
+
+**Paiement en ligne.** Il est **désactivé** (`PAYMENTS_DRIVER=none`) : aucun bouton
+« Payer en ligne » n'apparaît pour les élèves et les parents.
+
+- `PAYMENTS_DRIVER=simulation` sert seulement à essayer le parcours avec un faux
+  fournisseur. En production il est refusé, sauf `PAYMENTS_ALLOW_SIMULATION=true` (à
+  réserver à une recette : les paiements simulés créent de vrais encaissements dans
+  la comptabilité).
+- Pour brancher un vrai fournisseur (Wave, Orange Money, passerelle bancaire…), il
+  faut un compte marchand chez lui et une petite classe PHP qui implémente
+  `App\Payments\PaymentGateway` : démarrer le paiement, authentifier une notification,
+  interroger l'état d'une tentative, lister les modes proposés (`SimulationGateway`
+  sert de modèle). L'application s'occupe du reste : répartition sur les factures,
+  encaissement, reçu, alertes. Déclarez la classe dans `config/payments.php`, mettez
+  son nom dans `PAYMENTS_DRIVER` et donnez au fournisseur l'adresse de notification
+  `https://votre-domaine/paiements/webhook/<nom du pilote>`.
+- Cette adresse n'accepte que des notifications **signées** par le fournisseur ; une
+  notification rejouée ne crée jamais un second encaissement ; une somme différente
+  de celle attendue, ou une facture déjà réglée entre-temps, n'est pas encaissée
+  mais signalée à la comptabilité (*Frais de scolarité › Paiements en ligne*, où le
+  bouton « Réconcilier » interroge le fournisseur sans attendre).
+- Aucun lien de paiement n'est utilisable sans connexion : le payeur est toujours un
+  élève ou un parent identifié, qui ne paie que ses propres factures.
+
+## Conseils de classe et registre des sanctions
+
+Cette version ajoute le module **Conseils de classe** (préparation, pré-conseil des
+enseignants, séance, vue projetée, procès-verbal PDF signé par empreinte, validation,
+clôture, actions de suivi, rectification et recours) et un **registre des sanctions**
+(*Vie scolaire › Discipline*).
+
+**Mise à jour.** Neuf migrations nouvelles, `2026_10_05_170000` à `2026_10_05_220100`,
+uniquement des ajouts (tables du module, deux colonnes sur `report_cards`, une sur
+`subjects`). Elles installent aussi, **sans rien retirer** aux réglages existants :
+
+- les permissions des modules *Conseils*, *Conseils (Direction)*, *Paramétrage des
+  conseils* et *Discipline* ; les rôles `direction` et `super-admin` les reçoivent
+  toutes, `responsable-pedagogique` celles du conseil et du paramétrage ;
+- deux rôles nouveaux, **`vie-scolaire`** (sanctions, présences, consultation des
+  conseils) et **`secretariat`** (consultation et exports des conseils), à attribuer
+  aux comptes concernés dans *Personnel administratif* ;
+- les référentiels par défaut : types de décision, incompatibilités, seuils d'alerte,
+  groupes de matières, banque d'appréciations, grille d'évaluation de stage. Tout se
+  modifie ensuite dans *Évaluations & diplômes › Réglages des conseils*.
+
+Même procédure que ci-dessus : `php artisan migrate --force` puis
+`php artisan optimize` tout de suite après l'extraction (ou la tâche cron ponctuelle
+avec le chemin complet de PHP 8.4). Dans `storage/logs/deploy.log`, les neuf
+migrations doivent figurer en `DONE`.
+
+**Points d'attention**
+
+- Les procès-verbaux définitifs sont écrits dans `storage/app/private/councils/` (hors
+  du dossier public, téléchargés après connexion seulement). Ils ne sont jamais
+  régénérés : la sauvegarde quotidienne de l'application inclut désormais ce dossier ;
+  si vous sauvegardez aussi les fichiers par cPanel, gardez-le dans le périmètre.
+- Le cron `schedule:run` de l'étape 7 envoie chaque jour à 07:45 les rappels du
+  pré-conseil (3 jours avant la date limite) et des actions de suivi (7 jours avant
+  l'échéance, puis le jour même). Les convocations partent par e-mail : le cron de la
+  file d'attente doit tourner.
+- La vue projetée se rafraîchit toutes les 3 secondes (aucun service temps réel
+  requis sur un mutualisé).
+- Un élève, une classe, une matière ou une année scolaire qui figure dans un conseil
+  ne peut plus être supprimé (un message l'explique).
+
+Retour arrière possible : ces migrations n'ajoutent que des tables et des colonnes ;
+l'archive précédente fonctionne avec la nouvelle base.
+
+**Pilotage (votes, bilan, familles).** Deux migrations de plus, `2026_10_05_230000`
+(votes) et `2026_10_05_231000` (familles prévenues), elles aussi purement additives.
+
+- **Votes** : le président lance un vote sur une décision cochée ; les membres votants
+  présents votent depuis leur téléphone (page « Voter » de leur conseil) ou à main
+  levée. Règles dans *Réglages des conseils › Vote* (fonctions votantes, majorité, voix
+  prépondérante, vote nominatif ou secret). Une décision « soumise à vote » (l'exclusion,
+  par défaut) ne peut plus être retenue sans vote adopté.
+- **Bilan des conseils** (*Évaluations & diplômes*) : tableau de bord de la Direction et
+  du responsable pédagogique, avec export pour Excel.
+- **Familles** : après la clôture, l'élève et ses parents voient dans leur espace
+  l'appréciation et les décisions publiables (jamais les notes internes). Le message de
+  clôture aux familles est **désactivé par défaut** : rédigez-le et activez-le dans
+  *Réglages des conseils › Messages aux familles*. En attendant, la page de chaque conseil
+  clôturé propose « Prévenir les familles » et des messages WhatsApp prêts à envoyer.
+- **Visioconférence du conseil** (migration `2026_10_05_232000`) : pendant la séance, le
+  président ouvre une visio (vidéo ou audio seulement) ; les membres qui ont un compte
+  la rejoignent depuis leur téléphone ou leur ordinateur et sont notés **présents à
+  distance** (quorum des votes, procès-verbal). Comme les appels d'EEHT Connect ci-dessous,
+  elle passe directement entre les navigateurs : **https obligatoire**, et un serveur
+  TURN est conseillé pour les réseaux mobiles. Chaque participant envoie son image à
+  chacun des autres : 8 participants au plus ; au-delà de 4, préférez l'audio seulement.
+  Rien n'est enregistré.
+
 ## Appels audio et vidéo (EEHT Connect)
 
 Les appels passent **directement entre les navigateurs** (WebRTC) : ni le son

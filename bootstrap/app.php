@@ -37,8 +37,9 @@ return Application::configure(basePath: dirname(__DIR__))
             TrackLastSeen::class,
         ]);
 
-        // Refus d'appel depuis une notification : protégé par une signature.
-        $middleware->validateCsrfTokens(except: ['connect/calls/*/push-decline']);
+        // Refus d'appel depuis une notification et notifications du fournisseur de paiement : ni l'un ni l'autre ne vient
+        // d'un navigateur connecté, chacun est protégé par une signature.
+        $middleware->validateCsrfTokens(except: ['connect/calls/*/push-decline', 'paiements/webhook/*']);
 
         $middleware->alias([
             'staff' => EnsureUserIsStaff::class,
