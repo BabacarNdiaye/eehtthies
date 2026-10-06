@@ -2,6 +2,7 @@ import PortalLayout from '@/Layouts/PortalLayout';
 import { teacherNav } from '@/Pages/Portal/Teacher/Dashboard';
 import Card from '@/Components/Admin/Card';
 import { Field, TextInput } from '@/Components/Admin/Field';
+import RichTextEditor from '@/Components/RichText/RichTextEditor';
 import { LessonLog as LessonLogType, TimetableEntry } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { BookText, Clock, MapPin } from 'lucide-react';
@@ -98,33 +99,22 @@ export default function LessonLog({ entries, logs, date }: Props) {
                             )}
                         </div>
 
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                             <Field label="Contenu de la séance">
-                                <textarea
-                                    rows={3}
-                                    className="w-full rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
+                                <RichTextEditor
+                                    label={`Contenu de la séance — ${entry.school_class?.name ?? ''}`}
                                     value={forms[entry.id]?.content ?? ''}
-                                    onChange={(e) =>
-                                        setForms((prev) => ({
-                                            ...prev,
-                                            [entry.id]: { ...prev[entry.id], content: e.target.value },
-                                        }))
-                                    }
-                                    placeholder="Ce qui a été vu en classe..."
+                                    onChange={(html) => setForms((prev) => ({ ...prev, [entry.id]: { ...prev[entry.id], content: html } }))}
+                                    placeholder="Ce qui a été vu en classe…"
                                 />
                             </Field>
                             <Field label="Devoirs donnés (optionnel)">
-                                <textarea
-                                    rows={3}
-                                    className="w-full rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
+                                <RichTextEditor
+                                    label={`Devoirs donnés — ${entry.school_class?.name ?? ''}`}
                                     value={forms[entry.id]?.homework ?? ''}
-                                    onChange={(e) =>
-                                        setForms((prev) => ({
-                                            ...prev,
-                                            [entry.id]: { ...prev[entry.id], homework: e.target.value },
-                                        }))
-                                    }
-                                    placeholder="Exercices, lecture..."
+                                    onChange={(html) => setForms((prev) => ({ ...prev, [entry.id]: { ...prev[entry.id], homework: html } }))}
+                                    placeholder="Exercices, lecture…"
+                                    minHeight="7rem"
                                 />
                             </Field>
                         </div>

@@ -320,3 +320,18 @@ body[data-admin] ::selection {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Texte riche (éditeur TipTap et affichage du cahier de texte, des annonces…) */
+.rich-text > * + * { margin-top: 0.6em; }
+.rich-text p { line-height: 1.6; }
+.rich-text strong { font-weight: 700; }
+.rich-text em { font-style: italic; }
+.rich-text s { text-decoration: line-through; }
+.rich-text h2 { font-family: theme('fontFamily.serif'); font-size: 1.1em; font-weight: 700; color: rgb(var(--ink-900)); }
+.rich-text ul, .rich-text ol { padding-left: 1.4em; }
+.rich-text ul { list-style: disc; }
+.rich-text ol { list-style: decimal; }
+.rich-text li > p { margin: 0; }
+.rich-text blockquote { border-left: 3px solid rgb(var(--gold-500)); padding-left: 0.9em; color: rgb(var(--ink-600)); font-style: italic; }
+.rich-text a { color: rgb(var(--gold-700)); text-decoration: underline; text-underline-offset: 2px; }
+.rich-text p.is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: rgb(var(--ink-400)); }

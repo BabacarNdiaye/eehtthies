@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import RichTextView from '@/Components/RichText/RichTextView';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
@@ -125,8 +126,8 @@ export default function Index({ logs, schoolClasses, teachers, selectedClassId, 
                                     <td className="px-5 py-3 text-ink-700">
                                         {log.teacher ? `${log.teacher.first_name} ${log.teacher.last_name}` : '—'}
                                     </td>
-                                    <td className="max-w-sm px-5 py-3 text-ink-600">{log.content}</td>
-                                    <td className="max-w-xs px-5 py-3 text-ink-500">{log.homework || '—'}</td>
+                                    <td className="max-w-sm px-5 py-3 text-ink-600"><RichTextView html={log.content} /></td>
+                                    <td className="max-w-xs px-5 py-3 text-ink-500">{log.homework ? <RichTextView html={log.homework} /> : '—'}</td>
                                 </tr>
                             ))}
                             {logs.data.length === 0 && (

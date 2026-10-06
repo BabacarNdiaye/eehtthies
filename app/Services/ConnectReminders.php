@@ -92,7 +92,7 @@ class ConnectReminders
 
     public function announceHomework(LessonLog $log): void
     {
-        $homework = trim((string) $log->homework);
+        $homework = \App\Support\RichText::plain($log->homework);
         if ($homework === '' || ! $log->school_class_id) {
             return;
         }

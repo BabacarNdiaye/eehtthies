@@ -53,8 +53,12 @@ class TeacherLessonLogController extends Controller
         $data = $request->validate([
             'timetable_entry_id' => ['required', 'exists:timetable_entries,id'],
             'date' => ['required', 'date'],
-            'content' => ['required', 'string', 'max:5000'],
-            'homework' => ['nullable', 'string', 'max:2000'],
+            'content' => ['required', 'string', 'max:20000', function (string $attribute, mixed $value, \Closure $fail) {
+                if (\App\Support\RichText::forStorage((string) $value) === null) {
+                    $fail('Le contenu de la séance est obligatoire.');
+                }
+            }],
+            'homework' => ['nullable', 'string', 'max:10000'],
         ]);
 
         $entry = TimetableEntry::where('id', $data['timetable_entry_id'])
