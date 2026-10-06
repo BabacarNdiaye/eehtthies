@@ -23,11 +23,12 @@ export default function Contact() {
             phone: '',
             subject: '',
             message: '',
+            website_url: '', // piège anti-robots : doit rester vide
         });
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        post(route('contact.store'), {
+        post(route('pages.contact.store'), {
             preserveScroll: true,
             onSuccess: () => reset(),
         });
@@ -205,6 +206,12 @@ export default function Contact() {
                                         onSubmit={submit}
                                         className="mt-6 space-y-5 sm:mt-8"
                                     >
+                            <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+                                <label>
+                                    Ne pas remplir ce champ
+                                    <input type="text" name="website_url" tabIndex={-1} autoComplete="off" value={data.website_url} onChange={(e) => setData('website_url', e.target.value)} />
+                                </label>
+                            </div>
                                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                                             <Field label="Nom complet" required error={errors.name}>
                                                 <TextInput

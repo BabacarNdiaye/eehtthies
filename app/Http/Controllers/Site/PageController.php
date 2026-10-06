@@ -8,6 +8,7 @@ use App\Models\Faq;
 use App\Models\Partner;
 use App\Models\Teacher;
 use App\Models\Testimonial;
+use App\Support\Honeypot;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -67,6 +68,10 @@ class PageController extends Controller
 
     public function storeContact(Request $request)
     {
+        if (Honeypot::tripped($request)) {
+            return back()->with('success', 'Votre message a bien été envoyé. Nous vous répondrons dans les plus brefs délais.');
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],

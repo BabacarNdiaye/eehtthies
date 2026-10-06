@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Site;
 use App\Http\Controllers\Controller;
 use App\Models\Candidature;
 use App\Models\Formation;
+use App\Support\Honeypot;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,6 +26,10 @@ class CandidatureController extends Controller
 
     public function store(Request $request)
     {
+        if (Honeypot::tripped($request)) {
+            return redirect()->route('candidature.create')->with('success', 'Votre candidature a bien été envoyée.');
+        }
+
         $data = $request->validate([
             'formation_id' => ['required', 'exists:formations,id'],
             'first_name' => ['required', 'string', 'max:255'],
