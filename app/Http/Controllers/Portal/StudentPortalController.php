@@ -247,6 +247,21 @@ class StudentPortalController extends Controller
         ]);
     }
 
+    public function assignments(Request $request): Response
+    {
+        $student = $this->student($request);
+
+        $assignments = $student->school_class_id
+            ? \App\Models\HomeAssignment::where('school_class_id', $student->school_class_id)
+                ->with('subject:id,name', 'teacher:id,first_name,last_name')
+                ->orderByDesc('due_date')
+                ->limit(100)
+                ->get()
+            : collect();
+
+        return Inertia::render('Portal/Student/Assignments', ['assignments' => $assignments]);
+    }
+
     public function library(): Response
     {
         return Inertia::render('Portal/Student/Library', [

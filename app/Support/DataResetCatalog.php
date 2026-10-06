@@ -347,7 +347,7 @@ class DataResetCatalog
                 'description' => 'Matières enseignées.',
                 'note' => "Les présences et ateliers conservés n'auront plus de matière.",
                 'tables' => ['subject_teacher', 'formation_level_required_subject', 'subjects'],
-                'requires' => ['examens', 'cahier_texte', 'emplois_du_temps', 'conseils'],
+                'requires' => ['examens', 'cahier_texte', 'travaux_maison', 'emplois_du_temps', 'conseils'],
             ],
             'salles' => [
                 'group' => 'Pédagogie',
@@ -370,7 +370,7 @@ class DataResetCatalog
                 'description' => 'Classes et affectations des enseignants.',
                 'note' => "Les élèves conservés n'auront plus de classe. Les groupes de classe d'EEHT Connect sont recréés à la prochaine ouverture.",
                 'tables' => ['school_class_teacher', 'school_classes'],
-                'requires' => ['presences', 'connect', 'examens', 'cahier_texte', 'ateliers', 'bulletins', 'emplois_du_temps', 'conseils'],
+                'requires' => ['presences', 'connect', 'examens', 'cahier_texte', 'travaux_maison', 'ateliers', 'bulletins', 'emplois_du_temps', 'conseils'],
             ],
             'examens' => [
                 'group' => 'Pédagogie',
@@ -383,6 +383,12 @@ class DataResetCatalog
                 'label' => 'Cahier de texte',
                 'description' => 'Contenus de séances saisis par les enseignants.',
                 'tables' => ['lesson_logs'],
+            ],
+            'travaux_maison' => [
+                'group' => 'Pédagogie',
+                'label' => 'Travaux à la maison',
+                'description' => 'Travaux à faire à la maison donnés par les enseignants.',
+                'tables' => ['home_assignments'],
             ],
             'emplois_du_temps' => [
                 'group' => 'Pédagogie',
@@ -412,7 +418,7 @@ class DataResetCatalog
                 'description' => 'Fiches enseignants, photos et pièces jointes.',
                 'note' => "Les comptes de connexion restent (cochez « Comptes de connexion » pour les supprimer). Emplois du temps, ateliers et évaluations conservés n'auront plus d'enseignant.",
                 'tables' => ['exam_teacher', 'school_class_teacher', 'subject_teacher', 'teachers'],
-                'requires' => ['cahier_texte', 'salaires'],
+                'requires' => ['cahier_texte', 'travaux_maison', 'salaires'],
                 'files' => [$public('teachers', 'photo')],
                 'morphs' => [Teacher::class],
             ],

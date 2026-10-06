@@ -93,7 +93,7 @@ use App\Http\Controllers\Portal\StudentPortalController;
 use App\Http\Controllers\Portal\TeacherAttendanceController;
 use App\Http\Controllers\Portal\TeacherCouncilController;
 use App\Http\Controllers\Portal\TeacherExamController;
-use App\Http\Controllers\Portal\TeacherLeaveController;
+use App\Http\Controllers\Portal\TeacherHomeAssignmentController;
 use App\Http\Controllers\Portal\TeacherLessonLogController;
 use App\Http\Controllers\Portal\TeacherLibraryController;
 use App\Http\Controllers\Portal\TeacherPayslipController;
@@ -769,6 +769,7 @@ Route::prefix('espace-eleve')->name('student.')->middleware(['auth', 'verified',
     Route::get('/factures', [StudentPortalController::class, 'invoices'])->name('invoices');
     Route::get('/factures/{invoice}/paiements/{payment}/recu', [StudentPortalController::class, 'invoiceReceiptPdf'])->name('invoices.receipt');
     Route::post('/paiements', [PaymentAttemptController::class, 'startForStudent'])->middleware('throttle:20,1')->name('payments.start');
+    Route::get('/travaux-maison', [StudentPortalController::class, 'assignments'])->name('assignments');
     Route::get('/bibliotheque', [StudentPortalController::class, 'library'])->name('library');
     Route::get('/mot-de-passe', fn () => Inertia::render('Portal/Student/Password'))->name('password');
 });
@@ -797,12 +798,13 @@ Route::prefix('espace-enseignant')->name('teacher.')->middleware(['auth', 'verif
     Route::get('/cahier-de-texte', [TeacherLessonLogController::class, 'index'])->name('lesson-log.index');
     Route::post('/cahier-de-texte', [TeacherLessonLogController::class, 'store'])->name('lesson-log.store');
 
+    Route::get('/travaux-maison', [TeacherHomeAssignmentController::class, 'index'])->name('assignments.index');
+    Route::post('/travaux-maison', [TeacherHomeAssignmentController::class, 'store'])->name('assignments.store');
+    Route::delete('/travaux-maison/{homeAssignment}', [TeacherHomeAssignmentController::class, 'destroy'])->name('assignments.destroy');
+
     Route::get('/presences', [TeacherAttendanceController::class, 'index'])->name('attendance.index');
     Route::post('/presences', [TeacherAttendanceController::class, 'store'])->name('attendance.store');
 
-    Route::get('/conges', [TeacherLeaveController::class, 'index'])->name('leave.index');
-    Route::post('/conges', [TeacherLeaveController::class, 'store'])->name('leave.store');
-    Route::post('/conges/{leaveRequest}/annuler', [TeacherLeaveController::class, 'cancel'])->name('leave.cancel');
 
     Route::get('/competences', [TeacherSkillController::class, 'index'])->name('skills.index');
     Route::post('/competences', [TeacherSkillController::class, 'store'])->name('skills.store');

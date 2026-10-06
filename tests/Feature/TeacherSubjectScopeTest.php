@@ -112,4 +112,53 @@ class TeacherSubjectScopeTest extends TestCase
 
         $this->assertSame([$this->maths->id], Teacher::where('matricule', 'ENS-NEW')->first()->assignedSubjectIds());
     }
+
+    public function test_the_teacher_sees_compositions_read_only(): void
+    {
+        $this->teacher->subjects()->sync([$this->cooking->id]);
+        Exam::create(['title' => 'Composition Cuisine', 'type' => 'examen', 'school_class_id' => $this->class->id, 'subject_id' => $this->cooking->id, 'exam_date' => now()->addDays(10), 'max_score' => 20, 'coefficient' => 1]);
+        Exam::create(['title' => 'Composition Maths', 'type' => 'examen', 'school_class_id' => $this->class->id, 'subject_id' => $this->maths->id, 'exam_date' => now()->addDays(10), 'max_score' => 20, 'coefficient' => 1]);
+
+        $this->actingAs($this->user)->get(route('teacher.exams.index', ['categorie' => 'composition']))->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('category', 'composition')
+            ->has('exams.data', 1)
+            ->where('exams.data.0.title', 'Composition Cuisine')
+            ->where('exams.data.0.can_grade', false)
+            ->where('exams.data.0.is_mine', false));
+    }
+
+    public function test_the_teacher_gives_home_assignments_only_for_their_own_classes(): void
+    {
+        $this->teacher->subjects()->sync([$this->cooking->id]);
+
+        $this->actingAs($this->user)->post(route('teacher.assignments.store'), [
+            'school_class_id' => $this->class->id,
+            'subject_id' => $this->cooking->id,
+            'title' => 'Réviser la mayonnaise',
+            'due_date' => now()->addDays(2)->toDateString(),
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('home_assignments', ['title' => 'Réviser la mayonnaise', 'teacher_id' => $this->teacher->id, 'school_class_id' => $this->class->id]);
+
+        $this->actingAs($this->user)->post(route('teacher.assignments.store'), [
+            'school_class_id' => $this->class->id,
+            'subject_id' => $this->maths->id,
+            'title' => 'Pas ma matière',
+            'due_date' => now()->addDays(2)->toDateString(),
+        ])->assertForbidden();
+    }
+
+    public function test_students_of_the_class_see_the_home_assignments(): void
+    {
+        $this->teacher->subjects()->sync([$this->cooking->id]);
+        \App\Models\HomeAssignment::create(['teacher_id' => $this->teacher->id, 'school_class_id' => $this->class->id, 'subject_id' => $this->cooking->id, 'title' => 'Fiche technique', 'given_on' => now(), 'due_date' => now()->addDays(2)]);
+
+        $studentUser = User::factory()->create();
+        $studentUser->assignRole('eleve');
+        \App\Models\Student::create(['user_id' => $studentUser->id, 'school_class_id' => $this->class->id, 'matricule' => 'E-'.uniqid(), 'first_name' => 'Moussa', 'last_name' => 'Fall', 'status' => 'actif']);
+
+        $this->actingAs($studentUser)->get(route('student.assignments'))->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->has('assignments', 1)
+            ->where('assignments.0.title', 'Fiche technique'));
+    }
 }

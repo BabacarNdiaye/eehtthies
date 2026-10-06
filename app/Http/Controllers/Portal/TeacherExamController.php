@@ -64,8 +64,12 @@ class TeacherExamController extends Controller
         $teacher = $this->teacher($request);
         $pairs = $this->classSubjectPairs($teacher);
 
-        // Uniquement les devoirs des matières de l'enseignant, dans les classes où il les enseigne.
-        $exams = Exam::whereIn('type', config('eeht.exam_category_devoir'))
+        // Deux onglets : les devoirs (gérables) et les compositions (consultation seule, planifiées par l'administration).
+        $isComposition = $request->query('categorie') === 'composition';
+        $categoryTypes = config($isComposition ? 'eeht.exam_category_composition' : 'eeht.exam_category_devoir');
+
+        // Uniquement les évaluations des matières de l'enseignant, dans les classes où il les enseigne.
+        $exams = Exam::whereIn('type', $categoryTypes)
             ->where(function ($query) use ($pairs) {
                 $query->whereRaw('1 = 0');
 
@@ -75,11 +79,12 @@ class TeacherExamController extends Controller
             })
             ->with('schoolClass:id,name', 'subject:id,name')
             ->orderByDesc('exam_date')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
-        $exams->getCollection()->transform(function (Exam $exam) use ($request, $pairs) {
-            $exam->is_mine = $exam->created_by === $request->user()->id;
-            $exam->can_grade = $pairs->contains(
+        $exams->getCollection()->transform(function (Exam $exam) use ($request, $pairs, $isComposition) {
+            $exam->is_mine = ! $isComposition && $exam->created_by === $request->user()->id;
+            $exam->can_grade = ! $isComposition && $pairs->contains(
                 fn ($p) => $p->school_class_id === $exam->school_class_id && $p->subject_id === $exam->subject_id
             );
 
@@ -88,7 +93,8 @@ class TeacherExamController extends Controller
 
         return Inertia::render('Portal/Teacher/Exams/Index', [
             'exams' => $exams,
-            'types' => collect(Exam::TYPES)->only(config('eeht.exam_category_devoir')),
+            'category' => $isComposition ? 'composition' : 'devoir',
+            'types' => collect(Exam::TYPES)->only($categoryTypes),
         ]);
     }
 
