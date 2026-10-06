@@ -7,6 +7,7 @@ use App\Models\Formation;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -51,6 +52,19 @@ class StudentPresenceController extends Controller
             'without_account' => (clone $base)->whereNull('students.user_id')->count(),
         ];
 
+        // Les classes où l'on est le plus connecté en ce moment (huit au plus), pour l'aperçu du bandeau.
+        $byClass = (clone $base)
+            ->whereHas('user', fn ($query) => $query->where('last_seen_at', '>', $online))
+            ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
+            ->select('school_classes.name', DB::raw('count(*) as online'))
+            ->groupBy('school_classes.id', 'school_classes.name')
+            ->orderByDesc('online')
+            ->orderBy('school_classes.name')
+            ->limit(8)
+            ->get()
+            ->map(fn ($row) => ['name' => $row->name, 'online' => (int) $row->online])
+            ->all();
+
         $list = (clone $base)
             ->with(['user:id,last_seen_at', 'formation:id,name', 'schoolClass:id,name'])
             ->when($state === 'no_account', fn ($query) => $query->whereNull('students.user_id')->orderBy('students.last_name')->orderBy('students.first_name'))
@@ -80,6 +94,7 @@ class StudentPresenceController extends Controller
         return Inertia::render('Admin/Students/Online', [
             'students' => $list,
             'counts' => $counts,
+            'byClass' => $byClass,
             'filters' => ['state' => $state, 'formation_id' => $formationId, 'school_class_id' => $classId, 'q' => $search],
             'formations' => Formation::orderBy('name')->get(['id', 'name']),
             'classes' => SchoolClass::orderBy('name')->get(['id', 'name', 'formation_id']),
