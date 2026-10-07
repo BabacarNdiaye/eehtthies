@@ -25,6 +25,9 @@
         "vite": "^8.0.0"
     },
     "dependencies": {
+        "@tiptap/pm": "^3.31.4",
+        "@tiptap/react": "^3.31.4",
+        "@tiptap/starter-kit": "^3.31.4",
         "axios": "^1.19.0",
         "clsx": "^2.1.1",
         "html5-qrcode": "^2.3.8",

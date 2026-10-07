@@ -7,7 +7,6 @@ use App\Models\Announcement;
 use App\Models\Formation;
 use App\Models\SchoolClass;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,25 +34,8 @@ class AnnouncementController extends Controller
             'audience_id' => ['nullable', 'integer', 'required_if:audience_type,formation,classe'],
         ]);
 
-        $announcement = Announcement::create([...$data, 'created_by' => $request->user()->id]);
+        $announcement = Announcement::broadcast($data, $request->user()->id);
 
-        $recipientIds = $announcement->recipientUserIds();
-
-        // Remise en base en une fois ; les notifications push partent en différé
-        // via app:push-pending-messages (pushed_at null) pour ne pas bloquer la
-        // requête sur des centaines d'appels HTTP.
-        $now = now();
-        $recipientIds->chunk(500)->each(fn ($chunk) => DB::table('announcement_user')->insertOrIgnore(
-            $chunk->map(fn (int $userId) => [
-                'announcement_id' => $announcement->id,
-                'user_id' => $userId,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ])->values()->all()
-        ));
-
-        $announcement->update(['recipients_count' => $recipientIds->count()]);
-
-        return back()->with('success', "Annonce envoyée à {$recipientIds->count()} destinataire(s).");
+        return back()->with('success', "Annonce envoyée à {$announcement->recipients_count} destinataire(s).");
     }
 }

@@ -6,6 +6,7 @@ import {
     Award,
     BadgeCheck,
     Banknote,
+    FileText,
     BarChart3,
     BellRing,
     BookMarked,
@@ -414,12 +415,12 @@ export const navGroups: NavGroup[] = [
         icon: CreditCard,
         items: [
             {
-                label: 'Encaisser',
-                href: 'admin.cashier.create',
-                icon: HandCoins,
-                active: (c) => c.startsWith('admin.cashier'),
-                permission: 'ajouter_comptabilite',
-                keywords: 'caisse guichet paiement mensualite scolarite recu wave orange money cheque',
+                label: 'Tableau de bord financier',
+                href: 'admin.finance.dashboard',
+                icon: Wallet,
+                active: (c) => c === 'admin.finance.dashboard',
+                permission: 'voir_comptabilite',
+                keywords: 'finance tresorerie argent budget recettes depenses',
             },
             {
                 label: 'Factures',
@@ -428,6 +429,14 @@ export const navGroups: NavGroup[] = [
                 active: (c) => c.startsWith('admin.invoices') && !invoiceFollowUps.includes(c),
                 permission: 'voir_comptabilite',
                 keywords: 'paiements scolarite frais recus mensualites inscription',
+            },
+            {
+                label: 'Encaisser',
+                href: 'admin.cashier.create',
+                icon: HandCoins,
+                active: (c) => c.startsWith('admin.cashier'),
+                permission: 'ajouter_comptabilite',
+                keywords: 'caisse guichet paiement mensualite scolarite recu wave orange money cheque',
             },
             {
                 label: 'Suivi des mensualités',
@@ -475,14 +484,6 @@ export const navGroups: NavGroup[] = [
         label: 'Comptabilité',
         icon: Calculator,
         items: [
-            {
-                label: 'Tableau de bord financier',
-                href: 'admin.finance.dashboard',
-                icon: Wallet,
-                active: (c) => c === 'admin.finance.dashboard',
-                permission: 'voir_comptabilite',
-                keywords: 'finance tresorerie argent budget recettes depenses',
-            },
             {
                 label: 'Dépenses',
                 href: 'admin.expenses.index',
@@ -647,6 +648,14 @@ export const navGroups: NavGroup[] = [
                 active: (c) => c.startsWith('admin.announcements'),
                 permission: 'voir_communication',
                 keywords: 'communiques',
+            },
+            {
+                label: 'Notes d\'information',
+                href: 'admin.information-notes.index',
+                icon: FileText,
+                active: (c) => c.startsWith('admin.information-notes'),
+                permission: 'voir_communication',
+                keywords: 'note service circulaire direction pdf',
             },
             {
                 label: 'Modération des groupes',
