@@ -1,0 +1,1 @@
+import e from"./PrivacyPolicy-Bi1WrwLb.js";export{e as default};
