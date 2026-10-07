@@ -106,7 +106,7 @@ export default function Login({
                 </div>
 
                 <PrimaryButton
-                    className="mt-6 w-full !justify-center rounded-full bg-leaf-500 py-3 text-ink-900 hover:bg-leaf-400 focus:ring-leaf-600"
+                    className="mt-6 w-full !justify-center rounded-full bg-leaf-500 py-3 !text-ink-900 hover:bg-leaf-400 focus:ring-leaf-600"
                     disabled={processing}
                 >
                     Se connecter

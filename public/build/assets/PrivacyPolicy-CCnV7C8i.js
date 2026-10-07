@@ -1,0 +1,1 @@
+import e from"./PrivacyPolicy-Cs_t_FJM.js";export{e as default};

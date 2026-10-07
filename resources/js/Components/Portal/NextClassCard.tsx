@@ -32,7 +32,7 @@ function relativeDay(startsAt: string, now: number, dayLabel: string): string {
 export default function NextClassCard({ next, attendanceHref, timetableHref, reloadProp = 'nextClass', overlap = true }: Props) {
     const now = useNow(15000);
     const reloadedFor = useRef<string | null>(null);
-    const position = overlap ? 'relative z-10 -mt-10 lg:-mt-8' : 'relative';
+    const position = overlap ? 'relative z-10 lg:-mt-8' : 'relative';
 
     useEffect(() => {
         if (!next) return;

@@ -1,0 +1,1 @@
+import{n as e}from"./useUnreadCount-BJoNubcI.js";function t(){return!e(`(min-width: 640px)`)}function n(e,t,n=14){let r=String(e);return t&&r.length>n?`${r.slice(0,n-1).trimEnd()}…`:r}export{t as n,n as t};
