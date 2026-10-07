@@ -534,6 +534,13 @@ class DataResetCatalog
                 'description' => 'Annonces et leurs destinataires.',
                 'tables' => ['announcement_user', 'announcements'],
             ],
+            'notes_information' => [
+                'group' => 'Communication',
+                'label' => "Notes d'information",
+                'description' => "Notes d'information de la Direction et leur numérotation.",
+                'note' => "Les annonces conservées ne sont plus rattachées à une note.",
+                'tables' => ['information_notes'],
+            ],
             'connect' => [
                 'group' => 'Communication',
                 'label' => 'EEHT Connect',
