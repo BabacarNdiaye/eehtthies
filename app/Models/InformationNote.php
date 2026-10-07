@@ -3,7 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Mail\InformationNoteMail;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Note d'information officielle de la Direction : numérotée (N° 000026.MEFPA/EEHT/DIR), datée, avec objet et
@@ -14,7 +19,7 @@ class InformationNote extends Model
     public const REFERENCE_SUFFIX = 'MEFPA/EEHT/DIR';
 
     protected $fillable = [
-        'year', 'number', 'note_date', 'subject', 'body', 'audience_type', 'audience_id', 'announcement_id', 'created_by',
+        'year', 'number', 'note_date', 'subject', 'body', 'audience_type', 'audience_id', 'announcement_id', 'emails_count', 'created_by',
     ];
 
     protected $casts = [
@@ -69,5 +74,53 @@ class InformationNote extends Model
     public function getAudienceLabelAttribute(): string
     {
         return Announcement::AUDIENCE_TYPES[$this->audience_type] ?? $this->audience_type;
+    }
+
+    /**
+     * PDF de la note sur papier à en-tête. Une note envoyée n'est jamais modifiée : le PDF est donc généré une
+     * seule fois puis relu depuis le disque (utile quand il est joint à des centaines d'e-mails).
+     */
+    public function pdfContent(): string
+    {
+        $path = "information-notes/{$this->id}.pdf";
+
+        if (! Storage::disk('local')->exists($path)) {
+            Storage::disk('local')->put($path, Pdf::loadView('pdf.information-note', ['note' => $this])->setPaper('a4')->output());
+        }
+
+        return Storage::disk('local')->get($path);
+    }
+
+    /** Adresses réelles des destinataires : e-mails des comptes (professionnel et personnel) + tuteurs sans compte. */
+    public function recipientEmails(): Collection
+    {
+        $userIds = $this->announcement?->recipients()->pluck('users.id') ?? collect();
+
+        $emails = User::whereIn('id', $userIds)->get(['email', 'personal_email'])
+            ->flatMap(fn (User $u) => [$u->email, $u->personal_email]);
+
+        if (in_array($this->audience_type, ['parents', 'ecole'], true)) {
+            $emails = $emails->merge(
+                Student::where('status', 'actif')->whereNull('parent_user_id')->whereNotNull('guardian_email')->pluck('guardian_email')
+            );
+        }
+
+        return $emails->filter(fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL))
+            ->map(fn ($e) => strtolower($e))->unique()->values();
+    }
+
+    /** Envoie la note (PDF en pièce jointe) par e-mail ; les envois passent par la file d'attente. */
+    public function sendByEmail(): int
+    {
+        $this->pdfContent();
+        $emails = $this->recipientEmails();
+
+        foreach ($emails as $email) {
+            Mail::to($email)->send(new InformationNoteMail($this));
+        }
+
+        $this->update(['emails_count' => $emails->count()]);
+
+        return $emails->count();
     }
 }

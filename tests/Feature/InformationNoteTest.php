@@ -9,7 +9,9 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use App\Mail\InformationNoteMail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class InformationNoteTest extends TestCase
@@ -62,6 +64,32 @@ class InformationNoteTest extends TestCase
 
         $note = InformationNote::firstOrFail();
         $this->assertSame([$parent->id], $note->announcement->recipients()->pluck('users.id')->all());
+    }
+
+    public function test_note_can_be_emailed_with_its_pdf_to_parents_and_guardians_without_account(): void
+    {
+        Mail::fake();
+        $year = AcademicYear::create(['label' => '2026-2027', 'start_date' => '2026-09-01', 'end_date' => '2027-06-30', 'is_current' => true]);
+        $formation = Formation::create(['name' => 'BTS', 'code' => 'B-'.uniqid(), 'slug' => 'b-'.uniqid()]);
+        $class = SchoolClass::create(['name' => 'BTS1', 'formation_id' => $formation->id, 'academic_year_id' => $year->id]);
+        $parent = User::factory()->create(['email' => 'parent@example.com']);
+        $base = ['formation_id' => $formation->id, 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'status' => 'actif'];
+        Student::create([...$base, 'matricule' => 'E-1', 'first_name' => 'A', 'last_name' => 'B', 'parent_user_id' => $parent->id]);
+        Student::create([...$base, 'matricule' => 'E-2', 'first_name' => 'C', 'last_name' => 'D', 'guardian_email' => 'tuteur@example.com']);
+
+        $this->actingAs($this->admin)->post(route('admin.information-notes.store'), $this->payload(['audience_type' => 'parents', 'send_email' => true]))->assertRedirect();
+
+        Mail::assertQueued(InformationNoteMail::class, 2);
+        Mail::assertQueued(InformationNoteMail::class, fn ($m) => $m->hasTo('tuteur@example.com'));
+        $this->assertSame(2, InformationNote::firstOrFail()->emails_count);
+    }
+
+    public function test_no_email_is_sent_unless_requested(): void
+    {
+        Mail::fake();
+        $this->actingAs($this->admin)->post(route('admin.information-notes.store'), $this->payload());
+
+        Mail::assertNothingQueued();
     }
 
     public function test_pdf_is_generated(): void

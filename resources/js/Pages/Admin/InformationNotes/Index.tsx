@@ -15,6 +15,7 @@ type Note = {
     subject: string;
     audience: string;
     recipients_count: number;
+    emails_count: number;
     created_by: string | null;
 };
 
@@ -34,6 +35,7 @@ export default function Index({ notes, nextReference, today, audienceTypes, form
         body: '',
         audience_type: 'eleves',
         audience_id: '' as number | '',
+        send_email: true,
     });
 
     const needsAudienceId = data.audience_type === 'formation' || data.audience_type === 'classe';
@@ -99,6 +101,15 @@ export default function Index({ notes, nextReference, today, audienceTypes, form
                             <Textarea rows={10} value={data.body} onChange={(e) => setData('body', e.target.value)} />
                         </Field>
                     </div>
+                    <label className="flex items-center gap-2 text-sm text-ink-700 sm:col-span-2">
+                        <input
+                            type="checkbox"
+                            checked={data.send_email}
+                            onChange={(e) => setData('send_email', e.target.checked)}
+                            className="h-4 w-4 rounded border-ink-300"
+                        />
+                        Envoyer aussi par e-mail, avec le PDF de la note en pièce jointe
+                    </label>
                     <div className="sm:col-span-2">
                         <button
                             type="submit"
@@ -121,6 +132,7 @@ export default function Index({ notes, nextReference, today, audienceTypes, form
                                 <th className="px-5 py-3">Objet</th>
                                 <th className="px-5 py-3">Cible</th>
                                 <th className="px-5 py-3">Destinataires</th>
+                                <th className="px-5 py-3">E-mails</th>
                                 <th className="px-5 py-3">Rédigée par</th>
                                 <th className="px-5 py-3 text-right">PDF</th>
                             </tr>
@@ -133,6 +145,7 @@ export default function Index({ notes, nextReference, today, audienceTypes, form
                                     <td className="px-5 py-3 font-medium text-ink-900">{n.subject}</td>
                                     <td className="px-5 py-3 text-ink-600">{n.audience}</td>
                                     <td className="px-5 py-3 text-ink-600">{n.recipients_count}</td>
+                                    <td className="px-5 py-3 text-ink-600">{n.emails_count}</td>
                                     <td className="px-5 py-3 text-ink-600">{n.created_by ?? '—'}</td>
                                     <td className="px-5 py-3 text-right">
                                         <a
@@ -148,7 +161,7 @@ export default function Index({ notes, nextReference, today, audienceTypes, form
                             ))}
                             {notes.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="px-5 py-10 text-center">
+                                    <td colSpan={8} className="px-5 py-10 text-center">
                                         <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />

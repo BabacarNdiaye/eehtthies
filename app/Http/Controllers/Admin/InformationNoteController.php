@@ -7,7 +7,6 @@ use App\Models\Announcement;
 use App\Models\Formation;
 use App\Models\InformationNote;
 use App\Models\SchoolClass;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -31,6 +30,7 @@ class InformationNoteController extends Controller
                     'subject' => $n->subject,
                     'audience' => $n->audience_label,
                     'recipients_count' => $n->announcement?->recipients_count ?? 0,
+                    'emails_count' => $n->emails_count,
                     'created_by' => $n->createdBy?->name,
                 ]),
             'nextReference' => str_pad((string) InformationNote::nextNumber($year), 6, '0', STR_PAD_LEFT).'.'.InformationNote::REFERENCE_SUFFIX,
@@ -49,17 +49,26 @@ class InformationNoteController extends Controller
             'body' => ['required', 'string', 'max:20000'],
             'audience_type' => ['required', Rule::in(self::AUDIENCES)],
             'audience_id' => ['nullable', 'integer', 'required_if:audience_type,formation,classe'],
+            'send_email' => ['boolean'],
         ]);
+        $sendEmail = (bool) ($data['send_email'] ?? false);
+        unset($data['send_email']);
 
         $note = InformationNote::issue($data, $request->user()->id);
 
-        return back()->with('success', "Note d'information N° {$note->reference} envoyée à {$note->announcement->recipients_count} destinataire(s).");
+        $message = "Note d'information N° {$note->reference} envoyée à {$note->announcement->recipients_count} destinataire(s).";
+        if ($sendEmail) {
+            $message .= ' '.$note->sendByEmail().' e-mail(s) avec le PDF en pièce jointe en cours d\'envoi.';
+        }
+
+        return back()->with('success', $message);
     }
 
     public function pdf(InformationNote $informationNote)
     {
-        $pdf = Pdf::loadView('pdf.information-note', ['note' => $informationNote])->setPaper('a4');
-
-        return $pdf->stream('note-information-'.str_pad((string) $informationNote->number, 6, '0', STR_PAD_LEFT).'.pdf');
+        return response($informationNote->pdfContent(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="note-information-'.str_pad((string) $informationNote->number, 6, '0', STR_PAD_LEFT).'.pdf"',
+        ]);
     }
 }
