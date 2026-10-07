@@ -6,6 +6,7 @@ import {
     Award,
     BadgeCheck,
     Banknote,
+    FileText,
     BarChart3,
     BellRing,
     BookMarked,
@@ -513,6 +514,14 @@ export const navGroups: NavGroup[] = [
                 active: (c) => c.startsWith('admin.announcements'),
                 permission: 'voir_communication',
                 keywords: 'communiques',
+            },
+            {
+                label: 'Notes d\'information',
+                href: 'admin.information-notes.index',
+                icon: FileText,
+                active: (c) => c.startsWith('admin.information-notes'),
+                permission: 'voir_communication',
+                keywords: 'note service circulaire direction pdf',
             },
             {
                 label: 'Modération des groupes',

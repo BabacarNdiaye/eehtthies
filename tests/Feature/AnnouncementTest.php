@@ -62,6 +62,38 @@ class AnnouncementTest extends TestCase
         return $user;
     }
 
+    public function test_announcement_to_parents_reaches_only_parents_of_active_students(): void
+    {
+        $parent = User::factory()->create();
+        $parent->assignRole('parent');
+        $student = $this->makeStudentUser();
+        Student::where('user_id', $student->id)->update(['parent_user_id' => $parent->id]);
+        $otherParent = User::factory()->create();
+        $inactive = $this->makeStudentUser(null, null, 'abandon');
+        Student::where('user_id', $inactive->id)->update(['parent_user_id' => $otherParent->id]);
+
+        $this->actingAs($this->admin)->post(route('admin.announcements.store'), [
+            'title' => 'Parents', 'body' => 'Réunion', 'priority' => 'normale', 'audience_type' => 'parents',
+        ])->assertRedirect();
+
+        $ids = Announcement::where('title', 'Parents')->firstOrFail()->recipients()->pluck('users.id')->all();
+        $this->assertSame([$parent->id], $ids);
+    }
+
+    public function test_announcement_to_all_students_excludes_teachers_and_parents(): void
+    {
+        $student = $this->makeStudentUser();
+        $teacher = $this->makeTeacherUser();
+
+        $this->actingAs($this->admin)->post(route('admin.announcements.store'), [
+            'title' => 'Élèves', 'body' => 'Info', 'priority' => 'normale', 'audience_type' => 'eleves',
+        ])->assertRedirect();
+
+        $ids = Announcement::where('title', 'Élèves')->firstOrFail()->recipients()->pluck('users.id')->all();
+        $this->assertSame([$student->id], $ids);
+        $this->assertNotContains($teacher->id, $ids);
+    }
+
     public function test_announcement_to_a_class_only_reaches_active_students_of_that_class(): void
     {
         Notification::fake();

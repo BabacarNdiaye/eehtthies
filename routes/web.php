@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\AccountingReportController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AnnouncementController;
+use App\Http\Controllers\Admin\InformationNoteController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\CandidatureController as AdminCandidatureController;
@@ -380,6 +381,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     Route::post('mail/send', [MailController::class, 'send'])->name('mail.send')->middleware('permission:ajouter_communication');
     Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index')->middleware('permission:voir_communication');
     Route::post('announcements', [AnnouncementController::class, 'store'])->name('announcements.store')->middleware('permission:ajouter_communication');
+    Route::get('information-notes', [InformationNoteController::class, 'index'])->name('information-notes.index')->middleware('permission:voir_communication');
+    Route::post('information-notes', [InformationNoteController::class, 'store'])->name('information-notes.store')->middleware('permission:ajouter_communication');
+    Route::get('information-notes/{informationNote}/pdf', [InformationNoteController::class, 'pdf'])->name('information-notes.pdf')->middleware('permission:voir_communication');
     Route::get('class-discussions', [ClassDiscussionController::class, 'index'])->name('class-discussions.index')->middleware('permission:voir_communication');
     Route::get('class-discussions/{schoolClass}', [ClassDiscussionController::class, 'show'])->name('class-discussions.show')->middleware('permission:voir_communication');
     Route::delete('class-discussions/messages/{classMessage}', [ClassDiscussionController::class, 'destroy'])->name('class-discussions.destroy')->middleware('permission:modifier_communication');
