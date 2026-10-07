@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-FzZYHIPp.js";var t=e();function n({children:e,className:n=``,hoverable:r=!1,...i}){return(0,t.jsx)(`div`,{...i,className:`rounded-xl border border-ink-100 bg-white shadow-soft transition-shadow duration-200 ${r?`hover:shadow-elevated`:``} ${n}`,children:e})}export{n as t};

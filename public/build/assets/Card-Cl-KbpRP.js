@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-DqsOdvoF.js";var t=e();function n({children:e,className:n=``,hoverable:r=!1,...i}){return(0,t.jsx)(`div`,{...i,className:`rounded-2xl border border-ink-100/80 bg-white shadow-soft transition-[box-shadow,transform] duration-200 ${r?`hover:-translate-y-0.5 hover:shadow-elevated`:``} ${n}`,children:e})}export{n as t};
