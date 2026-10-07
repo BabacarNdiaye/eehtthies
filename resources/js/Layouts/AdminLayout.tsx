@@ -15,7 +15,7 @@ import { recallListUrl, rememberListUrl, rememberRecent } from '@/lib/adminMemor
 import { crumbsFor, isFormRoute, locate, shortcutTab, visibleGroups } from '@/lib/adminNav';
 import { PageProps } from '@/types';
 import { router, usePage } from '@inertiajs/react';
-import { Home, LayoutGrid, MessageCircle, Search } from 'lucide-react';
+import { Home, LayoutGrid, List, MessageCircle, Search } from 'lucide-react';
 import { PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 /** Vrai quand la frappe part dans un champ : le raccourci « / » ne doit alors pas ouvrir la palette. */
@@ -45,7 +45,23 @@ export default function AdminLayout({ children }: PropsWithChildren) {
     const mainRef = useRef<HTMLElement>(null);
     useAutoPushSubscribe();
     // Sous 768 px les tableaux deviennent des cartes : le hook leur fournit les libellés de leurs colonnes.
-    useResponsiveTables(mainRef);
+    // Sur ordinateur, le choix Liste / Grille (mémorisé) fait aussi des cartes de ces tableaux.
+    const [view, setView] = useState<'list' | 'grid'>(() => {
+        try {
+            return localStorage.getItem('admin-view') === 'grid' ? 'grid' : 'list';
+        } catch {
+            return 'list';
+        }
+    });
+    const hasTables = useResponsiveTables(mainRef, view === 'grid');
+    const chooseView = (next: 'list' | 'grid') => {
+        setView(next);
+        try {
+            localStorage.setItem('admin-view', next);
+        } catch {
+            /* stockage indisponible : le choix vaut pour cette page seulement */
+        }
+    };
 
     const permissions = auth.permissions;
     const groups = useMemo(() => visibleGroups(permissions), [permissions]);
@@ -161,6 +177,26 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                     tabIndex={-1}
                     className="flex-1 px-4 py-6 pb-[calc(var(--portal-bar-h)+1.5rem)] outline-none sm:px-6 lg:py-8 lg:pb-24"
                 >
+                    {hasTables && (
+                        <div role="group" aria-label="Affichage" className="mb-4 hidden justify-end md:flex">
+                            <div className="inline-flex overflow-hidden rounded-lg border border-ink-200 bg-white">
+                                {([['list', 'Liste', List], ['grid', 'Grille', LayoutGrid]] as const).map(([key, label, Icon]) => (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        aria-pressed={view === key}
+                                        onClick={() => chooseView(key)}
+                                        className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-500 ${
+                                            key === 'grid' ? 'border-l border-ink-200 ' : ''
+                                        }${view === key ? 'bg-ink-900 text-white' : 'text-ink-600 hover:bg-ink-50'}`}
+                                    >
+                                        <Icon className="h-4 w-4" aria-hidden="true" />
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     <div key={current} className="animate-fade-in-up">
                         {children}
                     </div>

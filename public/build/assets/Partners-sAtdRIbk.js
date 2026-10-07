@@ -1,1 +1,0 @@
-import e from"./Partners-DeTS2u2-.js";export{e as default};

@@ -32,7 +32,7 @@ export default function StudentTable({ sections, classCounts, grouped, showClass
     return (
         <Card className="overflow-hidden">
             <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table data-own-view className="w-full text-left text-sm">
                     <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
                         <tr>
                             <th className="px-3 py-3 sm:px-4">Élève</th>
