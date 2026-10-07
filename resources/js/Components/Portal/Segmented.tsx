@@ -42,9 +42,9 @@ export default function Segmented<T extends string>({
             role="tablist"
             aria-label={label}
             onKeyDown={onKeyDown}
-            className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-20 -mx-4 mb-5 bg-ink-50/90 px-4 py-2 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none"
+            className="sticky top-[calc(4rem+env(safe-area-inset-top,0px))] z-20 -mx-4 mb-5 bg-ink-50/90 px-4 py-2 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none"
         >
-            <div className="flex gap-1 rounded-2xl bg-white p-1 shadow-soft ring-1 ring-ink-100">
+            <div className="flex gap-1 rounded-full bg-white p-1 shadow-soft ring-1 ring-ink-100">
                 {tabs.map((tab) => {
                     const active = tab.key === value;
                     const Icon = tab.icon;
@@ -59,8 +59,8 @@ export default function Segmented<T extends string>({
                             aria-controls={`panel-${tab.key}`}
                             tabIndex={active ? 0 : -1}
                             onClick={() => select(tab.key)}
-                            className={`relative flex min-h-[2.75rem] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[11px] font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-gold-500 sm:flex-row sm:gap-2 sm:text-sm ${
-                                active ? 'bg-ink-900 text-white shadow' : 'text-ink-500 active:bg-ink-50'
+                            className={`relative flex min-h-[2.75rem] flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-1 text-[11px] font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-leaf-500 sm:flex-row sm:gap-2 sm:text-sm ${
+                                active ? 'bg-leaf-500 text-ink-900 shadow' : 'text-ink-500 active:bg-ink-50'
                             }`}
                         >
                             {Icon && <Icon className="h-[18px] w-[18px]" />}

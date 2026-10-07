@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-DqsOdvoF.js";import{t}from"./star-xKKa58_N.js";var n=e();function r({rating:e,className:r=``}){let i=Array.from({length:5},(t,n)=>n<Math.round(e));return(0,n.jsx)(`div`,{className:`flex items-center gap-0.5 ${r}`,children:i.map((e,r)=>(0,n.jsx)(t,{className:`h-4 w-4 ${e?`fill-gold-400 text-gold-400`:`text-ink-200`}`},r))})}export{r as t};
