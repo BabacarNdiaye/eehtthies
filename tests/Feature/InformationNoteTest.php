@@ -92,6 +92,24 @@ class InformationNoteTest extends TestCase
         Mail::assertNothingQueued();
     }
 
+    public function test_rich_content_is_sanitized_and_announcement_gets_a_plain_text_version(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.information-notes.store'), $this->payload([
+            'body' => '<p onclick="x()">Bonjour <strong>à tous</strong></p><script>alert(1)</script><ul><li>un</li></ul>',
+        ]))->assertRedirect();
+
+        $note = InformationNote::firstOrFail();
+        $this->assertSame('<p>Bonjour <strong>à tous</strong></p><ul><li>un</li></ul>', $note->body);
+        $this->assertStringNotContainsString('<', $note->announcement->body);
+        $this->assertStringContainsString('Bonjour à tous', $note->announcement->body);
+    }
+
+    public function test_empty_editor_content_is_rejected(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.information-notes.store'), $this->payload(['body' => '<p></p>']))
+            ->assertSessionHasErrors('body');
+    }
+
     public function test_pdf_is_generated(): void
     {
         $this->actingAs($this->admin)->post(route('admin.information-notes.store'), $this->payload());

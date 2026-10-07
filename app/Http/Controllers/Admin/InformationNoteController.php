@@ -7,7 +7,9 @@ use App\Models\Announcement;
 use App\Models\Formation;
 use App\Models\InformationNote;
 use App\Models\SchoolClass;
+use App\Support\HtmlSanitizer;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,6 +36,7 @@ class InformationNoteController extends Controller
                     'created_by' => $n->createdBy?->name,
                 ]),
             'nextReference' => str_pad((string) InformationNote::nextNumber($year), 6, '0', STR_PAD_LEFT).'.'.InformationNote::REFERENCE_SUFFIX,
+            'yearCount' => InformationNote::where('year', $year)->count(),
             'today' => now()->toDateString(),
             'audienceTypes' => collect(self::AUDIENCES)->mapWithKeys(fn ($k) => [$k => Announcement::AUDIENCE_TYPES[$k]]),
             'formations' => Formation::orderBy('name')->get(['id', 'name']),
@@ -51,6 +54,9 @@ class InformationNoteController extends Controller
             'audience_id' => ['nullable', 'integer', 'required_if:audience_type,formation,classe'],
             'send_email' => ['boolean'],
         ]);
+        if (HtmlSanitizer::toText(HtmlSanitizer::clean($data['body'])) === '') {
+            throw ValidationException::withMessages(['body' => 'Le contenu de la note est obligatoire.']);
+        }
         $sendEmail = (bool) ($data['send_email'] ?? false);
         unset($data['send_email']);
 

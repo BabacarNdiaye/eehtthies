@@ -16,6 +16,13 @@
         h1.object { font-size: 22pt; text-align: center; margin: 0 0 22pt; }
         h1.object span { font-weight: normal; font-size: 15pt; }
         .content { line-height: 1.55; text-align: justify; }
+        .content p { margin: 0 0 9pt; }
+        .content ul, .content ol { margin: 0 0 9pt; padding-left: 20pt; }
+        .content li { margin-bottom: 3pt; }
+        .content h2 { font-size: 14pt; margin: 12pt 0 6pt; }
+        .content h3 { font-size: 12.5pt; margin: 10pt 0 5pt; }
+        .content blockquote { margin: 0 0 9pt; padding-left: 10pt; border-left: 3pt solid #7a1648; color: #333; }
+        .content a { color: #7a1648; }
         .signature { margin-top: 36pt; text-align: right; font-style: italic; font-weight: bold; font-size: 15pt; page-break-inside: avoid; }
         .foot-text { text-align: center; font-size: 10pt; line-height: 1.45; color: #222; }
     </style>
@@ -47,7 +54,7 @@
 
     <h1 class="object">OBJET : <span>{{ $note->subject }}</span></h1>
 
-    <div class="content">{!! nl2br(e($note->body)) !!}</div>
+    <div class="content">{!! $note->body_html !!}</div>
 
     <div class="signature">La Direction de l’EEHT de Thiès</div>
 </body>

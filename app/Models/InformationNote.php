@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Mail\InformationNoteMail;
+use App\Support\HtmlSanitizer;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -47,9 +48,11 @@ class InformationNote extends Model
     {
         return DB::transaction(function () use ($data, $createdBy) {
             $year = (int) date('Y', strtotime($data['note_date']));
+            $data['body'] = HtmlSanitizer::clean($data['body']);
+            // Les annonces s'affichent sans mise en forme dans les portails : on leur donne la version texte.
             $announcement = Announcement::broadcast([
                 'title' => $data['subject'],
-                'body' => $data['body'],
+                'body' => HtmlSanitizer::toText($data['body']),
                 'priority' => 'importante',
                 'audience_type' => $data['audience_type'],
                 'audience_id' => $data['audience_id'] ?? null,
@@ -69,6 +72,12 @@ class InformationNote extends Model
     public function getReferenceAttribute(): string
     {
         return str_pad((string) $this->number, 6, '0', STR_PAD_LEFT).'.'.self::REFERENCE_SUFFIX;
+    }
+
+    /** Contenu prêt à afficher : le HTML de l'éditeur, ou le texte brut des notes saisies avant son arrivée. */
+    public function getBodyHtmlAttribute(): string
+    {
+        return $this->body === strip_tags($this->body) ? nl2br(e($this->body)) : $this->body;
     }
 
     public function getAudienceLabelAttribute(): string
