@@ -60,4 +60,31 @@ class HrDashboardTest extends TestCase
 
         $this->actingAs($user)->get(route('admin.hr.index'))->assertForbidden();
     }
+
+    public function test_the_dashboard_exposes_leave_departments_and_incomplete_files(): void
+    {
+        $staff = $this->staffUser();
+        $member = User::factory()->create(['department' => 'Comptabilité', 'hire_date' => now()->subYears(2)->toDateString()]);
+        \App\Models\LeaveRequest::create([
+            'user_id' => $member->id, 'type' => 'conge_paye', 'status' => 'en_attente',
+            'start_date' => now()->addDays(3)->toDateString(), 'end_date' => now()->addDays(8)->toDateString(),
+        ]);
+        \App\Models\LeaveRequest::create([
+            'user_id' => $member->id, 'type' => 'conge_maladie', 'status' => 'approuve',
+            'start_date' => now()->subDay()->toDateString(), 'end_date' => now()->addDay()->toDateString(),
+        ]);
+
+        $this->actingAs($staff)->get(route('admin.hr.index'))->assertOk()->assertInertia(fn ($page) => $page
+            ->where('summary.pendingLeaves', 1)
+            ->where('summary.onLeaveToday', 1)
+            ->has('leave.pending', 1)
+            ->has('leave.today', 1)
+            ->has('departments')
+            ->where('faculty.withoutSchedule', 0)
+            ->has('faculty.teachers', 0)
+            ->has('recentHires', 1)
+            ->has('incomplete')
+            ->where('can.payroll', false)
+        );
+    }
 }

@@ -36,7 +36,7 @@ export default function FilterBar({ search, activeCount = 0, children }: { searc
                             onClick={() => setOpen((value) => !value)}
                             aria-expanded={open}
                             aria-controls={panelId}
-                            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-ink-200 bg-white px-3 text-sm font-medium text-ink-700 outline-none transition-colors hover:bg-ink-50 focus-visible:ring-2 focus-visible:ring-gold-500 md:hidden"
+                            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl border border-ink-200 bg-white px-3 text-sm font-medium text-ink-700 outline-none transition-colors hover:bg-ink-50 focus-visible:ring-2 focus-visible:ring-gold-500 md:hidden"
                         >
                             <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
                             Filtres

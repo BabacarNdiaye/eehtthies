@@ -18,6 +18,7 @@ export const studentNav: PortalNavItem[] = [
     { label: 'Tableau de bord', href: 'student.dashboard', active: (c) => c === 'student.dashboard' },
     { label: 'Emploi du temps', href: 'student.timetable', active: (c) => c === 'student.timetable' },
     { label: 'Notes & bulletins', href: 'student.grades', active: (c) => c === 'student.grades' },
+    { label: 'Travaux maison', href: 'student.assignments', active: (c) => c === 'student.assignments' },
     { label: 'Présences', href: 'student.attendance', active: (c) => c === 'student.attendance' },
     { label: 'Factures', href: 'student.invoices', active: (c) => c === 'student.invoices' },
     { label: 'EEHT Connect', href: 'connect.index', active: (c) => c.startsWith('connect.') },

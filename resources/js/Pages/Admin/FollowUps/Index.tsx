@@ -6,6 +6,7 @@ import Pagination from '@/Components/Admin/Pagination';
 import FollowUpList, { FollowUpRow } from '@/Components/Council/FollowUpList';
 import { Paginated } from '@/types';
 import { Head, router } from '@inertiajs/react';
+import { CouncilTabs } from '@/Components/Admin/ClusterTabs';
 
 interface Props {
     mode: 'all' | 'mine';
@@ -35,6 +36,7 @@ export default function Index({ mode, followUps, filters, classes, owners, statu
                 title={mode === 'mine' ? 'Mes actions de suivi' : 'Actions de suivi'}
                 subtitle={mode === 'mine' ? 'Les actions décidées en conseil dont vous êtes responsable, par échéance.' : 'Toutes les actions décidées par les conseils de classe, jusqu’au conseil suivant.'}
             />
+            <CouncilTabs current="follow-ups" />
 
             {mode === 'all' && filters.council_id && (
                 <p className="mb-3 flex flex-wrap items-center gap-2 text-sm text-ink-700">

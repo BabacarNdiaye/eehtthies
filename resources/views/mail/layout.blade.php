@@ -23,14 +23,7 @@
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td width="44" valign="middle">
-                                        @php($logo = \App\Models\Setting::get('site_logo'))
-                                        @if($logo)
-                                            <img src="{{ url('/storage/'.$logo) }}" alt="{{ \App\Models\Setting::get('site_short_name', 'EEHT') }}" width="40" height="40" style="display:block; width:40px; height:40px; border-radius:50%; object-fit:cover; background-color:#ffffff;">
-                                        @else
-                                            <table role="presentation" width="40" height="40" cellpadding="0" cellspacing="0" style="background-color:#e2ac37; border-radius:50%;">
-                                                <tr><td align="center" valign="middle" style="font-family: Georgia, 'Times New Roman', serif; font-weight:bold; font-size:18px; color:#0b1728;">E</td></tr>
-                                            </table>
-                                        @endif
+                                        <img src="{{ \App\Support\SiteBrand::url() }}" alt="{{ \App\Models\Setting::get('site_short_name', 'EEHT') }}" width="40" height="40" style="display:block; width:40px; height:40px; border-radius:8px; object-fit:contain; background-color:#ffffff;">
                                     </td>
                                     <td valign="middle" style="padding-left: 14px;">
                                         <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 17px; font-weight: bold; color: #ffffff; line-height:1.3;">

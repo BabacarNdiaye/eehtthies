@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Services\ConnectReminders;
+use App\Support\RichText;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 class LessonLog extends Model
@@ -20,6 +22,23 @@ class LessonLog extends Model
                 ConnectReminders::safely(fn (ConnectReminders $reminders) => $reminders->announceHomework($log));
             }
         });
+    }
+
+    /** Contenu de la séance et devoirs : texte riche (éditeur), nettoyé à l'écriture et à la lecture. */
+    protected function content(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => $value === null ? null : RichText::clean($value),
+            set: fn (?string $value) => RichText::forStorage($value),
+        );
+    }
+
+    protected function homework(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => $value === null ? null : (RichText::clean($value) ?: null),
+            set: fn (?string $value) => RichText::forStorage($value),
+        );
     }
 
     protected $casts = [

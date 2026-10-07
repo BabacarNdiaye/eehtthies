@@ -27,24 +27,49 @@ class InvoiceController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Invoice::with('student:id,first_name,last_name,matricule')->withSum('payments', 'amount');
+        $paid = '(SELECT COALESCE(SUM(p.amount), 0) FROM payments p WHERE p.invoice_id = invoices.id)';
+        $net = '(invoices.amount - invoices.discount)';
 
-        if ($request->filled('student_id')) {
-            $query->where('student_id', $request->integer('student_id'));
-        }
+        // Filtres communs à la liste et aux totaux (hors statut, que les totaux répartissent eux-mêmes).
+        $apply = function ($query) use ($request) {
+            if ($request->filled('student_id')) {
+                $query->where('student_id', $request->integer('student_id'));
+            }
 
-        if ($request->filled('type')) {
-            $query->where('type', $request->string('type'));
-        }
+            if ($request->filled('type')) {
+                $query->where('type', $request->string('type'));
+            }
 
-        if ($request->filled('search')) {
-            $search = $request->string('search');
-            $query->whereHas('student', function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('matricule', 'like', "%{$search}%");
-            });
-        }
+            if ($request->filled('search')) {
+                $search = $request->string('search');
+                $query->whereHas('student', function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('matricule', 'like', "%{$search}%");
+                });
+            }
+
+            return $query;
+        };
+
+        $stats = $apply(Invoice::query())->selectRaw(
+            "COUNT(*) as total,
+             COALESCE(SUM($net), 0) as invoiced,
+             COALESCE(SUM($paid), 0) as collected,
+             COALESCE(SUM(CASE WHEN ROUND($net - $paid, 2) <= 0 THEN 1 ELSE 0 END), 0) as payee,
+             COALESCE(SUM(CASE WHEN ROUND($net - $paid, 2) > 0 AND $paid > 0 THEN 1 ELSE 0 END), 0) as partielle,
+             COALESCE(SUM(CASE WHEN ROUND($net - $paid, 2) > 0 AND $paid = 0 THEN 1 ELSE 0 END), 0) as impayee,
+             COALESCE(SUM(CASE WHEN ROUND($net - $paid, 2) > 0 THEN ROUND($net - $paid, 2) ELSE 0 END), 0) as outstanding"
+        )->first();
+
+        $query = $apply(Invoice::with('student:id,first_name,last_name,matricule')->withSum('payments', 'amount'));
+
+        match ($request->string('status')->toString()) {
+            'payee' => $query->whereRaw("ROUND($net - $paid, 2) <= 0"),
+            'partielle' => $query->whereRaw("ROUND($net - $paid, 2) > 0 AND $paid > 0"),
+            'impayee' => $query->whereRaw("ROUND($net - $paid, 2) > 0 AND $paid = 0"),
+            default => null,
+        };
 
         $invoices = $query->latest()->paginate(15)->withQueryString();
 
@@ -55,18 +80,25 @@ class InvoiceController extends Controller
             $invoice->computed_status = $balance <= 0 ? 'payee' : ($paid > 0 ? 'partielle' : 'impayee');
             $invoice->computed_balance = $balance;
             $invoice->computed_paid = $paid;
+            $invoice->days_late = $balance > 0 ? max(0, $invoice->daysPastDue() ?? 0) : 0;
 
             return $invoice;
         });
 
-        if ($request->filled('status')) {
-            $status = $request->string('status')->toString();
-            $filtered = $invoices->getCollection()->filter(fn ($i) => $i->computed_status === $status)->values();
-            $invoices->setCollection($filtered);
-        }
+        $user = $request->user();
 
         return Inertia::render('Admin/Invoices/Index', [
             'invoices' => $invoices,
+            'stats' => [
+                'total' => (int) $stats->total,
+                'invoiced' => round((float) $stats->invoiced, 2),
+                'collected' => round((float) $stats->collected, 2),
+                'outstanding' => round((float) $stats->outstanding, 2),
+                'payee' => (int) $stats->payee,
+                'partielle' => (int) $stats->partielle,
+                'impayee' => (int) $stats->impayee,
+            ],
+            'can' => ['collect' => (bool) $user?->can('ajouter_comptabilite')],
             'students' => Student::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'matricule']),
             'formations' => Formation::orderBy('name')->get(['id', 'name']),
             'academicYears' => AcademicYear::orderByDesc('start_date')->get(['id', 'label']),

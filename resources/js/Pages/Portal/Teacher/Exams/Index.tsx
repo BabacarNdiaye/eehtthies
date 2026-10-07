@@ -12,9 +12,11 @@ import { teacherNav } from '../Dashboard';
 interface Props {
     exams: Paginated<Exam>;
     types: Record<string, string>;
+    category: 'devoir' | 'composition';
 }
 
-export default function Index({ exams, types }: Props) {
+export default function Index({ exams, types, category }: Props) {
+    const isComposition = category === 'composition';
     const isWide = useMediaQuery('(min-width: 768px)');
 
     const destroy = (exam: Exam) => {
@@ -28,9 +30,14 @@ export default function Index({ exams, types }: Props) {
             <Head title="Devoirs" />
 
             <PortalPageHeader
-                title="Devoirs"
-                subtitle="Programmez vos devoirs, interrogations et contrôles pour vos classes."
+                title={isComposition ? 'Compositions' : 'Devoirs'}
+                subtitle={
+                    isComposition
+                        ? 'Calendrier des compositions de vos classes, planifié par l\'administration.'
+                        : 'Programmez vos devoirs, interrogations et contrôles pour vos classes.'
+                }
                 action={
+                    isComposition ? undefined : (
                     <Link
                         href={route('teacher.exams.create')}
                         className="inline-flex h-11 items-center gap-2 rounded-xl bg-ink-900 px-4 text-sm font-semibold text-white transition-colors active:bg-ink-800 lg:hover:bg-ink-800"
@@ -38,13 +45,26 @@ export default function Index({ exams, types }: Props) {
                         <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Programmer un devoir</span>
                         <span className="sm:hidden">Nouveau</span>
                     </Link>
+                    )
                 }
             />
+
+            <div className="mb-4 inline-flex rounded-xl bg-ink-100 p-1 text-sm font-semibold">
+                {(['devoir', 'composition'] as const).map((c) => (
+                    <Link
+                        key={c}
+                        href={route('teacher.exams.index', c === 'composition' ? { categorie: 'composition' } : {})}
+                        className={`rounded-lg px-4 py-2 transition-colors ${category === c ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500'}`}
+                    >
+                        {c === 'composition' ? 'Compositions' : 'Devoirs'}
+                    </Link>
+                ))}
+            </div>
 
             {!isWide ? (
                 <>
                     {exams.data.length === 0 ? (
-                        <p className="rounded-3xl bg-white px-4 py-10 text-center text-sm text-ink-400 ring-1 ring-ink-100">Aucun devoir programmé.</p>
+                        <p className="rounded-3xl bg-white px-4 py-10 text-center text-sm text-ink-400 ring-1 ring-ink-100">{isComposition ? 'Aucune composition planifiée.' : 'Aucun devoir programmé.'}</p>
                     ) : (
                         <ul className="space-y-3">
                             {exams.data.map((exam) => {
@@ -94,7 +114,7 @@ export default function Index({ exams, types }: Props) {
                                                     </button>
                                                 </>
                                             ) : (
-                                                !exam.can_grade && <span className="self-center text-xs italic text-ink-500">Créé par un autre enseignant</span>
+                                                (!exam.can_grade || isComposition) && <span className="self-center text-xs italic text-ink-500">{isComposition ? 'Planifiée par l\'administration' : 'Créé par un autre enseignant'}</span>
                                             )}
                                         </div>
                                     </li>
@@ -112,7 +132,7 @@ export default function Index({ exams, types }: Props) {
                         <table className="w-full text-left text-sm">
                             <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
                                 <tr>
-                                    <th className="px-5 py-3">Devoir</th>
+                                    <th className="px-5 py-3">{isComposition ? 'Composition' : 'Devoir'}</th>
                                     <th className="px-5 py-3">Classe</th>
                                     <th className="px-5 py-3">Matière</th>
                                     <th className="px-5 py-3">Date</th>
@@ -146,7 +166,7 @@ export default function Index({ exams, types }: Props) {
                                                         </button>
                                                     </>
                                                 ) : (
-                                                    !exam.can_grade && <span className="text-xs italic text-ink-500">Créé par un autre enseignant</span>
+                                                    (!exam.can_grade || isComposition) && <span className="text-xs italic text-ink-500">{isComposition ? 'Planifiée par l\'administration' : 'Créé par un autre enseignant'}</span>
                                                 )}
                                             </div>
                                         </td>
@@ -155,7 +175,7 @@ export default function Index({ exams, types }: Props) {
                                 {exams.data.length === 0 && (
                                     <tr>
                                         <td colSpan={5} className="px-5 py-10 text-center text-ink-400">
-                                            Aucun devoir programmé.
+                                            {isComposition ? 'Aucune composition planifiée.' : 'Aucun devoir programmé.'}
                                         </td>
                                     </tr>
                                 )}

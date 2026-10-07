@@ -92,7 +92,7 @@ class ConnectReminders
 
     public function announceHomework(LessonLog $log): void
     {
-        $homework = trim((string) $log->homework);
+        $homework = \App\Support\RichText::plain($log->homework);
         if ($homework === '' || ! $log->school_class_id) {
             return;
         }
@@ -110,6 +110,23 @@ class ConnectReminders
             $log->school_class_id,
             "📚 Devoir donné{$subject}{$date}{$teacher} :\n{$homework}",
             ['type' => 'homework', 'lesson_log_id' => $log->id],
+        );
+    }
+
+    public function announceAssignment(\App\Models\HomeAssignment $assignment): void
+    {
+        if (! $this->claim("assignment:{$assignment->id}")) {
+            return;
+        }
+
+        $assignment->loadMissing('subject:id,name', 'teacher:id,first_name,last_name');
+        $subject = $assignment->subject?->name ? " en {$assignment->subject->name}" : '';
+        $teacher = $assignment->teacher ? " par {$assignment->teacher->first_name} {$assignment->teacher->last_name}" : '';
+
+        $this->postToClass(
+            $assignment->school_class_id,
+            "🏠 Travail à la maison{$subject}{$teacher} pour le {$assignment->due_date->format('d/m')} :\n{$assignment->title}",
+            ['type' => 'home_assignment', 'home_assignment_id' => $assignment->id],
         );
     }
 

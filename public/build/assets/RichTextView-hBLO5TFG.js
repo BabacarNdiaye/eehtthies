@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-DqsOdvoF.js";var t=e();function n({html:e,className:n=``}){return e?(0,t.jsx)(`div`,{className:`rich-text ${n}`,dangerouslySetInnerHTML:{__html:e}}):null}export{n as t};

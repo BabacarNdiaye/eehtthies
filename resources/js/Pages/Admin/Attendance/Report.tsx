@@ -5,6 +5,7 @@ import { Field, Select, TextInput } from '@/Components/Admin/Field';
 import { SchoolClass } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Inbox } from 'lucide-react';
+import { PresenceTabs } from '@/Components/Admin/ClusterTabs';
 
 type StudentRow = { id: number; matricule: string; first_name: string; last_name: string };
 type SummaryRow = {
@@ -46,6 +47,7 @@ export default function Report({ schoolClasses, summary, selectedClassId, from, 
                     Faire l'appel
                 </Link>
             </PageHeader>
+            <PresenceTabs current="report" />
 
             <Card className="mb-6 p-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

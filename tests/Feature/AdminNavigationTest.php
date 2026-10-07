@@ -29,7 +29,7 @@ class AdminNavigationTest extends TestCase
         preg_match_all("/href: '([a-z0-9.\-]+)'/", $this->navSource(), $matches);
         $hrefs = array_unique($matches[1]);
 
-        $this->assertGreaterThan(60, count($hrefs), 'La navigation devrait compter plus de 60 rubriques.');
+        $this->assertGreaterThan(50, count($hrefs), 'La navigation devrait compter plus de 50 rubriques.');
 
         foreach ($hrefs as $name) {
             $this->assertTrue(Route::has($name), "La rubrique « {$name} » ne correspond à aucune route nommée.");
@@ -53,16 +53,38 @@ class AdminNavigationTest extends TestCase
         preg_match_all("/href: '([a-z0-9.\-]+)'/", $this->navSource(), $matches);
 
         $expected = [
-            'admin.invoices.monthly' => 'le suivi des mensualités',
-            'admin.invoices.overdue' => 'les impayés',
             'admin.finance.cash-journal' => 'le journal de caisse',
             'admin.finance.settings' => 'les réglages des paiements',
             'admin.products.movements' => 'les mouvements de stock',
-            'admin.pointage.report' => 'les statistiques de présence',
         ];
 
         foreach ($expected as $name => $page) {
             $this->assertContains($name, $matches[1], "Le menu doit mener à {$page} ({$name}) sans passer par le bouton d'une autre page.");
+        }
+    }
+
+    public function test_follow_up_pages_stay_one_tab_away_from_their_menu_entry(): void
+    {
+        // Ces pages ne sont plus des rubriques du menu : ce sont des onglets de la rubrique voisine.
+        $clusters = [
+            'resources/js/Components/Admin/FinanceTabs.tsx' => ['admin.invoices.monthly', 'admin.invoices.overdue', 'admin.payment-plans.index', 'admin.online-payments.index'],
+            'resources/js/Components/Admin/ClusterTabs.tsx' => [
+                'admin.pointage.register', 'admin.pointage.report',
+                'admin.formation-levels.index', 'admin.skills.index',
+                'admin.lesson-logs.index', 'admin.follow-ups.index',
+                'admin.borne.pointage.gate', 'admin.library.index',
+                'admin.council-dashboard.index', 'admin.council-settings.index',
+                'admin.students.online', 'admin.academic-years.index', 'admin.practical-sessions.index',
+            ],
+        ];
+
+        foreach ($clusters as $file => $names) {
+            $source = file_get_contents(base_path($file));
+
+            foreach ($names as $name) {
+                $this->assertStringContainsString("'{$name}'", $source, "L'onglet de {$name} a disparu de {$file}.");
+                $this->assertTrue(Route::has($name), "{$name} n'est plus une route.");
+            }
         }
     }
 

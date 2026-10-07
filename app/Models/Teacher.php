@@ -51,6 +51,12 @@ class Teacher extends Model
         return $this->belongsToMany(Subject::class, 'subject_teacher');
     }
 
+    /** @return list<int> Identifiants des matières affectées à l'enseignant (vide : aucune affectation). */
+    public function assignedSubjectIds(): array
+    {
+        return $this->subjects()->pluck('subjects.id')->map(fn ($id) => (int) $id)->all();
+    }
+
     public function schoolClasses()
     {
         return $this->belongsToMany(SchoolClass::class, 'school_class_teacher');

@@ -5,9 +5,10 @@ import CouncilStatusBadge from '@/Components/Council/CouncilStatusBadge';
 import useCompactChart, { axisLabel } from '@/hooks/useCompactChart';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Download } from 'lucide-react';
+import { AlertTriangle, CalendarClock, ClipboardCheck, Clock, Download, Eye, GraduationCap, Lock, Percent, Users, Video } from 'lucide-react';
 import { ReactNode } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CouncilTabs } from '@/Components/Admin/ClusterTabs';
 
 interface Indicators {
     examined: number;
@@ -40,21 +41,45 @@ const TONE_FILL: Record<string, string> = { emerald: '#059669', sky: '#0284c7', 
 const FOLLOW_UP_LABELS: Record<string, string> = { todo: 'À faire', in_progress: 'En cours', done: 'Réalisées', not_done: 'Non réalisées', abandoned: 'Abandonnées' };
 const fr = (value: number | null, digits = 2) => (value === null ? '—' : value.toLocaleString('fr-FR', { maximumFractionDigits: digits }));
 
-function Kpi({ label, value, hint }: { label: string; value: string; hint?: string }) {
+type Tone = 'neutral' | 'good' | 'warn' | 'bad';
+
+const KPI_TONES: Record<Tone, { value: string; badge: string; bar: string }> = {
+    neutral: { value: 'text-ink-900', badge: 'bg-ink-50 text-ink-500', bar: 'bg-ink-200' },
+    good: { value: 'text-emerald-700', badge: 'bg-emerald-50 text-emerald-700', bar: 'bg-emerald-500' },
+    warn: { value: 'text-amber-700', badge: 'bg-amber-50 text-amber-700', bar: 'bg-amber-400' },
+    bad: { value: 'text-red-700', badge: 'bg-red-50 text-red-700', bar: 'bg-red-500' },
+};
+
+function Kpi({ label, value, hint, icon: Icon, tone = 'neutral' }: { label: string; value: string; hint?: string; icon: typeof Users; tone?: Tone }) {
+    const colors = KPI_TONES[tone];
+
     return (
-        <Card className="p-4">
-            <p className="text-xs text-ink-500">{label}</p>
-            <p className="font-serif text-2xl font-bold text-ink-900">{value}</p>
-            {hint && <p className="text-xs text-ink-500">{hint}</p>}
-        </Card>
+        <div className="relative overflow-hidden rounded-2xl border border-ink-100 bg-white p-4 shadow-soft transition duration-200 hover:-translate-y-0.5 hover:shadow-elevated">
+            <span className={`absolute inset-x-0 top-0 h-0.5 ${colors.bar}`} aria-hidden="true" />
+            <div className="flex items-start justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-ink-500">{label}</p>
+                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${colors.badge}`} aria-hidden="true">
+                    <Icon className="h-4 w-4" />
+                </span>
+            </div>
+            <p className={`mt-2 font-serif text-3xl font-bold leading-none ${colors.value}`}>{value}</p>
+            {hint && <p className="mt-2 text-xs text-ink-500">{hint}</p>}
+        </div>
     );
+}
+
+function Eyebrow({ children }: { children: ReactNode }) {
+    return <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-500">{children}</h2>;
 }
 
 /** Graphique avec titre et, pour les lecteurs d'écran, le même contenu en tableau. */
 function Chart({ title, empty, rows, children }: { title: string; empty: boolean; rows: [string, string][]; children: ReactNode }) {
     return (
-        <Card className="p-5">
-            <h2 className="mb-3 font-serif text-base font-bold text-ink-900">{title}</h2>
+        <Card className="p-5 sm:p-6">
+            <h2 className="mb-4 flex items-center gap-2 font-serif text-lg font-bold text-ink-900">
+                <span className="h-4 w-1 rounded-full bg-gold-500" aria-hidden="true" />
+                {title}
+            </h2>
             {empty ? (
                 <p className="text-sm text-ink-500">Aucune donnée pour ces filtres.</p>
             ) : (
@@ -94,6 +119,7 @@ export default function Dashboard(props: Props) {
                     <Download className="h-4 w-4" aria-hidden="true" /> Exporter (Excel)
                 </a>
             </PageHeader>
+            <CouncilTabs current="dashboard" />
 
             <Card className="mb-6 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Select aria-label="Année scolaire" value={filters.academic_year_id ?? ''} onChange={(e) => go({ academic_year_id: e.target.value, school_class_id: '' })}>
@@ -130,22 +156,36 @@ export default function Dashboard(props: Props) {
                 </Select>
             </Card>
 
-            <h2 className="sr-only">Avancement des conseils</h2>
-            <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <Kpi label="Programmés" value={String(statuses.programmed)} hint="brouillons et programmés" />
-                <Kpi label="Réalisés" value={String(statuses.held)} hint="en séance ou PV en rédaction" />
-                <Kpi label="À valider" value={String(statuses.to_validate)} />
-                <Kpi label="Clôturés" value={String(statuses.closed)} />
-            </div>
+            <section aria-labelledby="kpi-progress" className="mb-6">
+                <h2 id="kpi-progress" className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-500">
+                    Avancement des conseils
+                </h2>
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    <Kpi label="Programmés" value={String(statuses.programmed)} hint="brouillons et programmés" icon={CalendarClock} />
+                    <Kpi label="Réalisés" value={String(statuses.held)} hint="en séance ou PV en rédaction" icon={Video} tone={statuses.held > 0 ? 'warn' : 'neutral'} />
+                    <Kpi label="À valider" value={String(statuses.to_validate)} hint="procès-verbal à approuver" icon={ClipboardCheck} tone={statuses.to_validate > 0 ? 'warn' : 'neutral'} />
+                    <Kpi label="Clôturés" value={String(statuses.closed)} hint="verrouillés" icon={Lock} tone="good" />
+                </div>
+            </section>
 
-            <h2 className="sr-only">Indicateurs académiques</h2>
-            <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
-                <Kpi label="Élèves examinés" value={String(indicators.examined)} hint={`${indicators.evaluated} avec une moyenne`} />
-                <Kpi label="Taux ≥ 10" value={indicators.pass_rate === null ? '—' : `${fr(indicators.pass_rate, 1)} %`} hint={`moyenne ${fr(indicators.average)}`} />
-                <Kpi label="Attention" value={String(indicators.red)} hint="pastille rouge" />
-                <Kpi label="Vigilance" value={String(indicators.orange)} hint="pastille orange" />
-                <Kpi label="Absences non justifiées" value={`${fr(indicators.unjustified_hours, 1)} h`} />
-            </div>
+            <section aria-labelledby="kpi-academic" className="mb-8">
+                <h2 id="kpi-academic" className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-500">
+                    Indicateurs académiques
+                </h2>
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+                    <Kpi label="Élèves examinés" value={String(indicators.examined)} hint={`${indicators.evaluated} avec une moyenne`} icon={Users} />
+                    <Kpi
+                        label="Taux ≥ 10"
+                        value={indicators.pass_rate === null ? '—' : `${fr(indicators.pass_rate, 1)} %`}
+                        hint={`moyenne ${fr(indicators.average)}`}
+                        icon={Percent}
+                        tone={indicators.pass_rate === null ? 'neutral' : indicators.pass_rate >= 70 ? 'good' : indicators.pass_rate < 50 ? 'bad' : 'warn'}
+                    />
+                    <Kpi label="Attention" value={String(indicators.red)} hint="pastille rouge" icon={AlertTriangle} tone={indicators.red > 0 ? 'bad' : 'good'} />
+                    <Kpi label="Vigilance" value={String(indicators.orange)} hint="pastille orange" icon={GraduationCap} tone={indicators.orange > 0 ? 'warn' : 'good'} />
+                    <Kpi label="Absences injustifiées" value={`${fr(indicators.unjustified_hours, 1)} h`} icon={Clock} tone={indicators.unjustified_hours > 0 ? 'warn' : 'neutral'} />
+                </div>
+            </section>
 
             <div className="mb-6 grid gap-4 lg:grid-cols-2">
                 <Chart title="Répartition des décisions" empty={decisions.length === 0} rows={decisions.map((row) => [row.label, String(row.count)])}>
@@ -208,27 +248,30 @@ export default function Dashboard(props: Props) {
                 </Chart>
             </div>
 
-            <Card className="mb-6 p-5">
-                <h2 className="font-serif text-base font-bold text-ink-900">Actions de suivi</h2>
+            <Card className="mb-6 p-5 sm:p-6">
+                <h2 className="flex items-center gap-2 font-serif text-lg font-bold text-ink-900">
+                    <span className="h-4 w-1 rounded-full bg-gold-500" aria-hidden="true" />
+                    Actions de suivi
+                </h2>
                 {followUps.total === 0 ? (
                     <p className="mt-2 text-sm text-ink-500">Aucune action de suivi pour ces filtres.</p>
                 ) : (
                     <>
                         <p className="mt-1 text-sm text-ink-600">
-                            <strong className="font-serif text-2xl text-ink-900">{followUps.rate === null ? '—' : `${fr(followUps.rate, 1)} %`}</strong> réalisées ({followUps.done} sur{' '}
+                            <strong className="font-serif text-4xl font-bold text-ink-900">{followUps.rate === null ? '—' : `${fr(followUps.rate, 1)} %`}</strong> réalisées ({followUps.done} sur{' '}
                             {followUps.total - followUps.abandoned}, hors abandonnées) · {followUps.overdue} en retard
                         </p>
                         <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-ink-100" role="img" aria-label={`Taux de réalisation : ${followUps.rate ?? 0} %`}>
-                            <div className="bg-emerald-600" style={{ width: `${followUps.rate ?? 0}%` }} />
+                            <div className="rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-700" style={{ width: `${followUps.rate ?? 0}%` }} />
                         </div>
-                        <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-700">
+                        <ul className="mt-4 flex flex-wrap gap-2 text-sm text-ink-700">
                             {Object.entries(followUps.statuses).map(([key, count]) => (
-                                <li key={key}>
-                                    {FOLLOW_UP_LABELS[key] ?? key} : <strong>{count}</strong>
+                                <li key={key} className="rounded-full bg-ink-50 px-3 py-1 ring-1 ring-inset ring-ink-100">
+                                    {FOLLOW_UP_LABELS[key] ?? key} : <strong className="text-ink-900">{count}</strong>
                                 </li>
                             ))}
                         </ul>
-                        <Link href={route('admin.follow-ups.index')} className="mt-3 inline-block text-sm font-semibold text-ink-900 underline">
+                        <Link href={route('admin.follow-ups.index')} className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 underline-offset-2 hover:underline">
                             Voir les actions de suivi
                         </Link>
                     </>
@@ -236,14 +279,17 @@ export default function Dashboard(props: Props) {
             </Card>
 
             <Card className="overflow-hidden">
-                <h2 className="border-b border-ink-100 px-5 py-3 font-serif text-base font-bold text-ink-900">Conseils ({councils.length})</h2>
+                <h2 className="flex items-center gap-2 border-b border-ink-100 px-5 py-4 font-serif text-lg font-bold text-ink-900">
+                    <span className="h-4 w-1 rounded-full bg-gold-500" aria-hidden="true" />
+                    Conseils ({councils.length})
+                </h2>
                 {councils.length === 0 ? (
                     <p className="px-5 py-6 text-sm text-ink-500">Aucun conseil pour ces filtres.</p>
                 ) : (
                     <ul className="divide-y divide-ink-100">
                         {councils.map((council) => (
                             <li key={council.id}>
-                                <Link href={route('admin.councils.show', council.id)} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 text-sm hover:bg-ink-50">
+                                <Link href={route('admin.councils.show', council.id)} className="group flex flex-wrap items-center gap-x-5 gap-y-1.5 px-5 py-3.5 text-sm outline-none transition hover:bg-ink-50 focus-visible:bg-ink-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-500">
                                     <span className="min-w-0 flex-1 basis-48">
                                         <span className="block font-semibold text-ink-900">
                                             {council.class} · {council.term}
@@ -254,12 +300,14 @@ export default function Dashboard(props: Props) {
                                     </span>
                                     <CouncilStatusBadge status={council.status} label={council.status_label} />
                                     <span className="text-ink-700">{council.pass_rate === null ? '—' : `${fr(council.pass_rate, 1)} % ≥ 10`}</span>
-                                    <span className="text-ink-700">
+                                    <span className="flex items-center gap-1.5 text-ink-700">
+                                        <span className={`h-2 w-2 rounded-full ${council.red > 0 ? 'bg-red-500' : council.orange > 0 ? 'bg-amber-400' : 'bg-emerald-500'}`} aria-hidden="true" />
                                         {council.red} attention · {council.orange} vigilance
                                     </span>
                                     <span className="text-ink-700">
                                         {council.follow_ups_done}/{council.follow_ups} actions
                                     </span>
+                                    <Eye className="h-4 w-4 text-ink-300 transition group-hover:text-gold-600" aria-hidden="true" />
                                 </Link>
                             </li>
                         ))}

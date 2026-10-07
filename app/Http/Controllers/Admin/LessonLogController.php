@@ -55,8 +55,8 @@ class LessonLogController extends Controller
             'class' => $log->schoolClass->name ?? '—',
             'subject' => $log->subject->name ?? '—',
             'teacher' => $log->teacher ? "{$log->teacher->first_name} {$log->teacher->last_name}" : '—',
-            'content' => $log->content,
-            'homework' => $log->homework ?? '—',
+            'content' => \App\Support\RichText::plain($log->content),
+            'homework' => \App\Support\RichText::plain($log->homework) ?: '—',
         ]);
 
         return $this->pdfResponse(

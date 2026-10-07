@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import RichTextView from '@/Components/RichText/RichTextView';
 import Card from '@/Components/Admin/Card';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
@@ -6,6 +7,7 @@ import { Field, Select, TextInput } from '@/Components/Admin/Field';
 import { LessonLog, Paginated, SchoolClass } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Download, Inbox } from 'lucide-react';
+import { TeachingTabs } from '@/Components/Admin/ClusterTabs';
 
 interface TeacherOption {
     id: number;
@@ -61,6 +63,7 @@ export default function Index({ logs, schoolClasses, teachers, selectedClassId, 
                     <Download className="h-4 w-4" /> Exporter en PDF
                 </a>
             </PageHeader>
+            <TeachingTabs current="lesson-log" />
 
             <Card className="mb-6 p-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
@@ -123,8 +126,8 @@ export default function Index({ logs, schoolClasses, teachers, selectedClassId, 
                                     <td className="px-5 py-3 text-ink-700">
                                         {log.teacher ? `${log.teacher.first_name} ${log.teacher.last_name}` : '—'}
                                     </td>
-                                    <td className="max-w-sm px-5 py-3 text-ink-600">{log.content}</td>
-                                    <td className="max-w-xs px-5 py-3 text-ink-500">{log.homework || '—'}</td>
+                                    <td className="max-w-sm px-5 py-3 text-ink-600"><RichTextView html={log.content} /></td>
+                                    <td className="max-w-xs px-5 py-3 text-ink-500">{log.homework ? <RichTextView html={log.homework} /> : '—'}</td>
                                 </tr>
                             ))}
                             {logs.data.length === 0 && (

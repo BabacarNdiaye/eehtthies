@@ -33,7 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Pas de route intégrée de service : elle occuperait l'adresse /storage/… (elle exige une signature) et masquerait
+            // les photos publiques. Les fichiers privés s'ouvrent par des routes à droits (ex. documents d'élèves).
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

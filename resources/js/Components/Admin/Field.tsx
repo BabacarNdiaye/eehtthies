@@ -21,19 +21,19 @@ export function Field({
 
     return (
         <div>
-            <label htmlFor={control ? controlId : undefined} className="mb-1.5 block text-sm font-medium text-ink-700">
+            <label htmlFor={control ? controlId : undefined} className="mb-1.5 block text-sm font-semibold text-ink-700">
                 {label}
                 {required && <span className="text-red-600"> *</span>}
             </label>
             {control ? cloneElement(control, { id: controlId }) : children}
             {hint && <p className="mt-1 text-xs text-ink-500">{hint}</p>}
-            {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+            {error && <p role="alert" className="mt-1 text-xs font-medium text-red-600">{error}</p>}
         </div>
     );
 }
 
 const baseInputClass =
-    'w-full rounded-lg border-ink-200 text-sm text-ink-900 shadow-sm focus:border-gold-500 focus:ring-gold-500';
+    'w-full rounded-xl border-ink-200 bg-white text-sm text-ink-900 shadow-sm placeholder:text-ink-400 transition-colors hover:border-ink-300 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/25 disabled:bg-ink-50 disabled:text-ink-500';
 
 export function TextInput(
     props: React.InputHTMLAttributes<HTMLInputElement>,
@@ -62,7 +62,7 @@ export function Checkbox(
         <input
             type="checkbox"
             {...props}
-            className={`rounded border-ink-300 text-gold-600 focus:ring-gold-500 ${props.className ?? ''}`}
+            className={`rounded-md border-ink-300 text-gold-600 transition-colors focus:ring-gold-500 ${props.className ?? ''}`}
         />
     );
 }

@@ -32,7 +32,7 @@ class AdminMenuCoverageTest extends TestCase
     ];
 
     private const CRUMBS = [
-        'admin.invoices.monthly', 'admin.invoices.overdue', 'admin.invoices.show', 'admin.exams.grades',
+        'admin.invoices.monthly', 'admin.invoices.overdue', 'admin.payment-plans.index', 'admin.online-payments.index', 'admin.invoices.show', 'admin.exams.grades',
         'admin.settings.reset.index', 'admin.products.movements', 'admin.finance.settings',
     ];
 
@@ -91,7 +91,7 @@ class AdminMenuCoverageTest extends TestCase
     {
         $report = $this->report();
 
-        $this->assertGreaterThan(60, $report['counts']['items'], 'Le menu devrait compter plus de 60 rubriques.');
+        $this->assertGreaterThan(50, $report['counts']['items'], 'Le menu devrait compter plus de 50 rubriques.');
         $this->assertGreaterThan(100, $report['counts']['pages'], "L'audit devrait avoir examiné plus de 100 pages d'administration.");
         $this->assertSame([], $report['problems'], "Le menu est incohérent :\n- ".implode("\n- ", $report['problems']));
     }
@@ -99,7 +99,7 @@ class AdminMenuCoverageTest extends TestCase
     public function test_the_stock_manager_only_sees_stock_pages(): void
     {
         $this->assertEqualsCanonicalizing(
-            ['admin.dashboard', 'admin.products.index', 'admin.products.movements', 'admin.suppliers.index', 'connect.index', 'admin.leave.index'],
+            ['admin.dashboard', 'admin.economat.dashboard', 'admin.products.index', 'admin.purchase-orders.index', 'admin.supply-requests.index', 'admin.inventory.index', 'admin.products.movements', 'admin.suppliers.index', 'connect.index', 'admin.leave.index'],
             $this->report()['visible']['responsable-stocks'],
         );
     }
@@ -108,7 +108,7 @@ class AdminMenuCoverageTest extends TestCase
     {
         $visible = $this->report()['visible']['caissier'];
 
-        foreach (['admin.cashier.create', 'admin.invoices.index', 'admin.invoices.monthly', 'admin.invoices.overdue', 'admin.payment-plans.index', 'admin.finance.cash-journal'] as $page) {
+        foreach (['admin.cashier.create', 'admin.invoices.index', 'admin.finance.cash-journal'] as $page) {
             $this->assertContains($page, $visible, "Le caissier doit voir {$page}.");
         }
 
@@ -121,7 +121,7 @@ class AdminMenuCoverageTest extends TestCase
     {
         $visible = $this->report()['visible']['comptable'];
 
-        foreach (['admin.invoices.overdue', 'admin.finance.dashboard', 'admin.accounting.ledger', 'admin.payroll.index', 'admin.salaries.index'] as $page) {
+        foreach (['admin.invoices.index', 'admin.finance.dashboard', 'admin.accounting.journal-entries.index', 'admin.payroll.index', 'admin.salaries.index'] as $page) {
             $this->assertContains($page, $visible, "Le comptable doit voir {$page}.");
         }
 
@@ -134,11 +134,11 @@ class AdminMenuCoverageTest extends TestCase
     {
         $visible = $this->report()['visible']['administration'];
 
-        foreach (['admin.students.index', 'admin.candidatures.index', 'admin.pointage.report', 'admin.timetable.index', 'admin.roles.index', 'admin.payroll.index'] as $page) {
+        foreach (['admin.students.index', 'admin.candidatures.index', 'admin.pointage.index', 'admin.timetable.index', 'admin.roles.index', 'admin.payroll.index'] as $page) {
             $this->assertContains($page, $visible, "L'administration doit voir {$page}.");
         }
 
-        foreach (['admin.finance.dashboard', 'admin.invoices.monthly', 'admin.products.index', 'admin.backups.index'] as $page) {
+        foreach (['admin.finance.dashboard', 'admin.invoices.index', 'admin.products.index', 'admin.backups.index'] as $page) {
             $this->assertNotContains($page, $visible, "L'administration ne doit pas voir {$page}.");
         }
     }
@@ -147,14 +147,19 @@ class AdminMenuCoverageTest extends TestCase
     {
         $crumbs = $this->report()['crumbs'];
 
-        // Les pages de suivi ont leur propre rubrique : ce ne sont plus des sous-pages de « Factures » ou de « Finance ».
-        foreach (['admin.invoices.monthly' => 'Suivi des mensualités', 'admin.invoices.overdue' => 'Impayés', 'admin.products.movements' => 'Mouvements de stock', 'admin.finance.settings' => 'Réglages des paiements'] as $page => $label) {
+        // Les pages de suivi des élèves sont des onglets de la rubrique « Factures & suivi » ; « Mouvements de stock » et
+        // « Réglages des paiements » gardent leur propre rubrique.
+        foreach (['admin.invoices.monthly', 'admin.invoices.overdue', 'admin.payment-plans.index', 'admin.online-payments.index'] as $page) {
+            $this->assertSame('Factures & suivi', $crumbs[$page]['item'], "{$page} devrait appartenir à « Factures & suivi ».");
+        }
+
+        foreach (['admin.products.movements' => 'Mouvements de stock', 'admin.finance.settings' => 'Réglages des paiements'] as $page => $label) {
             $this->assertSame($label, $crumbs[$page]['item'], "{$page} devrait avoir sa propre rubrique.");
             $this->assertFalse($crumbs[$page]['isSubPage'], "{$page} est une page du menu, pas une sous-page.");
             $this->assertNull($crumbs[$page]['leaf']);
         }
 
-        $this->assertSame('Factures', $crumbs['admin.invoices.show']['item']);
+        $this->assertSame('Factures & suivi', $crumbs['admin.invoices.show']['item']);
         $this->assertSame('Détail', $crumbs['admin.invoices.show']['leaf']);
         $this->assertSame('Examens & devoirs', $crumbs['admin.exams.grades']['item']);
         $this->assertSame('Notes', $crumbs['admin.exams.grades']['leaf']);

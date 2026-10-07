@@ -41,11 +41,7 @@
 
     <div class="header">
         <div class="header-left">
-            @if($logoPath = \App\Models\Setting::get('site_logo'))
-                <img src="{{ public_path('storage/'.$logoPath) }}" alt="Logo" style="width: 42px; height: 42px; object-fit: contain; vertical-align: middle;">
-            @else
-                <span class="logo">E</span>
-            @endif
+            <img src="{{ \App\Support\SiteBrand::file() }}" alt="Logo" style="width: 42px; height: 42px; object-fit: contain; vertical-align: middle;">
             <div style="display:inline-block; vertical-align: middle; margin-left: 8px;">
                 <div class="school-name">EEHT de Thiès</div>
                 <div class="school-sub">Elite École Hôtelière et Touristique</div>
@@ -129,7 +125,7 @@
     </div>
 
     <div class="footer">
-        Ce bulletin atteste du paiement du salaire versé par l'EEHT de Thiès. Les retenues et primes sont celles saisies par l'établissement. Document généré automatiquement.
+        Ce bulletin atteste du paiement du salaire versé par l'EEHT de Thiès. Les retenues et primes sont celles saisies par l'établissement.
     </div>
 </body>
 </html>

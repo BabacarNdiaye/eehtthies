@@ -26,15 +26,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Mot de passe par défaut
+    | Borne de pointage
     |--------------------------------------------------------------------------
     |
-    | Attribué lors de la création de l'accès au portail d'un élève, d'un enseignant ou d'un parent. Les
-    | acteurs sont censés le modifier depuis leur propre espace (voir le lien « Mot de passe » de chaque
-    | portail), ce qui explique qu'il n'ait pas besoin d'être aléatoire.
+    | Jeton qui ouvre la borne publique (tablette de portique). Il se lit ICI et non avec env() dans le code :
+    | quand la configuration est mise en cache (php artisan optimize), env() renvoie vide hors des fichiers config/.
     |
     */
-    'default_password' => 'eeht2026',
+    'kiosk_token' => env('KIOSK_TOKEN'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mots de passe des accès au portail
+    |--------------------------------------------------------------------------
+    |
+    | Il n'y a plus de mot de passe commun : chaque accès élève, enseignant ou parent reçoit un mot de passe
+    | provisoire aléatoire (App\Support\TemporaryPassword) à changer à la première connexion.
+    |
+    */
 
     /*
     |--------------------------------------------------------------------------
@@ -60,6 +69,19 @@ return [
     'terms' => [
         'Semestre 1',
         'Semestre 2',
+    ],
+
+    /*
+    | Période propre aux formations courtes : un seul conseil, en fin de formation, sur toute l'année scolaire. Elle
+    | n'est pas dans « terms » : le découpage en semestres des bulletins, examens et présences reste inchangé.
+    */
+    'final_term' => 'Fin de formation',
+
+    /* Périodes qu'un conseil de classe peut porter : les semestres, puis la fin de formation. */
+    'council_terms' => [
+        'Semestre 1',
+        'Semestre 2',
+        'Fin de formation',
     ],
 
     /*

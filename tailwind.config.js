@@ -45,8 +45,9 @@ export default {
                 leaf: themeScale('leaf', configurableStops),
             },
             boxShadow: {
-                soft: '0 10px 40px -12px rgba(11, 23, 40, 0.25)',
-                elevated: '0 20px 50px -15px rgba(11, 23, 40, 0.3)',
+                soft: '0 1px 2px rgba(11, 23, 40, 0.04), 0 10px 30px -14px rgba(11, 23, 40, 0.18)',
+                elevated: '0 2px 4px rgba(11, 23, 40, 0.05), 0 24px 50px -18px rgba(11, 23, 40, 0.35)',
+                ring: '0 0 0 4px rgb(var(--gold-500) / 0.18)',
             },
             keyframes: {
                 fadeIn: {

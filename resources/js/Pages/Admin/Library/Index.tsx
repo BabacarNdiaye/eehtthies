@@ -9,8 +9,9 @@ import { confirmAction } from '@/lib/confirm';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { FormationTabs } from '@/Components/Admin/ClusterTabs';
 
-export default function Index({ resources }: { resources: LibraryResourceRow[] }) {
+export default function Index({ resources, uploadLimitMb = 10 }: { resources: LibraryResourceRow[]; uploadLimitMb?: number }) {
     const [showCreate, setShowCreate] = useState(false);
     const [editing, setEditing] = useState<LibraryResourceRow | null>(null);
 
@@ -78,6 +79,7 @@ export default function Index({ resources }: { resources: LibraryResourceRow[] }
                     Ajouter une ressource
                 </button>
             </PageHeader>
+            <FormationTabs current="library" />
 
             <LibraryBrowser
                 resources={resources}
@@ -111,6 +113,7 @@ export default function Index({ resources }: { resources: LibraryResourceRow[] }
                         </Field>
                         {createForm.data.type === 'document' ? (
                             <DocumentFileField
+                                maxMb={uploadLimitMb}
                                 file={createForm.data.file}
                                 onFileChange={(file) => createForm.setData('file', file)}
                                 onThumbnailChange={(thumbnail) => createForm.setData('thumbnail', thumbnail)}

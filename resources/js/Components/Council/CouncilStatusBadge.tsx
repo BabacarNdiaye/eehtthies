@@ -8,9 +8,19 @@ const TONES: Record<string, string> = {
     closed: 'bg-emerald-100 text-emerald-900 ring-emerald-600/20',
 };
 
+const DOTS: Record<string, string> = {
+    draft: 'bg-ink-400',
+    scheduled: 'bg-sky-500',
+    in_session: 'bg-violet-500',
+    drafting_minutes: 'bg-amber-500',
+    pending_validation: 'bg-orange-500',
+    closed: 'bg-emerald-500',
+};
+
 export default function CouncilStatusBadge({ status, label }: { status: string; label: string }) {
     return (
         <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${TONES[status] ?? TONES.draft}`}>
+            <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${DOTS[status] ?? DOTS.draft} ${status === 'in_session' ? 'animate-pulse' : ''}`} aria-hidden="true" />
             {label}
         </span>
     );

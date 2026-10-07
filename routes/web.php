@@ -56,7 +56,11 @@ use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Admin\PaymentPlanController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\PracticalSessionController;
+use App\Http\Controllers\Admin\EconomatDashboardController;
+use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\PurchaseOrderController;
+use App\Http\Controllers\Admin\SupplyRequestController;
 use App\Http\Controllers\Admin\ReportCardController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoomController;
@@ -68,7 +72,9 @@ use App\Http\Controllers\Admin\SkillAssessmentController;
 use App\Http\Controllers\Admin\SkillController;
 use App\Http\Controllers\Admin\SliderController as AdminSliderController;
 use App\Http\Controllers\Admin\StatisticsController;
+use App\Http\Controllers\Admin\StorageDiagnosticController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\StudentPresenceController;
 use App\Http\Controllers\Admin\StudentDocumentController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\SupplierController;
@@ -88,13 +94,14 @@ use App\Http\Controllers\Portal\StudentPortalController;
 use App\Http\Controllers\Portal\TeacherAttendanceController;
 use App\Http\Controllers\Portal\TeacherCouncilController;
 use App\Http\Controllers\Portal\TeacherExamController;
-use App\Http\Controllers\Portal\TeacherLeaveController;
+use App\Http\Controllers\Portal\TeacherHomeAssignmentController;
 use App\Http\Controllers\Portal\TeacherLessonLogController;
 use App\Http\Controllers\Portal\TeacherLibraryController;
 use App\Http\Controllers\Portal\TeacherPayslipController;
 use App\Http\Controllers\Portal\TeacherPortalController;
 use App\Http\Controllers\Portal\TeacherPreCouncilController;
 use App\Http\Controllers\Portal\TeacherSkillController;
+use App\Http\Controllers\Portal\TeacherSupplyRequestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\PwaManifestController;
@@ -110,6 +117,7 @@ use App\Http\Controllers\Site\JobOfferController;
 use App\Http\Controllers\Site\NewsController;
 use App\Http\Controllers\Site\PageController;
 use App\Http\Controllers\Site\PaymentWebhookController;
+use App\Http\Controllers\Site\PublicStorageController;
 use App\Http\Controllers\Site\ReceiptVerificationController;
 use App\Http\Controllers\Site\ReportCardVerificationController;
 use App\Http\Controllers\Site\SitemapController;
@@ -125,6 +133,12 @@ use Inertia\Inertia;
 
 Route::get('/manifest.webmanifest', PwaManifestController::class)->name('pwa.manifest');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+
+// Photos et fichiers publics quand le raccourci public/storage est absent (voir PublicStorageController).
+Route::get('/storage/{path}', PublicStorageController::class)->where('path', '.*')->name('public.storage');
+
+// Diagnostic des photos (direction) : dit pourquoi elles ne s'affichent pas, sans terminal. Hors du menu d'administration.
+Route::get('/diagnostic/photos', StorageDiagnosticController::class)->middleware(['auth', 'verified', 'role:super-admin|direction'])->name('diagnostic.storage');
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('/a-propos', [PageController::class, 'about'])->name('pages.about');
@@ -207,8 +221,8 @@ Route::get('/dashboard', function () {
 // Points d'entrée publics de la borne (protégés par jeton, non soumis à une session de connexion pour qu'une
 // tablette de portique sans surveillance puisse rester indéfiniment sur cette page) — ouvrir avec
 // /borne/pointage/open?token=VOTRE_JETON&mode=gate
-Route::get('/borne/pointage/open', [AttendanceController::class, 'kioskOpen'])->name('borne.pointage.open');
-Route::post('/borne/pointage/scan/open', [AttendanceController::class, 'qrScanOpen'])->name('borne.pointage.scan.open');
+Route::get('/borne/pointage/open', [AttendanceController::class, 'kioskOpen'])->middleware('throttle:30,1')->name('borne.pointage.open');
+Route::post('/borne/pointage/scan/open', [AttendanceController::class, 'qrScanOpen'])->middleware('throttle:120,1')->name('borne.pointage.scan.open');
 
 // Conseil de classe : mode séance (E05) et vue projetée (E06), hors de /admin pour qu'un président enseignant y accède.
 // Les droits sont ceux de CouncilPolicy (lecture : membre ou personnel habilité ; écriture : conduct).
@@ -316,10 +330,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     Route::patch('candidatures/{candidature}/status', [AdminCandidatureController::class, 'updateStatus'])->name('candidatures.updateStatus')->middleware('permission:valider_candidatures');
     Route::post('candidatures/{candidature}/convert', [AdminCandidatureController::class, 'convertToStudent'])->name('candidatures.convert')->middleware('permission:valider_candidatures');
 
+    // « Élèves en ligne » : déclarée avant la ressource (students/{student}) ; mêmes droits que la liste des élèves.
+    Route::get('students/online', [StudentPresenceController::class, 'index'])->name('students.online')->middleware('permission:voir_eleves');
     PermissionRouting::gate(Route::resource('students', StudentController::class)->except('show'), 'eleves');
     Route::post('students/{student}/access', [StudentController::class, 'createAccess'])->name('students.access')->middleware('permission:modifier_eleves');
     Route::post('students/{student}/parent-access', [StudentController::class, 'createParentAccess'])->name('students.parentAccess')->middleware('permission:modifier_eleves');
     Route::post('students/{student}/documents', [StudentDocumentController::class, 'store'])->name('students.documents.store')->middleware('permission:modifier_eleves');
+    Route::get('students/{student}/documents/{document}', [StudentDocumentController::class, 'show'])->name('students.documents.show')->middleware('permission:voir_eleves');
     Route::delete('students/{student}/documents/{document}', [StudentDocumentController::class, 'destroy'])->name('students.documents.destroy')->middleware('permission:modifier_eleves');
     Route::get('students/{student}/diploma', [StudentController::class, 'diplomaPdf'])->name('students.diploma')->middleware('permission:voir_eleves');
     Route::get('students/{student}/attestation', [StudentController::class, 'attestationPdf'])->name('students.attestation')->middleware('permission:voir_eleves');
@@ -683,6 +700,24 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
     Route::post('products/{product}/movements', [ProductController::class, 'storeMovement'])->name('products.movements.store')->middleware('permission:modifier_stocks');
     PermissionRouting::gate(Route::resource('products', ProductController::class)->except('show'), 'stocks');
 
+    // Économat : tableau de bord, bons de commande, demandes de matériel et inventaire.
+    Route::get('economat', [EconomatDashboardController::class, 'index'])->name('economat.dashboard')->middleware('permission:voir_stocks');
+
+    PermissionRouting::gate(Route::resource('purchase-orders', PurchaseOrderController::class)->only(['index', 'create', 'store', 'show']), 'stocks');
+    Route::post('purchase-orders/{purchaseOrder}/send', [PurchaseOrderController::class, 'send'])->name('purchase-orders.send')->middleware('permission:modifier_stocks');
+    Route::post('purchase-orders/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive')->middleware('permission:modifier_stocks');
+    Route::post('purchase-orders/{purchaseOrder}/expense', [PurchaseOrderController::class, 'expense'])->name('purchase-orders.expense')->middleware('permission:ajouter_comptabilite');
+    Route::post('purchase-orders/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel')->middleware('permission:modifier_stocks');
+    Route::get('purchase-orders/{purchaseOrder}/pdf', [PurchaseOrderController::class, 'pdf'])->name('purchase-orders.pdf')->middleware('permission:voir_stocks');
+
+    PermissionRouting::gate(Route::resource('supply-requests', SupplyRequestController::class)->only(['index', 'create', 'store', 'show']), 'stocks');
+    Route::post('supply-requests/{supplyRequest}/approve', [SupplyRequestController::class, 'approve'])->name('supply-requests.approve')->middleware('permission:modifier_stocks');
+    Route::post('supply-requests/{supplyRequest}/refuse', [SupplyRequestController::class, 'refuse'])->name('supply-requests.refuse')->middleware('permission:modifier_stocks');
+    Route::post('supply-requests/{supplyRequest}/deliver', [SupplyRequestController::class, 'deliver'])->name('supply-requests.deliver')->middleware('permission:modifier_stocks');
+
+    Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index')->middleware('permission:voir_stocks');
+    Route::post('inventory', [InventoryController::class, 'store'])->name('inventory.store')->middleware('permission:modifier_stocks');
+
     PermissionRouting::gate(
         Route::resource('practical-sessions', PracticalSessionController::class)
             ->except('show')
@@ -738,6 +773,7 @@ Route::prefix('espace-eleve')->name('student.')->middleware(['auth', 'verified',
     Route::get('/factures', [StudentPortalController::class, 'invoices'])->name('invoices');
     Route::get('/factures/{invoice}/paiements/{payment}/recu', [StudentPortalController::class, 'invoiceReceiptPdf'])->name('invoices.receipt');
     Route::post('/paiements', [PaymentAttemptController::class, 'startForStudent'])->middleware('throttle:20,1')->name('payments.start');
+    Route::get('/travaux-maison', [StudentPortalController::class, 'assignments'])->name('assignments');
     Route::get('/bibliotheque', [StudentPortalController::class, 'library'])->name('library');
     Route::get('/mot-de-passe', fn () => Inertia::render('Portal/Student/Password'))->name('password');
 });
@@ -766,15 +802,20 @@ Route::prefix('espace-enseignant')->name('teacher.')->middleware(['auth', 'verif
     Route::get('/cahier-de-texte', [TeacherLessonLogController::class, 'index'])->name('lesson-log.index');
     Route::post('/cahier-de-texte', [TeacherLessonLogController::class, 'store'])->name('lesson-log.store');
 
+    Route::get('/travaux-maison', [TeacherHomeAssignmentController::class, 'index'])->name('assignments.index');
+    Route::post('/travaux-maison', [TeacherHomeAssignmentController::class, 'store'])->name('assignments.store');
+    Route::delete('/travaux-maison/{homeAssignment}', [TeacherHomeAssignmentController::class, 'destroy'])->name('assignments.destroy');
+
     Route::get('/presences', [TeacherAttendanceController::class, 'index'])->name('attendance.index');
     Route::post('/presences', [TeacherAttendanceController::class, 'store'])->name('attendance.store');
 
-    Route::get('/conges', [TeacherLeaveController::class, 'index'])->name('leave.index');
-    Route::post('/conges', [TeacherLeaveController::class, 'store'])->name('leave.store');
-    Route::post('/conges/{leaveRequest}/annuler', [TeacherLeaveController::class, 'cancel'])->name('leave.cancel');
 
     Route::get('/competences', [TeacherSkillController::class, 'index'])->name('skills.index');
     Route::post('/competences', [TeacherSkillController::class, 'store'])->name('skills.store');
+
+    Route::get('/materiel', [TeacherSupplyRequestController::class, 'index'])->name('supplies.index');
+    Route::post('/materiel', [TeacherSupplyRequestController::class, 'store'])->name('supplies.store');
+    Route::delete('/materiel/{supplyRequest}', [TeacherSupplyRequestController::class, 'cancel'])->name('supplies.cancel');
 
     Route::get('/bibliotheque', [TeacherLibraryController::class, 'index'])->name('library.index');
     Route::post('/bibliotheque', [TeacherLibraryController::class, 'store'])->name('library.store');

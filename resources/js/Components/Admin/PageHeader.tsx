@@ -23,7 +23,7 @@ export default function PageHeader({
     const primary = action && (
         <Link
             href={action.href}
-            className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-800"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm outline-none transition hover:bg-ink-800 hover:shadow-md focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2"
         >
             <Plus className="h-4 w-4" aria-hidden="true" />
             {action.label}
@@ -33,11 +33,12 @@ export default function PageHeader({
     return (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
             <div className="min-w-0 flex-1 basis-64">
-                <h1 className="font-serif text-2xl font-bold text-ink-900">
+                <span className="mb-3 block h-1 w-10 rounded-full bg-gradient-to-r from-gold-500 to-gold-300" aria-hidden="true" />
+                <h1 className="font-serif text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
                     {title}
                 </h1>
                 {subtitle && (
-                    <p className="mt-1 text-sm text-ink-500">{subtitle}</p>
+                    <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-ink-500">{subtitle}</p>
                 )}
             </div>
 
@@ -49,7 +50,7 @@ export default function PageHeader({
                         onClick={() => setOpen((value) => !value)}
                         aria-expanded={open}
                         aria-controls={panelId}
-                        className="inline-flex items-center gap-2 rounded-lg border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 outline-none transition-colors hover:bg-ink-50 focus-visible:ring-2 focus-visible:ring-gold-500 md:hidden"
+                        className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 outline-none transition-colors hover:bg-ink-50 focus-visible:ring-2 focus-visible:ring-gold-500 md:hidden"
                     >
                         Actions
                         <ChevronDown
@@ -59,7 +60,7 @@ export default function PageHeader({
                     </button>
                     <div
                         id={panelId}
-                        className={`basis-full flex-wrap items-center gap-2 max-md:rounded-xl max-md:border max-md:border-ink-100 max-md:bg-white max-md:p-3 sm:gap-3 md:flex ${
+                        className={`basis-full flex-wrap items-center gap-2 max-md:rounded-2xl max-md:border max-md:border-ink-100 max-md:bg-white max-md:p-3 sm:gap-3 md:flex ${
                             open ? 'flex' : 'hidden'
                         }`}
                     >

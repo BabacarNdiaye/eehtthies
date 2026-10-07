@@ -27,11 +27,7 @@
 <body>
     <div class="header">
         <div class="header-left">
-            @if($logoPath = \App\Models\Setting::get('site_logo'))
-                <img src="{{ public_path('storage/'.$logoPath) }}" alt="Logo" style="width: 42px; height: 42px; object-fit: contain; vertical-align: middle;">
-            @else
-                <span class="logo">E</span>
-            @endif
+            <img src="{{ \App\Support\SiteBrand::file() }}" alt="Logo" style="width: 42px; height: 42px; object-fit: contain; vertical-align: middle;">
             <div style="display:inline-block; vertical-align: middle; margin-left: 8px;">
                 <div class="school-name">EEHT de Thiès</div>
                 <div class="school-sub">Elite École Hôtelière et Touristique</div>
@@ -93,7 +89,7 @@
     </div>
 
     <div class="footer">
-        Fait à Thiès, le {{ \Illuminate\Support\Carbon::now()->translatedFormat('d F Y') }} — Document généré automatiquement.
+        Fait à Thiès, le {{ \Illuminate\Support\Carbon::now()->translatedFormat('d F Y') }}.
     </div>
 </body>
 </html>

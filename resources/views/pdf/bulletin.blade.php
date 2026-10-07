@@ -59,11 +59,7 @@
 <body>
     <div class="top-header">
         <div class="cell school-seal" style="width: 90px; text-align: left;">
-            @if($logoPath = \App\Models\Setting::get('site_logo'))
-                <img src="{{ public_path('storage/'.$logoPath) }}" alt="Logo" style="width: 44px; height: 44px; object-fit: contain;">
-            @else
-                <span class="badge">E</span>
-            @endif
+            <img src="{{ \App\Support\SiteBrand::file() }}" alt="Logo" style="width: 44px; height: 44px; object-fit: contain;">
         </div>
         <div class="cell republic">
             <div class="title">République du Sénégal</div>
@@ -216,10 +212,7 @@
 
     <div class="footer-sign">
         <div class="cell" style="width: 60%;">
-            <div style="font-size: 9px; color: #555;">
-                Document généré le {{ \Illuminate\Support\Carbon::now()->translatedFormat('d F Y à H:i') }}<br>
-                Référence de vérification : {{ $reportCard->qr_token }}
-            </div>
+            &nbsp;
         </div>
         <div class="cell right">
             <img src="data:image/svg+xml;base64,{{ $qrCode }}" width="64" height="64" alt="QR Code de vérification"><br>

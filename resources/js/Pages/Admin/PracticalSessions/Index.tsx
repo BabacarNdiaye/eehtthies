@@ -7,6 +7,7 @@ import { Paginated, PracticalSession } from '@/types';
 import { confirmAction } from '@/lib/confirm';
 import { Head, router } from '@inertiajs/react';
 import { Inbox, Pencil, Trash2 } from 'lucide-react';
+import { RoomTabs } from '@/Components/Admin/ClusterTabs';
 
 export default function Index({ sessions }: { sessions: Paginated<PracticalSession & { items_count: number }> }) {
     const destroy = async (session: PracticalSession) => {
@@ -23,6 +24,7 @@ export default function Index({ sessions }: { sessions: Paginated<PracticalSessi
                 subtitle="Suivez les séances pratiques et le coût des produits consommés."
                 action={{ label: 'Nouvelle séance', href: route('admin.practical-sessions.create') }}
             />
+            <RoomTabs current="workshops" />
 
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">

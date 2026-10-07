@@ -18,6 +18,7 @@ import {
     Languages,
     Laptop,
     Library,
+    PackageCheck,
     LucideIcon,
     Map,
     Medal,
@@ -218,6 +219,7 @@ export function navIcon(href: string): LucideIcon {
     if (href.includes('leave')) return CalendarOff;
     if (href.includes('skills')) return Medal;
     if (href.includes('library')) return Library;
+    if (href.includes('supplies')) return PackageCheck;
     if (href.includes('invoices')) return Receipt;
     if (href.includes('payslips')) return Wallet;
     if (href.includes('connect')) return MessageCircle;

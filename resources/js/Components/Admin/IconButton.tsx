@@ -8,8 +8,8 @@ const base =
     'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-gold-500 disabled:cursor-not-allowed disabled:opacity-40 max-md:h-11 max-md:w-11';
 
 const tones: Record<Tone, string> = {
-    default: 'text-ink-500 hover:bg-ink-100 hover:text-ink-700',
-    danger: 'text-red-600 hover:bg-red-50',
+    default: 'text-ink-500 hover:bg-ink-100 hover:text-ink-800 active:scale-95',
+    danger: 'text-red-600 hover:bg-red-50 active:scale-95',
 };
 
 const classes = (tone: Tone, className?: string) => `${base} ${tones[tone]} ${className ?? ''}`.trim();

@@ -156,11 +156,7 @@
                         <div class="subtitle">De fin de formation</div>
                     </div>
                     <div class="cell side right">
-                        @if($logoPath = \App\Models\Setting::get('site_logo'))
-                            <img class="site-logo" src="{{ public_path('storage/'.$logoPath) }}" alt="Logo EEHT">
-                        @else
-                            <span class="site-logo-fallback">E</span>
-                        @endif
+                        <img class="site-logo" src="{{ \App\Support\SiteBrand::file() }}" alt="Logo EEHT">
                     </div>
                 </div>
 

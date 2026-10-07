@@ -51,7 +51,15 @@ interface StudentResult {
     balance: number;
 }
 
+interface Desk {
+    total: number;
+    count: number;
+    byType: { label: string; total: number }[];
+    recent: { id: number; student: string; label: string | null; amount: number; receipt: string | null }[];
+}
+
 interface Props {
+    desk: Desk | null;
     selected: Selected | null;
     focus_invoice: number | null;
     done: Done | null;
@@ -99,20 +107,63 @@ function contactSummary(contacts: Contacts): string {
 const chip =
     'inline-flex min-h-11 items-center rounded-full border border-ink-200 bg-white px-4 text-sm font-medium text-ink-700 outline-none transition hover:bg-ink-50 focus-visible:ring-2 focus-visible:ring-gold-500';
 
-export default function Index({ selected, focus_invoice, done, channels, today }: Props) {
+export default function Index({ desk, selected, focus_invoice, done, channels, today }: Props) {
     return (
         <AdminLayout>
             <Head title="Encaisser un paiement" />
-            <PageHeader title="Encaisser un paiement" subtitle="Une somme, une ou plusieurs mensualités, un seul reçu." />
+            <PageHeader title="Encaisser un paiement" subtitle="Frais d'inscription, scolarité ou mensualités : une somme, un seul reçu." />
 
             {done ? (
                 <Success done={done} selected={selected} />
             ) : selected ? (
                 <PaymentForm key={selected.student.id} selected={selected} focusInvoice={focus_invoice} channels={channels} today={today} />
             ) : (
-                <StudentSearch />
+                <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+                    <StudentSearch />
+                    {desk && <DeskPanel desk={desk} />}
+                </div>
             )}
         </AdminLayout>
+    );
+}
+
+function DeskPanel({ desk }: { desk: Desk }) {
+    return (
+        <aside aria-label="Caisse du jour" className="overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 text-white shadow-elevated">
+            <div className="p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-300">Caisse du jour</p>
+                <p className="mt-2 font-serif text-3xl font-bold tabular-nums">{fcfa(desk.total)}</p>
+                <p className="mt-1 text-sm text-white/60">{desk.count} reçu(s) émis aujourd'hui</p>
+                {desk.byType.length > 0 && (
+                    <ul className="mt-4 space-y-1.5 text-sm">
+                        {desk.byType.map((t) => (
+                            <li key={t.label} className="flex justify-between gap-3 text-white/80">
+                                <span>{t.label}</span>
+                                <span className="font-semibold tabular-nums text-white">{fcfa(t.total)}</span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+            <div className="border-t border-white/10 bg-white/5 px-6 py-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/50">Derniers reçus</p>
+                {desk.recent.length === 0 ? (
+                    <p className="text-sm text-white/60">Aucun encaissement pour l'instant.</p>
+                ) : (
+                    <ul className="space-y-2">
+                        {desk.recent.map((p) => (
+                            <li key={p.id} className="flex items-center justify-between gap-3 text-sm">
+                                <span className="min-w-0">
+                                    <span className="block truncate font-medium">{p.student}</span>
+                                    <span className="block truncate text-xs text-white/50">{p.label ?? 'Paiement'}</span>
+                                </span>
+                                <span className="shrink-0 font-semibold tabular-nums text-emerald-300">+ {fcfa(p.amount)}</span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+        </aside>
     );
 }
 

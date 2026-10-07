@@ -7,6 +7,7 @@ import { SchoolClass, Subject } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Inbox } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { PresenceTabs } from '@/Components/Admin/ClusterTabs';
 
 type StudentRow = {
     id: number;
@@ -178,6 +179,7 @@ export default function Index({
                     Voir les statistiques
                 </Link>
             </PageHeader>
+            <PresenceTabs current="pointage" />
 
             <Card className="mb-6 p-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

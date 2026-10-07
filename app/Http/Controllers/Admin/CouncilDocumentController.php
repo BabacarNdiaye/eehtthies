@@ -54,7 +54,7 @@ class CouncilDocumentController extends Controller
     public function duplicate(Request $request, Council $council, CouncilWorkflow $workflow)
     {
         Gate::authorize('create', Council::class);
-        $data = $request->validate(['term' => ['required', Rule::in(config('eeht.terms'))]]);
+        $data = $request->validate(['term' => ['required', Rule::in(config('eeht.council_terms'))]]);
 
         $members = $council->members()->whereNotIn('function', ['president', 'main_teacher', 'secretary'])->get()
             ->map(fn (CouncilMember $member) => $member->only(['user_id', 'teacher_id', 'external_name', 'external_role', 'function', 'can_vote']))->all();
@@ -64,7 +64,7 @@ class CouncilDocumentController extends Controller
                 'academic_year_id' => $council->academic_year_id,
                 'school_class_id' => $council->school_class_id,
                 'term' => $data['term'],
-                'is_end_of_year' => $data['term'] === last(config('eeht.terms')),
+                'is_end_of_year' => in_array($data['term'], [last(config('eeht.terms')), config('eeht.final_term')], true),
                 'room' => $council->room,
                 'agenda' => $council->agenda,
                 'president_id' => $council->president_id,

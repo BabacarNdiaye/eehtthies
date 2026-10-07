@@ -28,7 +28,7 @@ class TeacherLessonLogController extends Controller
         $date = $request->string('date')->toString() ?: now()->toDateString();
         $dayOfWeek = Carbon::parse($date)->dayOfWeekIso;
 
-        $entries = TimetableEntry::where('teacher_id', $teacher->id)
+        $entries = TimetableEntry::taughtBy($teacher)
             ->where('day_of_week', $dayOfWeek)
             ->with('schoolClass:id,name', 'subject:id,name', 'room:id,name')
             ->orderBy('start_time')
@@ -53,8 +53,12 @@ class TeacherLessonLogController extends Controller
         $data = $request->validate([
             'timetable_entry_id' => ['required', 'exists:timetable_entries,id'],
             'date' => ['required', 'date'],
-            'content' => ['required', 'string', 'max:5000'],
-            'homework' => ['nullable', 'string', 'max:2000'],
+            'content' => ['required', 'string', 'max:20000', function (string $attribute, mixed $value, \Closure $fail) {
+                if (\App\Support\RichText::forStorage((string) $value) === null) {
+                    $fail('Le contenu de la séance est obligatoire.');
+                }
+            }],
+            'homework' => ['nullable', 'string', 'max:10000'],
         ]);
 
         $entry = TimetableEntry::where('id', $data['timetable_entry_id'])

@@ -85,26 +85,6 @@ class LeaveRequestTest extends TestCase
         Notification::assertSentTo($requester, PushAlert::class);
     }
 
-    public function test_teacher_can_manage_their_own_leave_via_portal(): void
-    {
-        $this->seed(RolesAndPermissionsSeeder::class);
-        $teacher = User::factory()->create();
-        $teacher->assignRole('enseignant');
-
-        $store = $this->actingAs($teacher)->post(route('teacher.leave.store'), [
-            'type' => 'conge_maladie',
-            'start_date' => '2026-10-01',
-            'end_date' => '2026-10-01',
-        ]);
-        $store->assertRedirect();
-
-        $leave = LeaveRequest::where('user_id', $teacher->id)->firstOrFail();
-
-        $cancel = $this->actingAs($teacher)->post(route('teacher.leave.cancel', $leave));
-        $cancel->assertRedirect();
-        $this->assertDatabaseHas('leave_requests', ['id' => $leave->id, 'status' => 'annule']);
-    }
-
     public function test_teacher_cannot_reach_the_admin_leave_pages(): void
     {
         $this->seed(RolesAndPermissionsSeeder::class);

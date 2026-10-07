@@ -4,6 +4,7 @@ import ImagePlaceholder from '@/Components/Public/ImagePlaceholder';
 import Reveal from '@/Components/Public/Reveal';
 import { NewsArticle, Paginated } from '@/types';
 import { formatDateLong, storageUrl } from '@/lib/publicFormat';
+import { decodeEntities } from '@/lib/html';
 import { Head, Link } from '@inertiajs/react';
 import { Newspaper } from 'lucide-react';
 
@@ -85,23 +86,22 @@ export default function NewsIndex({
 
                     {articles.last_page > 1 && (
                         <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
-                            {articles.links.map((link, i) => (
-                                <Link
-                                    key={i}
-                                    href={link.url ?? '#'}
-                                    preserveScroll
-                                    dangerouslySetInnerHTML={{
-                                        __html: link.label,
-                                    }}
-                                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                                        link.active
-                                            ? 'bg-ink-900 text-white'
-                                            : link.url
-                                              ? 'text-ink-600 hover:bg-ink-100'
-                                              : 'cursor-not-allowed text-ink-300'
-                                    }`}
-                                />
-                            ))}
+                            {articles.links.map((link, i) => {
+                                const text = decodeEntities(link.label);
+                                const classes = `rounded-full px-4 py-2 text-sm font-medium transition ${
+                                    link.active ? 'bg-ink-900 text-white' : link.url ? 'text-ink-600 hover:bg-ink-100' : 'cursor-not-allowed text-ink-300'
+                                }`;
+
+                                return link.url ? (
+                                    <Link key={i} href={link.url} preserveScroll aria-current={link.active ? 'page' : undefined} className={classes}>
+                                        {text}
+                                    </Link>
+                                ) : (
+                                    <span key={i} aria-disabled="true" className={classes}>
+                                        {text}
+                                    </span>
+                                );
+                            })}
                         </div>
                     )}
                 </div>

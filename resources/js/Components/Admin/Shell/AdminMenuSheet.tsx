@@ -72,11 +72,13 @@ export default function AdminMenuSheet({ open, onClose, onSearch, groups, curren
                         </div>
 
                         <ul className="px-3 pt-2">
-                            {group.items.map((item) => {
+                            {group.items.map((item, position) => {
                                 const isActive = item.active(current);
+                                const heading = item.section && item.section !== group.items[position - 1]?.section ? item.section : null;
 
                                 return (
                                     <li key={item.href}>
+                                        {heading && <p className="px-3 pb-1 pt-4 text-[11px] font-bold uppercase tracking-[0.14em] text-ink-400">{heading}</p>}
                                         <Link
                                             href={route(item.href)}
                                             onClick={() => {

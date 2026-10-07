@@ -20,17 +20,15 @@ export default function CouncilSessionLayout({ children }: { children: ReactNode
     return (
         <>
             {showBand && (
-                <div className="bg-ink-50 pb-1 pt-0.5">
-                    <MeetingBand
-                        key={sitting ? `seance-${sitting.id}` : `conseil-${council.id}`}
-                        councilId={council.id}
-                        meeting={visio.meeting}
-                        iceServers={visio.iceServers}
-                        me={visio.me}
-                        canConduct={can.conduct}
-                        maxParticipants={visio.maxParticipants}
-                    />
-                </div>
+                <MeetingBand
+                    key={sitting ? `seance-${sitting.id}` : `conseil-${council.id}`}
+                    councilId={council.id}
+                    meeting={visio.meeting}
+                    iceServers={visio.iceServers}
+                    me={visio.me}
+                    canConduct={can.conduct}
+                    maxParticipants={visio.maxParticipants}
+                />
             )}
             {children}
         </>

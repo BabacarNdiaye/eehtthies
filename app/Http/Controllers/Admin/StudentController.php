@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Support\CouncilGuards;
 use App\Support\Exportable;
 use App\Support\InstitutionalEmail;
+use App\Support\TemporaryPassword;
 use App\Support\StudentDirectory;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -343,7 +344,7 @@ class StudentController extends Controller
             $student->update(['professional_email' => InstitutionalEmail::generate($student->full_name)]);
         }
 
-        $password = config('eeht.default_password');
+        $password = TemporaryPassword::generate();
 
         $user = User::updateOrCreate(
             ['email' => $student->professional_email],
@@ -353,6 +354,7 @@ class StudentController extends Controller
                 'email_verified_at' => now(),
             ]
         );
+        $user->forceFill(TemporaryPassword::flag(true))->save();
         $user->syncRoles(['eleve']);
         $student->update(['user_id' => $user->id]);
 
@@ -363,7 +365,7 @@ class StudentController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
-            return back()->with('success', "Accès élève créé, mais l'e-mail n'a pas pu être envoyé. Identifiant : {$student->professional_email} — Mot de passe par défaut : {$password}");
+            return back()->with('success', "Accès élève créé, mais l'e-mail n'a pas pu être envoyé. Identifiant : {$student->professional_email} — Mot de passe provisoire : {$password} (à changer à la première connexion ; notez-le maintenant, il ne sera plus affiché)");
         }
     }
 
@@ -383,7 +385,7 @@ class StudentController extends Controller
             return back()->with('success', "Le compte parent existant ({$student->guardian_email}) a été lié à cet élève.");
         }
 
-        $password = config('eeht.default_password');
+        $password = TemporaryPassword::generate();
 
         $user = User::create([
             'name' => $student->guardian_name ?: 'Parent de '.$student->full_name,
@@ -391,10 +393,11 @@ class StudentController extends Controller
             'password' => bcrypt($password),
             'email_verified_at' => now(),
         ]);
+        $user->forceFill(TemporaryPassword::flag(true))->save();
         $user->syncRoles(['parent']);
         $student->update(['parent_user_id' => $user->id]);
 
-        return back()->with('success', "Accès parent créé. Identifiant : {$student->guardian_email} — Mot de passe par défaut : {$password}");
+        return back()->with('success', "Accès parent créé. Identifiant : {$student->guardian_email} — Mot de passe provisoire : {$password} (à changer à la première connexion ; notez-le maintenant, il ne sera plus affiché)");
     }
 
     public function diplomaPdf(Student $student)

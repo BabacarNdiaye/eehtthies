@@ -19,6 +19,8 @@ export interface CandidatureData {
     last_diploma: string;
     motivation: string;
     documents: File[];
+    /** Piège anti-robots : champ caché qui doit rester vide (voir App\Support\Honeypot). */
+    website_url: string;
 }
 
 export type CandidatureErrors = Partial<Record<keyof CandidatureData, string>>;

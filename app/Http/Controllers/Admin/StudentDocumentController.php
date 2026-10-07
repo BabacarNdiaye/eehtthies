@@ -18,7 +18,9 @@ class StudentDocumentController extends Controller
             'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
-        $path = $request->file('file')->store('student-documents/'.$student->id, 'public');
+        // Pièces d'identité, certificats… : disque PRIVÉ (storage/app/private), jamais servi directement par le web ;
+        // elles s'ouvrent par la route students.documents.show, qui vérifie les droits de la personne connectée.
+        $path = $request->file('file')->store('student-documents/'.$student->id, 'local');
 
         $student->documents()->create([
             'type' => $data['type'],
@@ -34,9 +36,28 @@ class StudentDocumentController extends Controller
     {
         abort_unless($document->student_id === $student->id, 404);
 
-        Storage::disk('public')->delete($document->file_path);
+        // Le fichier peut encore être sur l'ancien disque public (avant son déplacement) : on nettoie les deux.
+        foreach (['local', 'public'] as $disk) {
+            Storage::disk($disk)->delete($document->file_path);
+        }
         $document->delete();
 
         return back()->with('success', 'Document supprimé.');
+    }
+
+    /**
+     * Ouvre un document d'élève : réservé à qui a le droit de voir les élèves (voir la route). Un fichier encore
+     * sur l'ancien disque public est ramené sur le disque privé à sa première ouverture.
+     */
+    public function show(Student $student, StudentDocument $document)
+    {
+        abort_unless($document->student_id === $student->id, 404);
+
+        $disk = $document->privatize() ?? abort(404, 'Fichier introuvable.');
+
+        return Storage::disk($disk)->response($document->file_path, null, [
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, no-store',
+        ]);
     }
 }

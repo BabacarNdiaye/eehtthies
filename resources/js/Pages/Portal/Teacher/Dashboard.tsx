@@ -16,9 +16,10 @@ export const teacherNav: PortalNavItem[] = [
     { label: 'Mes classes', href: 'teacher.classes', active: (c) => c === 'teacher.classes' },
     { label: 'Emploi du temps', href: 'teacher.timetable', active: (c) => c === 'teacher.timetable' },
     { label: 'Cahier de texte', href: 'teacher.lesson-log.index', active: (c) => c.startsWith('teacher.lesson-log') },
+    { label: 'Travaux maison', href: 'teacher.assignments.index', active: (c) => c.startsWith('teacher.assignments') },
     { label: 'Présences', href: 'teacher.attendance.index', active: (c) => c.startsWith('teacher.attendance') },
-    { label: 'Congés', href: 'teacher.leave.index', active: (c) => c.startsWith('teacher.leave') },
     { label: 'Compétences', href: 'teacher.skills.index', active: (c) => c.startsWith('teacher.skills') },
+    { label: 'Matériel', href: 'teacher.supplies.index', active: (c) => c.startsWith('teacher.supplies') },
     { label: 'Bibliothèque', href: 'teacher.library.index', active: (c) => c.startsWith('teacher.library') },
     { label: 'Devoirs', href: 'teacher.exams.index', active: (c) => c.startsWith('teacher.exams') },
     { label: 'Conseils de classe', href: 'teacher.councils.index', active: (c) => c.startsWith('teacher.councils') },
@@ -30,10 +31,11 @@ export const teacherNav: PortalNavItem[] = [
 // Raccourcis de l'accueil : les rubriques d'usage quotidien, en grille d'icônes.
 const shortcuts = [
     { label: 'Devoirs', href: 'teacher.exams.index' },
+    { label: 'Travaux maison', href: 'teacher.assignments.index' },
     { label: 'Cahier de texte', href: 'teacher.lesson-log.index' },
     { label: 'Présences', href: 'teacher.attendance.index' },
-    { label: 'Congés', href: 'teacher.leave.index' },
     { label: 'Compétences', href: 'teacher.skills.index' },
+    { label: 'Matériel', href: 'teacher.supplies.index' },
     { label: 'Bibliothèque', href: 'teacher.library.index' },
 ];
 

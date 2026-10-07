@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import FinanceTabs from '@/Components/Admin/FinanceTabs';
 import PageHeader from '@/Components/Admin/PageHeader';
 import Pagination from '@/Components/Admin/Pagination';
 import { IconAnchor, IconLink } from '@/Components/Admin/IconButton';
@@ -112,6 +113,7 @@ export default function Index({ driver, attempts, counts }: Props) {
                     </button>
                 )}
             </PageHeader>
+            <FinanceTabs current="online" />
 
             <DriverBanner driver={driver} />
 

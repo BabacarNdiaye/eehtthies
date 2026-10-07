@@ -3,9 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\LeaveRequest;
+use App\Models\LessonLog;
+use App\Models\TimetableEntry;
+use App\Models\PayrollRun;
 use App\Models\SalaryPayment;
 use App\Models\Teacher;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,7 +22,7 @@ class HrController extends Controller
      * ces deux ensembles étant déjà mutuellement exclusifs — adminStaff() exclut
      * le rôle enseignant) avec indicateurs clés et accès rapide aux 5 sous-modules.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $adminStaff = User::adminStaff()
             ->with('roles:id,name')
@@ -25,7 +30,8 @@ class HrController extends Controller
             ->get(['id', 'name', 'email', 'avatar', 'position', 'department', 'hire_date', 'monthly_salary', 'is_active']);
 
         $teachers = Teacher::orderBy('last_name')
-            ->get(['id', 'first_name', 'last_name', 'photo', 'professional_email', 'email', 'phone', 'specialty', 'experience_years', 'status']);
+            ->withCount(['schoolClasses', 'subjects'])
+            ->get(['id', 'first_name', 'last_name', 'photo', 'professional_email', 'email', 'phone', 'specialty', 'experience_years', 'status', 'payment_type', 'monthly_salary']);
 
         $directory = $adminStaff->map(fn (User $u) => [
             'id' => 'user-'.$u->id,
@@ -37,6 +43,8 @@ class HrController extends Controller
             'phone' => null,
             'active' => (bool) $u->is_active,
             'editUrl' => route('admin.users.edit', $u->id),
+            'department' => $u->department ?: null,
+            'hireDate' => $u->hire_date?->toDateString(),
         ])->concat($teachers->map(fn (Teacher $t) => [
             'id' => 'teacher-'.$t->id,
             'name' => $t->full_name,
@@ -47,6 +55,8 @@ class HrController extends Controller
             'phone' => $t->phone,
             'active' => $t->status === 'actif',
             'editUrl' => route('admin.teachers.edit', $t->id),
+            'department' => 'Enseignement',
+            'hireDate' => null,
         ]))->sortBy('name')->values();
 
         // Les enseignants à salaire fixe portent désormais leur propre monthly_salary directement sur Teacher
@@ -61,6 +71,61 @@ class HrController extends Controller
 
         $departments = $adminStaff->pluck('department')->filter()->unique()->values();
 
+        $byDepartment = $adminStaff->groupBy(fn (User $u) => $u->department ?: 'Sans service')
+            ->map(fn ($group, $name) => ['name' => $name, 'count' => $group->count()])
+            ->when($teachers->isNotEmpty(), fn ($c) => $c->put('Enseignement', ['name' => 'Enseignement', 'count' => $teachers->count()]))
+            ->sortByDesc('count')->values();
+
+        $hired = $adminStaff->filter(fn (User $u) => $u->hire_date);
+        $averageTenure = $hired->isEmpty() ? null : round($hired->avg(fn (User $u) => $u->hire_date->diffInDays($today) / 365.25), 1);
+
+        $leaveBase = LeaveRequest::with('user:id,name,avatar')->orderBy('start_date');
+        $pendingLeaves = (clone $leaveBase)->where('status', 'en_attente')->get();
+        $onLeave = (clone $leaveBase)->where('status', 'approuve')
+            ->whereDate('start_date', '<=', $today)->whereDate('end_date', '>=', $today)->get();
+        $leaveRow = fn (LeaveRequest $l) => [
+            'id' => $l->id,
+            'name' => $l->user?->name ?? '—',
+            'type' => LeaveRequest::TYPES[$l->type] ?? $l->type,
+            'start' => $l->start_date->toDateString(),
+            'end' => $l->end_date->toDateString(),
+        ];
+
+        $payrollRun = PayrollRun::where('period_year', $today->year)->where('period_month', $today->month)->first();
+
+        // Équipe pédagogique : charge hebdomadaire réelle (emploi du temps) et suivi du cahier de texte.
+        $minutes = TimetableEntry::whereNotNull('teacher_id')->get(['teacher_id', 'start_time', 'end_time'])
+            ->groupBy('teacher_id')
+            ->map(fn ($slots) => $slots->sum(fn ($e) => max(0, Carbon::parse($e->end_time)->diffInMinutes(Carbon::parse($e->start_time), true))));
+        $logs = LessonLog::where('date', '>=', $today->copy()->subDays(30))->selectRaw('teacher_id, count(*) as n')
+            ->groupBy('teacher_id')->pluck('n', 'teacher_id');
+        $activeTeachers = $teachers->where('status', 'actif');
+        $faculty = $activeTeachers->map(fn (Teacher $t) => [
+            'id' => $t->id,
+            'name' => $t->full_name,
+            'photo' => $t->photo,
+            'specialty' => $t->specialty ?: '—',
+            'hours' => round(($minutes[$t->id] ?? 0) / 60, 1),
+            'classes' => (int) $t->school_classes_count,
+            'subjects' => (int) $t->subjects_count,
+            'logs' => (int) ($logs[$t->id] ?? 0),
+            'payment' => $t->payment_type === 'horaire' ? 'Horaire' : 'Fixe',
+            'experience' => (int) $t->experience_years,
+            'editUrl' => route('admin.teachers.edit', $t->id),
+        ])->sortByDesc('hours')->values();
+
+        // Dossiers à compléter : ce qui manque pour une gestion RH fiable.
+        $incomplete = [
+            ['label' => "Sans date d'embauche", 'count' => $adminStaff->whereNull('hire_date')->count(), 'href' => route('admin.users.index')],
+            ['label' => 'Sans fonction renseignée', 'count' => $adminStaff->filter(fn (User $u) => ! $u->position)->count(), 'href' => route('admin.users.index')],
+            ['label' => 'Enseignants sans téléphone', 'count' => $teachers->filter(fn (Teacher $t) => ! $t->phone)->count(), 'href' => route('admin.teachers.index')],
+            ['label' => 'Enseignants sans emploi du temps', 'count' => $faculty->where('hours', 0)->count(), 'href' => route('admin.teachers.index')],
+            ['label' => 'Comptes inactifs', 'count' => $directory->where('active', false)->count(), 'href' => route('admin.users.index')],
+        ];
+
+        $user = $request->user();
+
+
         return Inertia::render('Admin/Hr/Index', [
             'directory' => $directory,
             'summary' => [
@@ -72,6 +137,40 @@ class HrController extends Controller
                 'departmentsCount' => $departments->count(),
                 'monthlyPayroll' => $monthlyPayroll,
                 'paidThisMonth' => $paidThisMonth,
+                'averageTenure' => $averageTenure,
+                'newThisYear' => $hired->filter(fn (User $u) => $u->hire_date->year === $today->year)->count(),
+                'pendingLeaves' => $pendingLeaves->count(),
+                'onLeaveToday' => $onLeave->count(),
+                'payrollStatus' => $payrollRun?->status,
+            ],
+            'departments' => $byDepartment,
+            'faculty' => [
+                'totalHours' => round($faculty->sum('hours'), 1),
+                'averageHours' => $faculty->isEmpty() ? 0 : round($faculty->avg('hours'), 1),
+                'averageExperience' => $faculty->isEmpty() ? null : round($faculty->avg('experience'), 1),
+                'fixed' => $faculty->where('payment', 'Fixe')->count(),
+                'hourly' => $faculty->where('payment', 'Horaire')->count(),
+                'withoutSchedule' => $faculty->where('hours', 0)->count(),
+                'withoutLogs' => $faculty->where('hours', '>', 0)->where('logs', 0)->count(),
+                'inactive' => $teachers->where('status', '!=', 'actif')->count(),
+                'teachers' => $faculty->take(10)->values(),
+            ],
+            'leave' => [
+                'pending' => $pendingLeaves->take(5)->map($leaveRow)->values(),
+                'today' => $onLeave->take(6)->map($leaveRow)->values(),
+            ],
+            'recentHires' => $hired->sortByDesc('hire_date')->take(5)->map(fn (User $u) => [
+                'name' => $u->name,
+                'photo' => $u->avatar,
+                'detail' => $u->position ?: ($u->department ?: '—'),
+                'hireDate' => $u->hire_date->toDateString(),
+            ])->values(),
+            'incomplete' => array_values(array_filter($incomplete, fn ($i) => $i['count'] > 0)),
+            'can' => [
+                'payroll' => (bool) $user?->can('voir_salaires'),
+                'teachers' => (bool) $user?->can('voir_enseignants'),
+                'roles' => (bool) $user?->can('voir_roles'),
+                'orgChart' => (bool) $user?->can('voir_organigramme'),
             ],
         ]);
     }

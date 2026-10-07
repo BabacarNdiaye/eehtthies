@@ -1,4 +1,5 @@
 import { EditorContent, useEditor } from '@tiptap/react';
+import Underline from '@tiptap/extension-underline';
 import StarterKit from '@tiptap/starter-kit';
 import { Bold, Heading2, Italic, List, ListOrdered, Quote, Redo2, Underline as UnderlineIcon, Undo2 } from 'lucide-react';
 import { useEffect } from 'react';
@@ -18,7 +19,7 @@ export const richContentClass =
 
 export default function RichTextEditor({ value, onChange, error, minHeight = 220 }: Props) {
     const editor = useEditor({
-        extensions: [StarterKit.configure({ heading: { levels: [2] } })],
+        extensions: [StarterKit.configure({ heading: { levels: [2] } }), Underline],
         content: value,
         editorProps: {
             attributes: {

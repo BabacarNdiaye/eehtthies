@@ -63,6 +63,7 @@ export default function CandidatureCreate({
             last_diploma: draft.last_diploma ?? '',
             motivation: draft.motivation ?? '',
             documents: [],
+            website_url: '',
         };
     });
     const { data, setData, post, processing, errors } = useForm<CandidatureData>(initial);
@@ -262,6 +263,12 @@ export default function CandidatureCreate({
                             noValidate
                             className="space-y-8 rounded-2xl border border-ink-100 bg-white p-5 shadow-soft sm:space-y-10 sm:p-10"
                         >
+                            <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+                                <label>
+                                    Ne pas remplir ce champ
+                                    <input type="text" name="website_url" tabIndex={-1} autoComplete="off" value={data.website_url} onChange={(e) => setData('website_url', e.target.value)} />
+                                </label>
+                            </div>
                             {hasServerErrors && (
                                 <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                                     Certains champs sont à corriger avant l'envoi de votre dossier.

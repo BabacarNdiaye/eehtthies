@@ -137,4 +137,29 @@ class LessonLogTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_rich_text_is_stored_cleaned_and_empty_content_is_refused(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+        $now = Carbon::parse('2026-09-28');
+        [$user, , $entry] = $this->makeTeacherWithEntry($now);
+
+        $this->actingAs($user)->post(route('teacher.lesson-log.store'), [
+            'timetable_entry_id' => $entry->id,
+            'date' => $now->toDateString(),
+            'content' => '<p>Les <strong>fonctions</strong></p><script>alert(1)</script><ul><li>affines</li></ul>',
+            'homework' => '<p onclick="x()">Exercices 1 à 5</p>',
+        ])->assertRedirect();
+
+        $log = \App\Models\LessonLog::firstOrFail();
+        $this->assertSame('<p>Les <strong>fonctions</strong></p><ul><li>affines</li></ul>', $log->content);
+        $this->assertSame('<p>Exercices 1 à 5</p>', $log->homework);
+
+        // Un éditeur laissé vide n'est pas un contenu.
+        $this->actingAs($user)->post(route('teacher.lesson-log.store'), [
+            'timetable_entry_id' => $entry->id,
+            'date' => $now->toDateString(),
+            'content' => '<p></p>',
+        ])->assertSessionHasErrors('content');
+    }
 }

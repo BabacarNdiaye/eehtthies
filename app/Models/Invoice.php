@@ -67,7 +67,7 @@ class Invoice extends Model
 
             $invoice->student?->user?->notify(new PushAlert(
                 'Nouvelle facture',
-                "{$invoice->label} — ".number_format((float) $invoice->amount, 0, ',', ' ').' FCFA',
+                "{$invoice->label} · ".number_format((float) $invoice->amount, 0, ',', ' ').' FCFA',
                 '/espace-eleve/factures'
             ));
         });

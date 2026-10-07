@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureUserIsStaff;
+use App\Http\Middleware\ForcePasswordChange;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TrackLastSeen;
@@ -35,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
             SecurityHeaders::class,
             TrackLastSeen::class,
+            ForcePasswordChange::class,
         ]);
 
         // Refus d'appel depuis une notification et notifications du fournisseur de paiement : ni l'un ni l'autre ne vient

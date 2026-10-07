@@ -36,7 +36,33 @@ class CashierController extends Controller
             'done' => is_string($request->query('done')) ? $this->done($request->query('done'), $notifier) : null,
             'channels' => PaymentChannels::options(),
             'today' => today()->toDateString(),
+            'desk' => $student || $request->query('done') ? null : $this->desk(),
         ]);
+    }
+
+    /** Caisse du jour affichée à côté de la recherche : total encaissé, nombre de reçus et derniers reçus. */
+    private function desk(): array
+    {
+        $day = Payment::whereDate('paid_at', today());
+
+        return [
+            'total' => (float) (clone $day)->sum('amount'),
+            'count' => (clone $day)->count(),
+            'byType' => Payment::join('invoices', 'invoices.id', '=', 'payments.invoice_id')
+                ->whereDate('payments.paid_at', today())
+                ->selectRaw('invoices.type as type, sum(payments.amount) as total')
+                ->groupBy('invoices.type')->pluck('total', 'type')
+                ->map(fn ($total, $type) => ['label' => Invoice::TYPES[$type] ?? $type, 'total' => (float) $total])->values(),
+            'recent' => Payment::with('invoice:id,label,student_id', 'invoice.student:id,first_name,last_name')
+                ->whereDate('paid_at', today())->latest('id')->limit(6)->get()
+                ->map(fn (Payment $p) => [
+                    'id' => $p->id,
+                    'student' => trim(($p->invoice?->student?->first_name ?? '').' '.($p->invoice?->student?->last_name ?? '')) ?: '—',
+                    'label' => $p->invoice?->label,
+                    'amount' => (float) $p->amount,
+                    'receipt' => $p->receipt_number,
+                ]),
+        ];
     }
 
     /** Recherche d'élève du guichet : 8 résultats au plus, chacun avec ce qu'il reste à payer. */

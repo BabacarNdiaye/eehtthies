@@ -1,0 +1,1 @@
+import e from"./PrivacyPolicy-Cx_9ky-T.js";export{e as default};

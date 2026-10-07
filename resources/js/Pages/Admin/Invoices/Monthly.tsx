@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
+import FinanceTabs from '@/Components/Admin/FinanceTabs';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { Checkbox, Field, Select } from '@/Components/Admin/Field';
 import { IconButton, IconLink } from '@/Components/Admin/IconButton';
@@ -94,6 +95,20 @@ function Chip({ cell, compact = false }: { cell: MonthCell; compact?: boolean })
     return cell.invoice_id ? <Link href={route('admin.invoices.show', cell.invoice_id)}>{badge}</Link> : badge;
 }
 
+const initialsOf = (name: string) => name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('');
+
+/** Mois facturés et mois payés d'un élève : sa progression de l'année. */
+function progressOf(student: StudentRow, months: number[]) {
+    const billed = months.filter((m) => (student.months[m]?.status ?? 'non_genere') !== 'non_genere');
+    const paid = billed.filter((m) => student.months[m].status === 'payee');
+
+    return { billed: billed.length, paid: paid.length, pct: billed.length ? Math.round((paid.length / billed.length) * 100) : 0 };
+}
+
+function Avatar({ name }: { name: string }) {
+    return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink-900 font-serif text-xs font-bold text-gold-300">{initialsOf(name)}</span>;
+}
+
 function StudentActions({
     student,
     canCollect,
@@ -130,6 +145,11 @@ export default function Monthly({ students, totals, formations, academicYears, s
     const late = students.filter((student) => student.overdue.count > 0);
     const rows = onlyLate ? late : students;
     const hasFilters = Boolean(filters.formation_id && filters.academic_year_id);
+    // Taux « à jour » : parmi les mensualités dont l'échéance est atteinte (payées ou en retard), la part qui est payée.
+    const all = students.flatMap((st) => schoolMonths.map((m) => st.months[m] ?? emptyCell));
+    const paidCells = all.filter((c) => c.status === 'payee').length;
+    const dueCells = paidCells + all.filter((c) => c.status !== 'payee' && c.overdue).length;
+    const upToDate = dueCells ? Math.round((paidCells / dueCells) * 100) : 100;
 
     const fixDueDates = async () => {
         const message = `Fixer l'échéance de ${missingDueDates} mensualité(s) au ${dueDay} de leur mois ? Les dates déjà saisies ne sont pas modifiées.`;
@@ -176,6 +196,7 @@ export default function Monthly({ students, totals, formations, academicYears, s
                     </Link>
                 )}
             </PageHeader>
+            <FinanceTabs current="monthly" />
 
             {canEdit && missingDueDates > 0 && (
                 <div role="status" className="mb-6 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -196,7 +217,7 @@ export default function Monthly({ students, totals, formations, academicYears, s
                 </div>
             )}
 
-            <Card className="mb-6 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+            <Card className="mb-6 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-5">
                 <Field label="Formation">
                     <Select
                         value={filters.formation_id ?? ''}
@@ -231,20 +252,33 @@ export default function Monthly({ students, totals, formations, academicYears, s
                 </Card>
             ) : (
                 <>
-                    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <Card className="p-4">
-                            <p className="text-xs text-ink-500">Reste à encaisser</p>
-                            <p className="font-serif text-2xl font-bold text-ink-900">{fcfa(totals.balance)}</p>
-                        </Card>
-                        <Card className="p-4">
-                            <p className="text-xs text-ink-500">Dont en retard</p>
-                            <p className={`font-serif text-2xl font-bold ${totals.overdue > 0 ? 'text-red-600' : 'text-ink-900'}`}>{fcfa(totals.overdue)}</p>
-                        </Card>
-                        <Card className="p-4">
-                            <p className="text-xs text-ink-500">Familles à relancer</p>
-                            <p className={`font-serif text-2xl font-bold ${late.length > 0 ? 'text-red-600' : 'text-ink-900'}`}>{late.length}</p>
-                        </Card>
-                    </div>
+                    <section aria-label="Synthèse des mensualités" className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 p-6 text-white shadow-elevated">
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gold-500/60 to-transparent" aria-hidden="true" />
+                        <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-300">Mensualités à jour</p>
+                                <p className="mt-2 font-serif text-5xl font-bold tabular-nums">{upToDate} %</p>
+                                <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10" role="img" aria-label={`${upToDate} % des mensualités échues sont payées`}>
+                                    <div className="h-full rounded-full bg-gradient-to-r from-gold-500 to-gold-300" style={{ width: `${upToDate}%` }} />
+                                </div>
+                                <p className="mt-2 text-sm text-white/60">{paidCells} payée(s) sur {dueCells} échue(s) · {students.length} élève(s).</p>
+                            </div>
+                            <dl className="grid grid-cols-3 gap-3">
+                                <div className="rounded-xl bg-white/5 p-3 ring-1 ring-white/10">
+                                    <dt className="text-xs text-white/60">Reste à encaisser</dt>
+                                    <dd className="mt-1 text-base font-bold tabular-nums">{fcfa(totals.balance)}</dd>
+                                </div>
+                                <div className="rounded-xl bg-white/5 p-3 ring-1 ring-white/10">
+                                    <dt className="text-xs text-white/60">Dont en retard</dt>
+                                    <dd className={`mt-1 text-base font-bold tabular-nums ${totals.overdue > 0 ? 'text-amber-300' : ''}`}>{fcfa(totals.overdue)}</dd>
+                                </div>
+                                <div className="rounded-xl bg-white/5 p-3 ring-1 ring-white/10">
+                                    <dt className="text-xs text-white/60">À relancer</dt>
+                                    <dd className="mt-1 text-base font-bold tabular-nums">{late.length} famille(s)</dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </section>
 
                     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <ul className="flex flex-wrap items-center gap-2 text-xs" aria-label="Légende des couleurs">
@@ -281,7 +315,8 @@ export default function Monthly({ students, totals, formations, academicYears, s
                                 {rows.map((student) => (
                                     <li key={student.id} className="rounded-2xl bg-white p-4 shadow-soft ring-1 ring-ink-100">
                                         <div className="flex items-start justify-between gap-2">
-                                            <div className="min-w-0">
+                                            <Avatar name={student.name} />
+                                            <div className="min-w-0 flex-1">
                                                 <p className="font-semibold text-ink-900">{student.name}</p>
                                                 <p className="text-xs text-ink-500">{student.matricule}</p>
                                                 {student.overdue.count > 0 && (
@@ -328,9 +363,18 @@ export default function Monthly({ students, totals, formations, academicYears, s
                                                 <tr key={student.id} className="transition-colors duration-150 hover:bg-ink-50/60">
                                                     <td className="sticky left-0 z-10 bg-white px-5 py-3">
                                                         <div className="flex items-center justify-between gap-3">
-                                                            <div>
+                                                            <Avatar name={student.name} />
+                                                            <div className="min-w-0 flex-1">
                                                                 <p className="whitespace-nowrap font-medium text-ink-900">{student.name}</p>
-                                                                <p className="text-xs text-ink-500">{student.matricule}</p>
+                                                                <p className="flex items-center gap-2 text-xs text-ink-500">
+                                                                    {student.matricule}
+                                                                    <span className="inline-flex items-center gap-1 tabular-nums" title={`${progressOf(student, schoolMonths).paid} mois payés sur ${progressOf(student, schoolMonths).billed}`}>
+                                                                        <span className="inline-block h-1.5 w-12 overflow-hidden rounded-full bg-ink-100">
+                                                                            <span className="block h-full rounded-full bg-emerald-500" style={{ width: `${progressOf(student, schoolMonths).pct}%` }} />
+                                                                        </span>
+                                                                        {progressOf(student, schoolMonths).paid}/{progressOf(student, schoolMonths).billed}
+                                                                    </span>
+                                                                </p>
                                                                 {student.overdue.count > 0 && (
                                                                     <p className="whitespace-nowrap text-xs font-medium text-red-700">
                                                                         {student.overdue.count} en retard · {fcfa(student.overdue.balance)}

@@ -27,17 +27,13 @@
 </head>
 <body>
     <div class="footer">
-        {{ $title }} · généré le {{ now()->translatedFormat('d/m/Y H:i') }}
+        {{ $title }}
         <span style="float: right;">Page <span class="page"></span></span>
     </div>
 
     <div class="header">
         <div class="header-left">
-            @if($logoPath = \App\Models\Setting::get('site_logo'))
-                <img src="{{ public_path('storage/'.$logoPath) }}" alt="Logo" style="width: 38px; height: 38px; object-fit: contain; vertical-align: middle;">
-            @else
-                <span class="logo">E</span>
-            @endif
+            <img src="{{ \App\Support\SiteBrand::file() }}" alt="Logo" style="width: 38px; height: 38px; object-fit: contain; vertical-align: middle;">
             <div style="display:inline-block; vertical-align: middle; margin-left: 8px;">
                 <div class="school-name">EEHT — Élite École Hôtelière et Touristique</div>
                 <div class="school-sub">Thiès</div>

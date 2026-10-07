@@ -1,6 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import Card from '@/Components/Admin/Card';
-import PageHeader from '@/Components/Admin/PageHeader';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import useCompactChart, { axisLabel } from '@/hooks/useCompactChart';
 import { visibleQuickActions } from '@/lib/adminNav';
@@ -73,14 +72,15 @@ const fcfa = (value: number) => `${new Intl.NumberFormat('fr-FR').format(Math.ro
 /** Carte de chiffre clé : compacte sur téléphone (deux par ligne), aérée à partir de sm. */
 function Kpi({ icon: Icon, label, value, tint }: { icon: LucideIcon; label: string; value: number | string; tint: string }) {
     return (
-        <Card className="p-3.5 sm:p-5">
+        <Card hoverable className="relative overflow-hidden p-3.5 sm:p-5">
+            <span className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-gold-500/70 to-transparent" aria-hidden="true" />
             <div className="flex items-center gap-3 sm:gap-4">
-                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-11 sm:w-11 ${tint}`}>
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-black/5 sm:h-12 sm:w-12 ${tint}`}>
                     <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" aria-hidden="true" />
                 </div>
                 <div className="min-w-0">
-                    <p className="text-xl font-bold leading-tight text-ink-900 sm:text-2xl">{value}</p>
-                    <p className="text-xs leading-tight text-ink-500 sm:text-sm">{label}</p>
+                    <p className="font-serif text-2xl font-bold leading-none text-ink-900 sm:text-3xl">{value}</p>
+                    <p className="mt-1 text-xs leading-tight text-ink-500 sm:text-sm">{label}</p>
                 </div>
             </div>
         </Card>
@@ -181,10 +181,15 @@ export default function Dashboard({
         <AdminLayout>
             <Head title="Tableau de bord" />
 
-            <PageHeader
-                title="Tableau de bord"
-                subtitle={`Bonjour${firstName ? ` ${firstName}` : ''} — ${today}. Vue d'ensemble de l'activité de l'EEHT de Thiès.`}
-            />
+            <header className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 p-6 text-white shadow-elevated sm:p-8">
+                <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-gold-500/15 blur-3xl" aria-hidden="true" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gold-500/60 to-transparent" aria-hidden="true" />
+                <p className="relative text-xs font-semibold uppercase tracking-[0.25em] text-gold-300">{today}</p>
+                <h1 className="relative mt-2 font-serif text-3xl font-bold leading-tight sm:text-4xl">
+                    Bonjour{firstName ? ` ${firstName}` : ''}
+                </h1>
+                <p className="relative mt-2 max-w-2xl text-sm text-ink-200 sm:text-base">Tableau de bord — vue d’ensemble de l’activité de l’EEHT de Thiès.</p>
+            </header>
 
             {!hasAnyContent && (
                 <Card className="flex flex-col items-center gap-3 p-12 text-center">
@@ -200,7 +205,10 @@ export default function Dashboard({
                 <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-5">
                     {hasTodo && (
                         <Card className={`overflow-hidden ${quickActions.length > 0 ? 'lg:col-span-3' : 'lg:col-span-5'}`}>
-                            <h2 className="border-b border-ink-100 px-4 py-3.5 font-serif text-lg font-semibold text-ink-900 sm:px-5">À traiter</h2>
+                            <h2 className="flex items-center gap-2 border-b border-ink-100 px-4 py-3.5 font-serif text-lg font-bold text-ink-900 sm:px-5">
+                                <span className="h-4 w-1 rounded-full bg-gold-500" aria-hidden="true" />
+                                À traiter
+                            </h2>
                             {todoRows.length > 0 ? (
                                 <ul className="divide-y divide-ink-100">
                                     {todoRows.map((row) => (
@@ -218,7 +226,10 @@ export default function Dashboard({
 
                     {quickActions.length > 0 && (
                         <Card className={`p-4 sm:p-5 ${hasTodo ? 'lg:col-span-2' : 'lg:col-span-5'}`}>
-                            <h2 className="mb-3 font-serif text-lg font-semibold text-ink-900">Actions rapides</h2>
+                            <h2 className="mb-3 flex items-center gap-2 font-serif text-lg font-bold text-ink-900">
+                                <span className="h-4 w-1 rounded-full bg-gold-500" aria-hidden="true" />
+                                Actions rapides
+                            </h2>
                             <ul className="grid grid-cols-2 gap-2.5">
                                 {quickActions.map((action) => (
                                     <li key={action.href}>
@@ -264,7 +275,8 @@ export default function Dashboard({
                 <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
                     {monthlyCandidatures && (
                         <Card className="p-4 sm:p-5">
-                            <h2 className="mb-4 font-serif text-lg font-semibold text-ink-900">
+                            <h2 className="mb-4 flex items-center gap-2 font-serif text-lg font-bold text-ink-900">
+                                <span className="h-4 w-1 rounded-full bg-gold-500" aria-hidden="true" />
                                 Candidatures — 6 derniers mois
                             </h2>
                             <ResponsiveContainer width="100%" height={compact ? 210 : 260}>
@@ -281,7 +293,8 @@ export default function Dashboard({
 
                     {studentsPerFormation && (
                         <Card className="p-4 sm:p-5">
-                            <h2 className="mb-4 font-serif text-lg font-semibold text-ink-900">
+                            <h2 className="mb-4 flex items-center gap-2 font-serif text-lg font-bold text-ink-900">
+                                <span className="h-4 w-1 rounded-full bg-gold-500" aria-hidden="true" />
                                 Élèves par formation
                             </h2>
                             <ResponsiveContainer width="100%" height={compact ? Math.max(210, studentsPerFormation.length * 34) : 260}>
@@ -308,7 +321,8 @@ export default function Dashboard({
             {candidaturesByStatus && (
                 <div className="mb-6">
                     <Card className="p-4 sm:p-5">
-                        <h2 className="mb-4 font-serif text-lg font-semibold text-ink-900">
+                        <h2 className="mb-4 flex items-center gap-2 font-serif text-lg font-bold text-ink-900">
+                            <span className="h-4 w-1 rounded-full bg-gold-500" aria-hidden="true" />
                             Répartition des candidatures par statut
                         </h2>
                         <ResponsiveContainer width="100%" height={compact ? Math.max(200, statusData.length * 36) : 220}>
@@ -339,7 +353,8 @@ export default function Dashboard({
                     {latestCandidatures && (
                         <Card>
                             <div className="flex items-center justify-between border-b border-ink-100 p-4 sm:p-5">
-                                <h2 className="font-serif text-lg font-semibold text-ink-900">
+                                <h2 className="flex items-center gap-2 font-serif text-lg font-bold text-ink-900">
+                                    <span className="h-4 w-1 rounded-full bg-gold-500" aria-hidden="true" />
                                     Dernières candidatures
                                 </h2>
                                 <Link href={route('admin.candidatures.index')} className="text-sm font-medium text-gold-700 hover:underline">
@@ -373,7 +388,8 @@ export default function Dashboard({
                     {latestNews && (
                         <Card>
                             <div className="flex items-center justify-between border-b border-ink-100 p-4 sm:p-5">
-                                <h2 className="font-serif text-lg font-semibold text-ink-900">
+                                <h2 className="flex items-center gap-2 font-serif text-lg font-bold text-ink-900">
+                                    <span className="h-4 w-1 rounded-full bg-gold-500" aria-hidden="true" />
                                     Dernières actualités
                                 </h2>
                                 <Link href={route('admin.news.index')} className="text-sm font-medium text-gold-700 hover:underline">

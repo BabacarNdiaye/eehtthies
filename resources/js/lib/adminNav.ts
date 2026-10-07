@@ -15,7 +15,6 @@ import {
     Briefcase,
     Building,
     Building2,
-    Calculator,
     Calendar,
     CalendarCheck,
     CalendarClock,
@@ -63,6 +62,7 @@ import {
     Network,
     Newspaper,
     Package,
+    PackageCheck,
     PanelTop,
     PenSquare,
     PieChart,
@@ -71,6 +71,7 @@ import {
     ReceiptText,
     Route,
     Scale,
+    ShoppingCart,
     ScanLine,
     School,
     ScrollText,
@@ -93,6 +94,7 @@ import {
     Vault,
     Wallet,
     Warehouse,
+    Wifi,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -105,12 +107,14 @@ import {
  * présences, on organise les formations et les classes, on enseigne, on évalue et on diplôme, puis viennent
  * l'argent (frais de scolarité, comptabilité, stocks), l'insertion professionnelle, la communication, le site, les
  * statistiques, le personnel et l'administration du logiciel. Un métier retrouve ses pages au même endroit : le
- * caissier dans « Frais de scolarité », le magasinier dans « Stocks & achats ».
+ * caissier dans « Finance », l'économe dans « Économat ».
  *
  * Une page appartient à une seule rubrique (les fonctions `active` ne se recouvrent pas) : AdminMenuCoverageTest le
  * vérifie pour toutes les pages d'administration, y compris celles que l'on ajoutera.
  */
 export interface NavItem {
+    /** Intertitre affiché au-dessus de cet élément quand il change d'un élément à l'autre (grands groupes). */
+    section?: string;
     label: string;
     /** Nom de la route Laravel (et non son adresse). */
     href: string;
@@ -138,8 +142,6 @@ export interface QuickAction {
 /** Les pages de présence existent sous deux préfixes de route (admin.pointage.* et admin.attendance.*). */
 const isPresence = (current: string) => current.startsWith('admin.pointage') || current.startsWith('admin.attendance');
 
-/** Pages de suivi des factures qui ont leur propre rubrique : « Factures » ne doit pas s'allumer aussi sur elles. */
-const invoiceFollowUps = ['admin.invoices.monthly', 'admin.invoices.overdue'];
 
 export const navGroups: NavGroup[] = [
     {
@@ -155,8 +157,8 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        label: 'Admissions & élèves',
-        icon: Users,
+        label: 'Admissions',
+        icon: UserPlus,
         items: [
             {
                 label: 'Candidatures',
@@ -166,53 +168,38 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_candidatures',
                 keywords: 'admissions dossiers inscription candidats pre-inscription',
             },
+        ],
+    },
+    {
+        label: 'Scolarité',
+        icon: Users,
+        items: [
             {
                 label: 'Élèves',
                 href: 'admin.students.index',
                 icon: IdCard,
+                // Liste des élèves et « En ligne » : onglets (StudentTabs).
                 active: (c) => c.startsWith('admin.students'),
                 permission: 'voir_eleves',
-                keywords: 'etudiants apprenants inscrits matricule dossiers',
+                keywords: 'etudiants apprenants inscrits matricule dossiers en ligne connectes presence en direct',
             },
-        ],
-    },
-    {
-        label: 'Vie scolaire',
-        icon: CalendarCheck,
-        items: [
             {
-                label: 'Pointage des élèves',
+                label: 'Classes',
+                href: 'admin.school-classes.index',
+                icon: Group,
+                // Classes et années académiques : onglets (ClassTabs).
+                active: (c) => c.startsWith('admin.school-classes') || c.startsWith('admin.academic-years'),
+                permission: 'voir_classes',
+                keywords: 'promotions groupes effectifs annee academique annees scolaires',
+            },
+            {
+                label: 'Présences',
                 href: 'admin.pointage.index',
                 icon: ClipboardCheck,
-                // Le registre et les statistiques ont leur propre rubrique plus bas : ils partagent le préfixe de
-                // route admin.pointage et ne doivent pas aussi allumer « Pointage des élèves ».
-                active: (c) => isPresence(c) && !c.includes('.register') && !c.endsWith('.report'),
+                // Pointage, registre, statistiques et scanner d'entrée : onglets (PresenceTabs).
+                active: (c) => isPresence(c) || c.startsWith('admin.borne.pointage'),
                 permission: 'voir_presences',
-                keywords: 'presence appel absences retards',
-            },
-            {
-                label: 'Scanner les cartes (entrée)',
-                href: 'admin.borne.pointage.gate',
-                icon: ScanLine,
-                active: (c) => c.startsWith('admin.borne.pointage'),
-                permission: 'ajouter_presences',
-                keywords: 'qr badge borne entree carte scan',
-            },
-            {
-                label: "Registre d'absences",
-                href: 'admin.pointage.register',
-                icon: UserX,
-                active: (c) => isPresence(c) && c.includes('.register'),
-                permission: 'voir_presences',
-                keywords: 'absences retards historique justifiees cahier',
-            },
-            {
-                label: 'Statistiques de présence',
-                href: 'admin.pointage.report',
-                icon: UserCheck,
-                active: (c) => isPresence(c) && c.endsWith('.report'),
-                permission: 'voir_presences',
-                keywords: 'assiduite taux de presence absenteisme periode',
+                keywords: 'presence appel absences retards registre statistiques taux de presence absenteisme scanner cartes entree borne qr',
             },
             {
                 label: 'Discipline',
@@ -222,35 +209,28 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_discipline',
                 keywords: 'sanctions avertissement blame exclusion conduite vie scolaire',
             },
+            {
+                label: 'Passation de classe',
+                href: 'admin.class-promotion.index',
+                icon: ArrowUpCircle,
+                active: (c) => c.startsWith('admin.class-promotion'),
+                permission: 'modifier_eleves',
+                keywords: 'passage promotion redoublement fin d annee exclusion',
+            },
         ],
     },
     {
-        label: 'Structure pédagogique',
+        label: 'Pédagogie',
         icon: School,
         items: [
             {
                 label: 'Formations',
                 href: 'admin.formations.index',
                 icon: GraduationCap,
-                active: (c) => c.startsWith('admin.formations'),
+                // Formations, niveaux, compétences et bibliothèque : onglets (FormationTabs).
+                active: (c) => c.startsWith('admin.formations') || c.startsWith('admin.formation-levels') || c.startsWith('admin.skills') || c.startsWith('admin.library'),
                 permission: 'voir_formations',
-                keywords: 'filieres diplomes programmes cursus',
-            },
-            {
-                label: 'Niveaux & règles de passage',
-                href: 'admin.formation-levels.index',
-                icon: Layers,
-                active: (c) => c.startsWith('admin.formation-levels'),
-                permission: 'voir_formations',
-                keywords: 'progression annees passage redoublement seuils',
-            },
-            {
-                label: 'Classes',
-                href: 'admin.school-classes.index',
-                icon: Group,
-                active: (c) => c.startsWith('admin.school-classes'),
-                permission: 'voir_classes',
-                keywords: 'promotions groupes effectifs',
+                keywords: 'filieres diplomes programmes cursus niveaux regles de passage referentiel de competences niveaux regles de passage referentiel de competences bibliotheque ressources',
             },
             {
                 label: 'Matières',
@@ -261,50 +241,22 @@ export const navGroups: NavGroup[] = [
                 keywords: 'cours disciplines coefficients',
             },
             {
-                label: 'Référentiel de compétences',
-                href: 'admin.skills.index',
-                icon: Gauge,
-                active: (c) => c.startsWith('admin.skills'),
-                permission: 'voir_formations',
-                keywords: 'competences savoir-faire',
-            },
-            {
-                label: 'Année académique',
-                href: 'admin.academic-years.index',
-                icon: CalendarDays,
-                active: (c) => c.startsWith('admin.academic-years'),
-                permission: 'voir_classes',
-                keywords: 'annee scolaire periode semestres rentree',
-            },
-        ],
-    },
-    {
-        label: 'Enseignement',
-        icon: Presentation,
-        items: [
-            {
                 label: 'Emploi du temps',
                 href: 'admin.timetable.index',
                 icon: Clock,
-                active: (c) => c.startsWith('admin.timetable'),
+                // Emploi du temps et cahier de texte : onglets (TeachingTabs).
+                active: (c) => c.startsWith('admin.timetable') || c.startsWith('admin.lesson-logs'),
                 permission: 'voir_emploi_du_temps',
-                keywords: 'planning horaires cours seances',
+                keywords: 'planning horaires cours seances cahier de texte seances contenu devoirs cahier de texte seances contenu devoirs',
             },
             {
-                label: 'Cahier de texte',
-                href: 'admin.lesson-logs.index',
-                icon: BookText,
-                active: (c) => c.startsWith('admin.lesson-logs'),
-                permission: 'voir_emploi_du_temps',
-                keywords: 'cours contenu devoirs seances journal de classe',
-            },
-            {
-                label: 'Ateliers pratiques',
-                href: 'admin.practical-sessions.index',
-                icon: ChefHat,
-                active: (c) => c.startsWith('admin.practical-sessions'),
+                label: 'Salles & ateliers',
+                href: 'admin.rooms.index',
+                icon: DoorOpen,
+                // Salles et ateliers pratiques : onglets (RoomTabs).
+                active: (c) => c.startsWith('admin.rooms') || c.startsWith('admin.practical-sessions'),
                 permission: 'voir_salles',
-                keywords: 'travaux pratiques seances cuisine tp',
+                keywords: 'locaux ateliers amphitheatre ateliers pratiques travaux pratiques',
             },
             {
                 label: 'Fiches enseignants',
@@ -314,26 +266,10 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_enseignants',
                 keywords: 'professeurs formateurs intervenants vacataires',
             },
-            {
-                label: 'Salles',
-                href: 'admin.rooms.index',
-                icon: DoorOpen,
-                active: (c) => c.startsWith('admin.rooms'),
-                permission: 'voir_salles',
-                keywords: 'locaux ateliers amphitheatre',
-            },
-            {
-                label: 'Bibliothèque',
-                href: 'admin.library.index',
-                icon: Library,
-                active: (c) => c.startsWith('admin.library'),
-                permission: 'voir_formations',
-                keywords: 'documents ressources livres supports de cours',
-            },
         ],
     },
     {
-        label: 'Évaluations & diplômes',
+        label: 'Évaluations',
         icon: Award,
         items: [
             {
@@ -361,12 +297,13 @@ export const navGroups: NavGroup[] = [
                 keywords: 'releves notes moyennes semestre',
             },
             {
-                label: 'Passation de classe',
-                href: 'admin.class-promotion.index',
-                icon: ArrowUpCircle,
-                active: (c) => c.startsWith('admin.class-promotion'),
-                permission: 'modifier_eleves',
-                keywords: 'passage promotion redoublement fin d annee exclusion',
+                label: 'Conseils de classe',
+                href: 'admin.councils.index',
+                icon: Gavel,
+                // Conseils, actions de suivi, bilan et réglages : onglets (CouncilTabs).
+                active: (c) => c.startsWith('admin.councils') || c.startsWith('admin.council-sittings') || c.startsWith('admin.council-dashboard') || c.startsWith('admin.council-settings') || (c.startsWith('admin.follow-ups') && c !== 'admin.follow-ups.mine'),
+                permission: 'voir_conseils',
+                keywords: 'conseil de classe deliberation decisions proces verbal pv seance appreciations actions de suivi entretiens actions de suivi entretiens bilan tableau de bord reglages seuils',
             },
             {
                 label: 'Diplômes & attestations',
@@ -376,99 +313,62 @@ export const navGroups: NavGroup[] = [
                 permission: 'voir_eleves',
                 keywords: 'certificats attestations de stage remise',
             },
-            {
-                label: 'Conseils de classe',
-                href: 'admin.councils.index',
-                icon: Gavel,
-                active: (c) => c.startsWith('admin.councils') || c.startsWith('admin.council-sittings'),
-                permission: 'voir_conseils',
-                keywords: 'conseil de classe deliberation decisions proces verbal pv seance appreciations',
-            },
-            {
-                label: 'Actions de suivi',
-                href: 'admin.follow-ups.index',
-                icon: ClipboardList,
-                active: (c) => c.startsWith('admin.follow-ups') && c !== 'admin.follow-ups.mine',
-                permission: 'voir_conseils',
-                keywords: 'conseil de classe suivi soutien entretien famille echeance responsable',
-            },
-            {
-                label: 'Bilan des conseils',
-                href: 'admin.council-dashboard.index',
-                icon: ChartNoAxesCombined,
-                active: (c) => c.startsWith('admin.council-dashboard'),
-                permission: 'voir_conseils_direction',
-                keywords: 'tableau de bord direction conseils de classe indicateurs decisions taux reussite actions de suivi',
-            },
-            {
-                label: 'Réglages des conseils',
-                href: 'admin.council-settings.index',
-                icon: SlidersHorizontal,
-                active: (c) => c.startsWith('admin.council-settings'),
-                permission: 'voir_parametrage_conseils',
-                keywords: 'conseil de classe decisions seuils alertes pastilles groupes de matieres validation recours',
-            },
         ],
     },
     {
-        label: 'Frais de scolarité',
+        label: 'Finance',
         icon: CreditCard,
         items: [
-            {
-                label: 'Tableau de bord financier',
-                href: 'admin.finance.dashboard',
-                icon: Wallet,
-                active: (c) => c === 'admin.finance.dashboard',
-                permission: 'voir_comptabilite',
-                keywords: 'finance tresorerie argent budget recettes depenses',
-            },
-            {
-                label: 'Factures',
-                href: 'admin.invoices.index',
-                icon: ReceiptText,
-                active: (c) => c.startsWith('admin.invoices') && !invoiceFollowUps.includes(c),
-                permission: 'voir_comptabilite',
-                keywords: 'paiements scolarite frais recus mensualites inscription',
-            },
             {
                 label: 'Encaisser',
                 href: 'admin.cashier.create',
                 icon: HandCoins,
                 active: (c) => c.startsWith('admin.cashier'),
                 permission: 'ajouter_comptabilite',
-                keywords: 'caisse guichet paiement mensualite scolarite recu wave orange money cheque',
+                keywords: 'caisse guichet paiement mensualite scolarite inscription recu wave orange money cheque',
             },
             {
-                label: 'Suivi des mensualités',
-                href: 'admin.invoices.monthly',
-                icon: CalendarRange,
-                active: (c) => c === 'admin.invoices.monthly',
+                // Une seule rubrique pour le suivi des élèves : factures, mensualités, impayés, échéanciers et paiements en ligne
+                // sont des onglets de la même page (FinanceTabs).
+                label: 'Factures & suivi',
+                href: 'admin.invoices.index',
+                icon: ReceiptText,
+                active: (c) => c.startsWith('admin.invoices') || c.startsWith('admin.payment-plans') || c.startsWith('admin.online-payments'),
                 permission: 'voir_comptabilite',
-                keywords: 'mensualites mois a jour retards echeances tableau scolarite generer',
+                keywords: 'paiements scolarite frais recus mensualites inscription impayes retards relances echeances echeanciers tranches plans wave orange money carte tentatives anomalies reconcilier',
             },
             {
-                label: 'Impayés',
-                href: 'admin.invoices.overdue',
-                icon: BellRing,
-                active: (c) => c === 'admin.invoices.overdue',
+                label: 'Tableau de bord financier',
+                href: 'admin.finance.dashboard',
+                icon: Wallet,
+                active: (c) => c === 'admin.finance.dashboard',
                 permission: 'voir_comptabilite',
-                keywords: 'retards de paiement echeance relances relancer dettes arrieres soldes',
+                keywords: 'finance tresorerie argent budget recettes depenses recouvrement',
             },
             {
-                label: 'Échéanciers',
-                href: 'admin.payment-plans.index',
-                icon: CalendarClock,
-                active: (c) => c.startsWith('admin.payment-plans'),
+                label: 'Journal de caisse',
+                href: 'admin.finance.cash-journal',
+                icon: Vault,
+                active: (c) => c === 'admin.finance.cash-journal',
                 permission: 'voir_comptabilite',
-                keywords: 'mensualites tranches paiement plans etalement echeance',
+                keywords: 'caisse tresorerie recettes depenses solde livre de caisse',
             },
             {
-                label: 'Paiements en ligne',
-                href: 'admin.online-payments.index',
-                icon: Smartphone,
-                active: (c) => c.startsWith('admin.online-payments'),
+                label: 'Dépenses',
+                href: 'admin.expenses.index',
+                icon: TrendingDown,
+                active: (c) => c.startsWith('admin.expenses'),
                 permission: 'voir_comptabilite',
-                keywords: 'wave orange money carte fournisseur tentatives anomalies reconcilier simulation',
+                keywords: 'achats charges frais',
+            },
+            {
+                // Écritures, grand livre, balance, bilan, compte de résultat et plan comptable sont des onglets (AccountingTabs).
+                label: 'Comptabilité',
+                href: 'admin.accounting.journal-entries.index',
+                icon: BookMarked,
+                active: (c) => c.startsWith('admin.accounting'),
+                permission: 'voir_comptabilite',
+                keywords: 'ecritures journal debit credit grand livre balance generale bilan compte de resultat plan comptable comptes',
             },
             {
                 label: 'Réglages des paiements',
@@ -481,82 +381,48 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        label: 'Comptabilité',
-        icon: Calculator,
-        items: [
-            {
-                label: 'Dépenses',
-                href: 'admin.expenses.index',
-                icon: TrendingDown,
-                active: (c) => c.startsWith('admin.expenses'),
-                permission: 'voir_comptabilite',
-                keywords: 'achats charges frais',
-            },
-            {
-                label: 'Journal de caisse',
-                href: 'admin.finance.cash-journal',
-                icon: Vault,
-                active: (c) => c === 'admin.finance.cash-journal',
-                permission: 'voir_comptabilite',
-                keywords: 'caisse tresorerie recettes depenses solde livre de caisse',
-            },
-            {
-                label: 'Écritures comptables',
-                href: 'admin.accounting.journal-entries.index',
-                icon: FileSpreadsheet,
-                active: (c) => c.startsWith('admin.accounting.journal-entries'),
-                permission: 'voir_comptabilite',
-                keywords: 'journal debit credit',
-            },
-            {
-                label: 'Grand livre',
-                href: 'admin.accounting.ledger',
-                icon: BookMarked,
-                active: (c) => c.startsWith('admin.accounting.ledger'),
-                permission: 'voir_comptabilite',
-            },
-            {
-                label: 'Balance générale',
-                href: 'admin.accounting.trial-balance',
-                icon: Scale,
-                active: (c) => c.startsWith('admin.accounting.trial-balance'),
-                permission: 'voir_comptabilite',
-            },
-            {
-                label: 'Bilan',
-                href: 'admin.accounting.balance-sheet',
-                icon: Landmark,
-                active: (c) => c.startsWith('admin.accounting.balance-sheet'),
-                permission: 'voir_comptabilite',
-            },
-            {
-                label: 'Compte de résultat',
-                href: 'admin.accounting.income-statement',
-                icon: TrendingUp,
-                active: (c) => c.startsWith('admin.accounting.income-statement'),
-                permission: 'voir_comptabilite',
-            },
-            {
-                label: 'Plan comptable',
-                href: 'admin.accounting.accounts.index',
-                icon: ListTree,
-                active: (c) => c.startsWith('admin.accounting.accounts'),
-                permission: 'voir_comptabilite',
-                keywords: 'comptes',
-            },
-        ],
-    },
-    {
-        label: 'Stocks & achats',
+        label: 'Économat',
         icon: Warehouse,
         items: [
             {
-                label: 'Produits & stocks',
+                label: "Tableau de bord de l'économat",
+                href: 'admin.economat.dashboard',
+                icon: Gauge,
+                active: (c) => c === 'admin.economat.dashboard',
+                permission: 'voir_stocks',
+                keywords: 'economat econome stock valeur ruptures alertes reapprovisionnement',
+            },
+            {
+                label: 'Articles & stocks',
                 href: 'admin.products.index',
                 icon: Package,
                 active: (c) => c.startsWith('admin.products') && c !== 'admin.products.movements',
                 permission: 'voir_stocks',
-                keywords: 'inventaire marchandises articles seuils alerte',
+                keywords: 'inventaire marchandises articles produits denrees fournitures uniformes materiel seuils alerte',
+            },
+            {
+                label: 'Bons de commande',
+                href: 'admin.purchase-orders.index',
+                icon: ShoppingCart,
+                active: (c) => c.startsWith('admin.purchase-orders'),
+                permission: 'voir_stocks',
+                keywords: 'achats commandes fournisseurs reception livraison bon de commande approvisionnement',
+            },
+            {
+                label: 'Demandes de matériel',
+                href: 'admin.supply-requests.index',
+                icon: PackageCheck,
+                active: (c) => c.startsWith('admin.supply-requests'),
+                permission: 'voir_stocks',
+                keywords: 'demandes atelier pratique cours cuisine sortie livraison matiere premiere classe',
+            },
+            {
+                label: 'Inventaire',
+                href: 'admin.inventory.index',
+                icon: ListChecks,
+                active: (c) => c.startsWith('admin.inventory'),
+                permission: 'voir_stocks',
+                keywords: 'comptage ecarts regularisation stock physique',
             },
             {
                 label: 'Mouvements de stock',
@@ -723,48 +589,17 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        label: 'Statistiques',
-        icon: PieChart,
+        // Rubrique seule : elle s'affiche comme un lien direct, sans groupe à déplier.
+        label: null,
         items: [
             {
-                label: 'Statistiques académiques',
+                // Académique, financier, marketing, élèves à risque et trafic sont des onglets (StatisticsTabs).
+                label: 'Statistiques',
                 href: 'admin.statistics.academic',
                 icon: LineChart,
-                active: (c) => c === 'admin.statistics.academic',
+                active: (c) => c.startsWith('admin.statistics'),
                 permission: 'voir_statistiques',
-                keywords: 'indicateurs resultats',
-            },
-            {
-                label: 'Statistiques financières',
-                href: 'admin.statistics.financial',
-                icon: BarChart3,
-                active: (c) => c === 'admin.statistics.financial',
-                permission: 'voir_statistiques',
-                keywords: 'indicateurs recettes depenses recouvrement',
-            },
-            {
-                label: 'Statistiques marketing',
-                href: 'admin.statistics.marketing',
-                icon: Target,
-                active: (c) => c === 'admin.statistics.marketing',
-                permission: 'voir_statistiques',
-                keywords: 'indicateurs candidatures sources',
-            },
-            {
-                label: 'Élèves à risque',
-                href: 'admin.statistics.at-risk',
-                icon: AlertTriangle,
-                active: (c) => c === 'admin.statistics.at-risk',
-                permission: 'voir_statistiques',
-                keywords: 'decrochage alertes',
-            },
-            {
-                label: 'Trafic',
-                href: 'admin.statistics.traffic',
-                icon: Activity,
-                active: (c) => c === 'admin.statistics.traffic',
-                permission: 'voir_statistiques',
-                keywords: 'connexions visites',
+                keywords: 'indicateurs resultats academique financieres recettes depenses recouvrement marketing candidatures sources eleves a risque decrochage alertes trafic visites connexions',
             },
         ],
     },

@@ -8,14 +8,18 @@ export default function DocumentFileField({
     onFileChange,
     onThumbnailChange,
     error,
+    maxMb = 10,
 }: {
     file: File | null;
     onFileChange: (file: File | null) => void;
     onThumbnailChange: (thumbnail: File | null) => void;
     error?: string;
+    /** Taille maximale acceptée par le serveur (Mo) : au-delà, le fichier est refusé avant l'envoi. */
+    maxMb?: number;
 }) {
     const [generating, setGenerating] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [tooBig, setTooBig] = useState<string | null>(null);
 
     useEffect(() => {
         return () => {
@@ -24,6 +28,18 @@ export default function DocumentFileField({
     }, [previewUrl]);
 
     const handleChange = async (selected: File | null) => {
+        setTooBig(null);
+
+        if (selected && selected.size > maxMb * 1024 * 1024) {
+            const mb = (selected.size / (1024 * 1024)).toFixed(1).replace('.', ',');
+
+            setTooBig(`Ce fichier fait ${mb} Mo : le maximum accepté ici est ${String(maxMb).replace('.', ',')} Mo. Réduisez-le (compression du PDF, images plus légères) ou demandez à l'hébergeur d'augmenter la limite d'envoi.`);
+            onFileChange(null);
+            onThumbnailChange(null);
+
+            return;
+        }
+
         onFileChange(selected);
         onThumbnailChange(null);
         setPreviewUrl((prev) => {
@@ -44,7 +60,7 @@ export default function DocumentFileField({
     };
 
     return (
-        <Field label="Fichier" required error={error} hint="PDF, Word, Excel, PowerPoint ou image — 10 Mo max.">
+        <Field label="Fichier" required error={tooBig ?? error} hint={`PDF, Word, Excel, PowerPoint ou image — ${String(maxMb).replace('.', ',')} Mo max.`}>
             <div className="flex items-center gap-3">
                 <input
                     type="file"
