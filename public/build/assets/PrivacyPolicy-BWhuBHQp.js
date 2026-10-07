@@ -1,0 +1,1 @@
+import e from"./PrivacyPolicy-BrT1cmZE.js";export{e as default};

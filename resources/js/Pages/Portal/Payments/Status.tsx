@@ -40,7 +40,7 @@ function useFollow(open: boolean) {
     }, [open]);
 }
 
-const button = 'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition';
+const button = 'inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition';
 
 /** Où en est un paiement en ligne : en attente de confirmation, payé (avec le reçu), échoué, expiré ou à vérifier. */
 export default function Status({ attempt }: { attempt: Attempt }) {
@@ -50,7 +50,9 @@ export default function Status({ attempt }: { attempt: Attempt }) {
 
     const states: Record<Attempt['status'], { icon: ReactNode; tone: string; title: string; text: string }> = {
         succeeded: {
-            icon: <CheckCircle2 className="h-12 w-12 text-emerald-600" aria-hidden="true" />,
+            icon: <span className="flex h-20 w-20 items-center justify-center rounded-full bg-leaf-100 ring-8 ring-leaf-50">
+                    <CheckCircle2 className="h-12 w-12 text-leaf-600" aria-hidden="true" />
+                </span>,
             tone: 'text-emerald-800',
             title: 'Paiement confirmé',
             text: 'Merci : votre paiement est enregistré. Un reçu vous est envoyé par e-mail et dans l’application.',
@@ -133,7 +135,7 @@ export default function Status({ attempt }: { attempt: Attempt }) {
 
             <div className="mt-6 space-y-2">
                 {attempt.receipt_url && (
-                    <a href={attempt.receipt_url} target="_blank" rel="noopener noreferrer" className={`${button} bg-ink-900 text-white hover:bg-ink-800`}>
+                    <a href={attempt.receipt_url} target="_blank" rel="noopener noreferrer" className={`${button} bg-leaf-500 text-ink-900 hover:bg-leaf-400`}>
                         <FileText className="h-4 w-4" aria-hidden="true" /> Télécharger le reçu
                     </a>
                 )}

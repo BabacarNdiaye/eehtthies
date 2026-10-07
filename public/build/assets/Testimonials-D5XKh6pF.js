@@ -1,1 +1,0 @@
-import e from"./Testimonials-BQB7QsxD.js";export{e as default};

@@ -1,8 +1,10 @@
 import PayOnline from '@/Components/Portal/PayOnline';
+import Segmented from '@/Components/Portal/Segmented';
 import { paymentChannelLabel } from '@/lib/paymentChannels';
 import { formatAmount } from '@/lib/portal';
 import { Invoice, OnlinePaymentConfig, Payment } from '@/types';
 import { CheckCircle2, Clock, Receipt, Wallet } from 'lucide-react';
+import { useState } from 'react';
 
 const statusStyles: Record<string, string> = {
     payee: 'bg-emerald-100 text-emerald-700',
@@ -45,7 +47,7 @@ function InvoiceCards({ invoices, receiptHref }: { invoices: Invoice[]; receiptH
                 const due = balance > 0 ? dueBadge(invoice.due_date) : null;
 
                 return (
-                    <li key={invoice.id} className="rounded-2xl bg-white p-4 shadow-soft ring-1 ring-ink-100">
+                    <li key={invoice.id} className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-ink-100">
                         <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                                 <p className="text-[11px] font-medium uppercase tracking-wide text-ink-400">{invoice.reference}</p>
@@ -67,7 +69,7 @@ function InvoiceCards({ invoices, receiptHref }: { invoices: Invoice[]; receiptH
                         </div>
 
                         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ink-100" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} aria-label="Part réglée">
-                            <div className={`h-full rounded-full ${status === 'payee' ? 'bg-emerald-500' : 'bg-gold-500'}`} style={{ width: `${progress * 100}%` }} />
+                            <div className={`h-full rounded-full ${status === 'payee' ? 'bg-emerald-500' : 'bg-leaf-500'}`} style={{ width: `${progress * 100}%` }} />
                         </div>
 
                         <dl className="mt-3 grid grid-cols-3 gap-2 text-sm">
@@ -100,7 +102,7 @@ function InvoiceCards({ invoices, receiptHref }: { invoices: Invoice[]; receiptH
                                             href={receiptHref(invoice, payment)}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="inline-flex min-h-[2.75rem] items-center gap-1.5 px-1 text-xs font-semibold text-gold-700 hover:text-gold-600"
+                                            className="inline-flex min-h-[2.75rem] items-center gap-1.5 px-1 text-xs font-semibold text-leaf-700 hover:text-leaf-600"
                                         >
                                             <Receipt className="h-4 w-4" /> Reçu
                                         </a>
@@ -149,13 +151,19 @@ function Summary({ invoices }: { invoices: Invoice[] }) {
     const open = invoices.filter((invoice) => (invoice.computed_balance ?? 0) > 0);
     const totalDue = open.reduce((sum, invoice) => sum + (invoice.computed_balance ?? 0), 0);
 
+    const card = 'relative mb-5 overflow-hidden rounded-3xl bg-gradient-to-br from-ink-900 via-ink-800 to-leaf-900 p-5 text-white shadow-elevated';
+    const glow = <span aria-hidden="true" className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-leaf-500/25 blur-2xl" />;
+
     if (totalDue <= 0) {
         return (
-            <div role="status" className="mb-5 flex items-center gap-3 rounded-2xl bg-emerald-50 p-4 text-emerald-800">
-                <CheckCircle2 className="h-6 w-6 shrink-0" aria-hidden="true" />
-                <div>
-                    <p className="text-xs font-medium opacity-80">Scolarité</p>
-                    <p className="text-lg font-bold leading-tight">À jour</p>
+            <div role="status" className={`${card} flex items-center gap-4`}>
+                {glow}
+                <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-leaf-500 text-ink-900">
+                    <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
+                </span>
+                <div className="relative">
+                    <p className="text-xs font-medium text-white/70">Scolarité</p>
+                    <p className="text-2xl font-bold leading-tight">À jour</p>
                 </div>
             </div>
         );
@@ -168,22 +176,21 @@ function Summary({ invoices }: { invoices: Invoice[] }) {
         .sort((a, b) => daysUntil(a.due_date as string) - daysUntil(b.due_date as string))[0];
 
     return (
-        <div role="status" className={`mb-5 rounded-2xl p-4 ${overdue.length > 0 ? 'bg-red-50 text-red-800' : 'bg-amber-50 text-amber-900'}`}>
-            <div className="flex items-center gap-3">
-                <Wallet className="h-6 w-6 shrink-0" aria-hidden="true" />
-                <div>
-                    <p className="text-xs font-medium opacity-80">Solde à régler</p>
-                    <p className="text-lg font-bold leading-tight">{formatAmount(totalDue)}</p>
-                </div>
+        <div role="status" className={card}>
+            {glow}
+            <div className="relative flex items-center gap-3">
+                <Wallet className="h-6 w-6 shrink-0 text-leaf-400" aria-hidden="true" />
+                <p className="text-xs font-medium text-white/70">Solde à régler</p>
             </div>
+            <p className="relative mt-2 text-3xl font-bold leading-tight tracking-tight">{formatAmount(totalDue)}</p>
             {overdue.length > 0 && (
-                <p className="mt-2 text-sm">
-                    {overdue.length} facture(s) en retard, soit {formatAmount(overdueTotal)}.
+                <p className="relative mt-3 inline-block rounded-full bg-red-500/20 px-3 py-1 text-sm font-medium text-red-200">
+                    {overdue.length} facture(s) en retard, soit {formatAmount(overdueTotal)}
                 </p>
             )}
             {next?.due_date && (
-                <p className="mt-1 text-sm">
-                    Prochaine échéance : {localDate(next.due_date).toLocaleDateString('fr-FR')} — {formatAmount(next.computed_balance ?? 0)}.
+                <p className="relative mt-2 text-sm text-white/70">
+                    Prochaine échéance : {localDate(next.due_date).toLocaleDateString('fr-FR')} — {formatAmount(next.computed_balance ?? 0)}
                 </p>
             )}
         </div>
@@ -213,14 +220,28 @@ export default function InvoiceList({
     /** Présent seulement quand un pilote de paiement en ligne est actif : « Payer en ligne » n'apparaît pas sinon. */
     online?: OnlinePaymentConfig | null;
 }) {
+    const [filter, setFilter] = useState<'all' | 'open' | 'paid'>('all');
     const ordered = byUrgency(invoices);
     const open = ordered.filter((invoice) => (invoice.computed_balance ?? 0) > 0);
+    const shown = filter === 'open' ? open : filter === 'paid' ? ordered.filter((invoice) => (invoice.computed_balance ?? 0) <= 0) : ordered;
 
     return (
         <>
             <Summary invoices={invoices} />
             {online && open.length > 0 && <PayOnline key={open.map((invoice) => invoice.id).join('-')} invoices={open} online={online} />}
-            <InvoiceCards invoices={ordered} receiptHref={receiptHref} />
+            {invoices.length > 0 && (
+                <Segmented
+                    label="Filtrer les factures"
+                    value={filter}
+                    onChange={setFilter}
+                    tabs={[
+                        { key: 'all', label: 'Toutes' },
+                        { key: 'open', label: 'À payer', badge: open.length || null },
+                        { key: 'paid', label: 'Payées' },
+                    ]}
+                />
+            )}
+            <InvoiceCards invoices={shown} receiptHref={receiptHref} />
         </>
     );
 }
