@@ -1,0 +1,7 @@
+Paquets de mise à jour (6-7 octobre 2026)
+
+- eeht-maj-complete.zip      : tout le code de l'application (sans .env, storage, vendor, .htaccess, index.php). À préférer.
+- eeht-maj-6-7-octobre.zip   : seulement ce qui a changé depuis le 6 octobre (PHP + front compilé).
+
+Chaque zip contient sa notice d'installation (LISEZMOI-*.txt) : suppression de public/build, extraction dans
+/home/onitssn/, tâche cron ponctuelle migrate + optimize:clear + optimize, à supprimer ensuite.
