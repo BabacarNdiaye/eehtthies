@@ -9,7 +9,7 @@ import { toSnapshotEntries } from '@/lib/offline';
 import { FeedItem, gradientFor, navIcon, NextClass, PortalEntry } from '@/lib/portal';
 import { Exam, PageProps } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Users } from 'lucide-react';
+import { CalendarDays, ClipboardCheck, Users } from 'lucide-react';
 
 export const teacherNav: PortalNavItem[] = [
     { label: 'Tableau de bord', href: 'teacher.dashboard', active: (c) => c === 'teacher.dashboard' },
@@ -80,6 +80,10 @@ export default function Dashboard({ teacher, classes, upcomingExams, entriesToda
                 lines={[teacher.subjects?.map((subject) => subject.name).join(', ') || 'Aucune matière assignée']}
                 avatar={portalProfile?.photo}
                 badge={portalProfile?.matricule}
+                tiles={[
+                    { label: 'Faire l\'appel', icon: ClipboardCheck, href: attendanceHref, tone: 'green' },
+                    { label: 'Emploi du temps', icon: CalendarDays, href: route('teacher.timetable'), tone: 'dark' },
+                ]}
             />
 
             <div className="space-y-8">

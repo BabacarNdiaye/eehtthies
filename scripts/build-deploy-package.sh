@@ -53,7 +53,7 @@ git ls-files -z | tar --null -T - -cf - | tar -xf - -C "$PKG"
 cp -r public/build "$PKG/public/build"
 
 # Fichiers inutiles en production
-rm -rf "$PKG/tests" "$PKG/.claude" "$PKG/.github" "$PKG/node_modules" \
+rm -rf "$PKG/tests" "$PKG/.claude" "$PKG/.github" "$PKG/node_modules" "$PKG/mises-a-jour" \
        "$PKG/phpunit.xml"
 
 echo "→ Installation des dépendances PHP de production…"

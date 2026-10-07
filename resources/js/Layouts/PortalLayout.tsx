@@ -219,10 +219,10 @@ export default function PortalLayout({ title, nav, children }: PropsWithChildren
 
                     {!isHome && (
                         <header
-                            className="sticky top-0 z-30 border-b border-ink-100 bg-white/90 px-2 backdrop-blur-xl lg:hidden"
+                            className="sticky top-0 z-30 bg-ink-50/90 px-4 backdrop-blur-xl lg:hidden"
                             style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
                         >
-                            <div className="flex h-14 items-center gap-1">
+                            <div className="grid h-16 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2">
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -230,20 +230,20 @@ export default function PortalLayout({ title, nav, children }: PropsWithChildren
                                         window.history.back();
                                     }}
                                     aria-label="Retour"
-                                    className="flex h-10 w-10 items-center justify-center rounded-full text-ink-700 transition-colors active:bg-ink-100"
+                                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink-900 shadow-soft ring-1 ring-ink-100 transition-transform active:scale-95"
                                 >
-                                    <ChevronLeft className="h-6 w-6" />
+                                    <ChevronLeft className="h-5 w-5" />
                                 </button>
-                                <h1 className="min-w-0 flex-1 truncate px-1 font-serif text-base font-bold text-ink-900">{pageTitle}</h1>
+                                <h1 className="min-w-0 truncate text-center font-serif text-base font-bold text-ink-900">{pageTitle}</h1>
                                 <Link
                                     href={messagesHref}
                                     aria-label={unread > 0 ? `Messages (${unread} non lus)` : 'Messages'}
-                                    className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink-600 transition-colors active:bg-ink-100"
+                                    className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink-900 shadow-soft ring-1 ring-ink-100 transition-transform active:scale-95"
                                 >
                                     <Bell className="h-5 w-5" />
                                     {unread > 0 && (
                                         // Le nom du lien donne déjà le nombre : le badge n'est que visuel (« 9+ » ne figurerait pas dans le nom).
-                                        <span aria-hidden="true" className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                                        <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white ring-2 ring-ink-50">
                                             {unread > 9 ? '9+' : unread}
                                         </span>
                                     )}

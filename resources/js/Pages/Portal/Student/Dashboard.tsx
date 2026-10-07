@@ -12,7 +12,7 @@ import { toSnapshotEntries } from '@/lib/offline';
 import { FeedItem, formatAmount, NextClass, PortalEntry, SubjectSummary } from '@/lib/portal';
 import { PageProps, ReportCard, Student } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { CheckCircle2, Maximize2, Wallet } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Maximize2, QrCode, Wallet } from 'lucide-react';
 
 export const studentNav: PortalNavItem[] = [
     { label: 'Tableau de bord', href: 'student.dashboard', active: (c) => c === 'student.dashboard' },
@@ -58,6 +58,7 @@ export default function Dashboard({
     const absences = (attendanceStats.absent ?? 0) + (attendanceStats.absence_justifiee ?? 0);
     const average = overallAverage ?? (latestReportCard?.average != null ? Number(latestReportCard.average) : null);
     const { auth } = usePage<PageProps>().props;
+    const { openCard } = usePortal();
     const name = `${student.first_name} ${student.last_name}`;
 
     // Mode hors ligne : l'emploi du temps de la semaine et la carte restent consultables sans réseau.
@@ -87,6 +88,10 @@ export default function Dashboard({
                 lines={[student.formation?.name, [student.school_class?.name, student.academic_year?.label].filter(Boolean).join(' · ')]}
                 avatar={student.photo ? `/storage/${student.photo}` : null}
                 badge={student.matricule}
+                tiles={[
+                    { label: 'Ma carte', icon: QrCode, onClick: openCard, tone: 'green' },
+                    { label: 'Emploi du temps', icon: CalendarDays, href: route('student.timetable'), tone: 'dark' },
+                ]}
             />
 
             <div className="space-y-8">
