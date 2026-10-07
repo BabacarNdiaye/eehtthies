@@ -942,11 +942,26 @@ export function normalize(text: string): string {
 }
 
 /** Rubriques et groupes que le rôle a le droit de voir (un groupe sans rubrique visible disparaît). */
+/**
+ * Vrai si la route existe dans la liste Ziggy envoyée par le serveur. Quand le front compilé est plus récent que le
+ * PHP du serveur (déploiement en deux temps, cache de routes périmé), une rubrique inconnue ferait lever
+ * « route … is not in the route list » et blanchirait toute l'administration : on la masque simplement.
+ */
+function routeExists(name: string): boolean {
+    try {
+        const router = route() as unknown as { has?: (name: string) => boolean };
+
+        return typeof router.has === 'function' ? router.has(name) : true;
+    } catch {
+        return true;
+    }
+}
+
 export function visibleGroups(permissions: readonly string[] | undefined): NavGroup[] {
     const granted = new Set(permissions ?? []);
 
     return navGroups
-        .map((group) => ({ ...group, items: group.items.filter((item) => !item.permission || granted.has(item.permission)) }))
+        .map((group) => ({ ...group, items: group.items.filter((item) => (!item.permission || granted.has(item.permission)) && routeExists(item.href)) }))
         .filter((group) => group.items.length > 0);
 }
 
@@ -954,7 +969,7 @@ export function visibleGroups(permissions: readonly string[] | undefined): NavGr
 export function visibleQuickActions(permissions: readonly string[] | undefined): QuickAction[] {
     const granted = new Set(permissions ?? []);
 
-    return quickActions.filter((action) => granted.has(action.permission));
+    return quickActions.filter((action) => granted.has(action.permission) && routeExists(action.href));
 }
 
 /** Rubrique (et groupe) qui possède la route courante, ou null pour une page hors menu. */
