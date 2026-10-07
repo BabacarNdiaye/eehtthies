@@ -1,0 +1,1 @@
+import e from"./PrivacyPolicy-hIrnLs2Z.js";export{e as default};

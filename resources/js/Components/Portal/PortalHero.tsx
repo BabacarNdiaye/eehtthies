@@ -117,14 +117,20 @@ function MobileHome({ name, avatar, tiles, unread }: { name: string; avatar?: st
                             </span>
                         )}
                     </Link>
-                    <Avatar name={name} src={avatar} size="sm" />
                 </div>
             </div>
 
-            <p className="mt-5 text-sm font-medium text-ink-500">{greeting()}</p>
-            <h1 className="font-serif text-2xl font-bold leading-tight text-ink-900">
-                Bonjour {firstName} ! <span className="block text-lg font-semibold text-ink-500">Que souhaitez-vous faire ?</span>
-            </h1>
+            <div className="mt-5 flex items-center gap-4">
+                <span className="shrink-0 rounded-full p-1 ring-2 ring-leaf-500">
+                    <Avatar name={name} src={avatar} size="lg" />
+                </span>
+                <div className="min-w-0">
+                    <p className="text-sm font-medium text-ink-500">{greeting()}</p>
+                    <h1 className="font-serif text-2xl font-bold leading-tight text-ink-900">
+                        Bonjour {firstName} ! <span className="block text-base font-semibold text-ink-500">Que souhaitez-vous faire ?</span>
+                    </h1>
+                </div>
+            </div>
 
             <Link
                 href={route('connect.index')}
