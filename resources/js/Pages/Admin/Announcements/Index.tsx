@@ -57,7 +57,7 @@ export default function Index({ announcements, formations, schoolClasses, priori
             <Head title="Annonces officielles" />
             <PageHeader
                 title="Annonces officielles"
-                subtitle="Diffusez une communication institutionnelle vers toute l'école, une formation, une classe, les enseignants ou l'administration."
+                subtitle="Diffusez une communication institutionnelle vers toute l'école, une formation, une classe, les élèves, les parents, les enseignants ou le personnel administratif."
             />
 
             <Card className="mb-6 p-6">
@@ -130,6 +130,7 @@ export default function Index({ announcements, formations, schoolClasses, priori
                             <tr>
                                 <th className="px-5 py-3">Titre</th>
                                 <th className="px-5 py-3">Priorité</th>
+                                <th className="px-5 py-3">Cible</th>
                                 <th className="px-5 py-3">Destinataires</th>
                                 <th className="px-5 py-3">Envoyée par</th>
                                 <th className="px-5 py-3">Date</th>
@@ -144,6 +145,7 @@ export default function Index({ announcements, formations, schoolClasses, priori
                                             {priorities[a.priority]}
                                         </span>
                                     </td>
+                                    <td className="px-5 py-3 text-ink-600">{audienceTypes[a.audience_type] ?? a.audience_type}</td>
                                     <td className="px-5 py-3 text-ink-600">{a.recipients_count}</td>
                                     <td className="px-5 py-3 text-ink-600">{a.created_by?.name ?? '—'}</td>
                                     <td className="px-5 py-3 text-ink-500">{new Date(a.created_at).toLocaleDateString('fr-FR')}</td>
@@ -151,7 +153,7 @@ export default function Index({ announcements, formations, schoolClasses, priori
                             ))}
                             {announcements.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-5 py-10 text-center">
+                                    <td colSpan={6} className="px-5 py-10 text-center">
                                         <div className="flex flex-col items-center gap-3 text-ink-500">
                                             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-50">
                                                 <Inbox className="h-6 w-6" />
