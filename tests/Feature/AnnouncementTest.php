@@ -181,6 +181,26 @@ class AnnouncementTest extends TestCase
         $this->assertSame(2, Announcement::first()->recipients_count);
     }
 
+    public function test_the_sender_never_receives_their_own_announcement(): void
+    {
+        Notification::fake();
+        $staff = User::factory()->create();
+        $staff->assignRole('responsable-communication');
+
+        $this->actingAs($staff)->post(route('admin.announcements.store'), [
+            'title' => 'Staff', 'body' => 'Info', 'priority' => 'normale', 'audience_type' => 'ecole',
+        ]);
+        $this->actingAs($this->admin)->post(route('admin.announcements.store'), [
+            'title' => 'Admin', 'body' => 'Info', 'priority' => 'normale', 'audience_type' => 'administration',
+        ]);
+
+        $own = Announcement::where('title', 'Staff')->firstOrFail();
+        $this->assertDatabaseMissing('announcement_user', ['announcement_id' => $own->id, 'user_id' => $staff->id]);
+        $toAdmins = Announcement::where('title', 'Admin')->firstOrFail();
+        $this->assertDatabaseMissing('announcement_user', ['announcement_id' => $toAdmins->id, 'user_id' => $this->admin->id]);
+        $this->assertDatabaseHas('announcement_user', ['announcement_id' => $toAdmins->id, 'user_id' => $staff->id]);
+    }
+
     public function test_a_user_without_the_permission_cannot_send_an_announcement(): void
     {
         $user = User::factory()->create();

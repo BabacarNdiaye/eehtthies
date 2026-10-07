@@ -33,7 +33,8 @@ class Announcement extends Model
     public static function broadcast(array $data, int $createdBy): self
     {
         $announcement = self::create([...$data, 'created_by' => $createdBy]);
-        $recipientIds = $announcement->recipientUserIds();
+        // L'auteur ne reçoit ni la notification, ni l'e-mail de son propre envoi, même s'il fait partie du public visé.
+        $recipientIds = $announcement->recipientUserIds()->reject(fn ($id) => (int) $id === $createdBy)->values();
 
         $now = now();
         $recipientIds->chunk(500)->each(fn ($chunk) => DB::table('announcement_user')->insertOrIgnore(
