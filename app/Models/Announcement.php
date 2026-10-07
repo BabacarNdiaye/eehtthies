@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class Announcement extends Model
 {
@@ -24,6 +25,30 @@ class Announcement extends Model
     ];
 
     protected $fillable = ['title', 'body', 'priority', 'audience_type', 'audience_id', 'recipients_count', 'created_by'];
+
+    /**
+     * Crée l'annonce et la remet à ses destinataires en base. Les notifications push partent en différé via
+     * app:push-pending-messages (pushed_at null) pour ne pas bloquer la requête sur des centaines d'appels HTTP.
+     */
+    public static function broadcast(array $data, int $createdBy): self
+    {
+        $announcement = self::create([...$data, 'created_by' => $createdBy]);
+        $recipientIds = $announcement->recipientUserIds();
+
+        $now = now();
+        $recipientIds->chunk(500)->each(fn ($chunk) => DB::table('announcement_user')->insertOrIgnore(
+            $chunk->map(fn (int $userId) => [
+                'announcement_id' => $announcement->id,
+                'user_id' => $userId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->values()->all()
+        ));
+
+        $announcement->update(['recipients_count' => $recipientIds->count()]);
+
+        return $announcement;
+    }
 
     public function createdBy()
     {
