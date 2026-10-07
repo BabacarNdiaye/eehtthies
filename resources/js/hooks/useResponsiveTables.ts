@@ -1,4 +1,4 @@
-import { RefObject, useLayoutEffect } from 'react';
+import { RefObject, useLayoutEffect, useState } from 'react';
 
 const CARDS_QUERY = '(max-width: 767px)';
 
@@ -82,6 +82,7 @@ function enhance(table: HTMLTableElement, cardMode: boolean) {
     if (titleColumn < 0) titleColumn = firstNamedColumn;
 
     setAttr(table, 'data-cards', '');
+    cardMode ? setAttr(table, 'data-cards-on', '') : removeAttr(table, 'data-cards-on');
 
     if (cardMode) {
         setAttr(table, 'role', 'table');
@@ -150,14 +151,22 @@ function enhance(table: HTMLTableElement, cardMode: boolean) {
  * amélioration progressive plutôt qu'une réécriture page par page. Un `MutationObserver` rattrape les lignes que
  * React ajoute après coup (filtre, page suivante) avant la peinture suivante.
  */
-export default function useResponsiveTables(rootRef: RefObject<HTMLElement>) {
+export default function useResponsiveTables(rootRef: RefObject<HTMLElement>, grid = false): boolean {
+    const [hasTables, setHasTables] = useState(false);
+
     useLayoutEffect(() => {
         const root = rootRef.current;
 
         if (!root) return;
 
         const media = window.matchMedia(CARDS_QUERY);
-        const run = () => root.querySelectorAll('table').forEach((table) => enhance(table, media.matches));
+        const run = () => {
+            const tables = Array.from(root.querySelectorAll('table'));
+
+            tables.forEach((table) => enhance(table, media.matches || (grid && !table.hasAttribute('data-own-view'))));
+            // Le bouton Liste / Grille n'a de sens que si la page porte au moins un tableau convertible.
+            setHasTables(tables.some((table) => !isOptedOut(table) && !table.hasAttribute('data-own-view') && !!table.tHead?.rows[0]));
+        };
 
         run();
 
@@ -170,5 +179,7 @@ export default function useResponsiveTables(rootRef: RefObject<HTMLElement>) {
             observer.disconnect();
             media.removeEventListener('change', run);
         };
-    }, [rootRef]);
+    }, [rootRef, grid]);
+
+    return hasTables;
 }
