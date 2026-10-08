@@ -56,6 +56,19 @@
         {{-- Couleurs du thème du site, configurables depuis Admin > Paramètres --}}
         <style>{!! \App\Support\ThemePalette::cssVariables() !!}</style>
 
+        {{-- Google Analytics 4 : uniquement sur le site public, pour les visiteurs non connectés, et seulement si un
+             identifiant est configuré. Les pages vues sont envoyées depuis app.tsx (navigation Inertia). --}}
+        @php($gaId = \App\Support\GoogleAnalytics::id())
+        @if ($gaId && auth()->guest() && ! request()->is('admin', 'admin/*'))
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}" nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}"></script>
+        <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function () { dataLayer.push(arguments); };
+            gtag('js', new Date());
+            gtag('config', @json($gaId), { send_page_view: false });
+        </script>
+        @endif
+
         <!-- Scripts -->
         @routes(nonce: \Illuminate\Support\Facades\Vite::cspNonce())
         @viteReactRefresh

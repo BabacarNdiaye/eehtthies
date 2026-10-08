@@ -34,6 +34,7 @@ class SettingController extends Controller
             'whatsapp_url' => ['nullable', 'url', 'max:255'],
             'linkedin_url' => ['nullable', 'url', 'max:255'],
             'youtube_url' => ['nullable', 'url', 'max:255'],
+            'google_analytics_id' => ['nullable', 'regex:/^G-[A-Za-z0-9]{4,20}$/'],
             'years_experience' => ['nullable', 'string', 'max:10'],
             'students_trained' => ['nullable', 'string', 'max:10'],
             'success_rate' => ['nullable', 'string', 'max:10'],

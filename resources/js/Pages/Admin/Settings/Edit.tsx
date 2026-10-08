@@ -64,6 +64,7 @@ export default function Edit({ settings }: { settings: Record<string, string> })
         whatsapp_url: settings.whatsapp_url ?? '',
         linkedin_url: settings.linkedin_url ?? '',
         youtube_url: settings.youtube_url ?? '',
+        google_analytics_id: settings.google_analytics_id ?? '',
         years_experience: settings.years_experience ?? '',
         students_trained: settings.students_trained ?? '',
         success_rate: settings.success_rate ?? '',
@@ -222,6 +223,23 @@ export default function Edit({ settings }: { settings: Record<string, string> })
                         </Field>
                         <Field label="RCCM" error={errors.site_rccm}>
                             <TextInput value={data.site_rccm} onChange={(e) => setData('site_rccm', e.target.value)} />
+                        </Field>
+                    </div>
+                </Card>
+
+                <Card id="analytics" className="scroll-mt-32 p-6">
+                    <h2 className="mb-1 font-serif text-lg font-bold text-ink-900">Google Analytics</h2>
+                    <p className="mb-4 text-sm text-ink-500">
+                        Mesure d'audience du site public (les pages d'administration et les utilisateurs connectés ne sont pas suivis).
+                        Laissez vide pour désactiver.
+                    </p>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        <Field label="ID de mesure (GA4)" error={errors.google_analytics_id}>
+                            <TextInput
+                                value={data.google_analytics_id}
+                                onChange={(e) => setData('google_analytics_id', e.target.value.trim())}
+                                placeholder="G-XXXXXXXXXX"
+                            />
                         </Field>
                     </div>
                 </Card>

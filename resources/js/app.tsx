@@ -27,6 +27,17 @@ createInertiaApp({
         if (loggedOut(props.initialPage)) clearOfflineData();
         router.on('navigate', (event) => {
             if (loggedOut(event.detail.page)) clearOfflineData();
+
+            // Google Analytics (chargé par app.blade.php seulement s'il est configuré) : une page vue par navigation,
+            // jamais pour un utilisateur connecté ni dans l'administration.
+            const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag;
+            if (gtag && loggedOut(event.detail.page) && !event.detail.page.url.startsWith('/admin')) {
+                gtag('event', 'page_view', {
+                    page_location: window.location.href,
+                    page_path: event.detail.page.url,
+                    page_title: document.title,
+                });
+            }
         });
 
         const root = createRoot(el);

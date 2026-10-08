@@ -1,0 +1,1 @@
+import e from"./PrivacyPolicy-D4cHvdCA.js";export{e as default};

@@ -201,7 +201,7 @@ class DataResetCatalog
                 'settings' => [
                     'site_name', 'site_short_name', 'site_tagline', 'site_email', 'site_phone', 'site_address',
                     'opening_hours', 'site_ninea', 'site_rccm', 'facebook_url', 'instagram_url', 'whatsapp_url',
-                    'linkedin_url', 'youtube_url',
+                    'linkedin_url', 'youtube_url', 'google_analytics_id',
                 ],
             ],
             'reglages_chiffres' => [

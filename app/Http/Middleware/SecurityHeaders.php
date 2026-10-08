@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\GoogleAnalytics;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
@@ -30,13 +31,17 @@ class SecurityHeaders
         // variables CSS du thème sont injectées dans un bloc <style> en ligne et Tailwind/React s'appuient
         // sur des attributs style en ligne — le risque de XSS par les styles est bien plus faible que par les
         // scripts.
+        // Google Analytics n'est autorisé que lorsqu'un identifiant de mesure est configuré.
+        $ga = GoogleAnalytics::id() !== null;
+        $gaHosts = 'https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com';
+
         $response->headers->set('Content-Security-Policy', implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'nonce-{$nonce}'",
+            "script-src 'self' 'nonce-{$nonce}'".($ga ? ' https://www.googletagmanager.com' : ''),
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
-            "img-src 'self' data:",
-            "connect-src 'self'",
+            "img-src 'self' data:".($ga ? " $gaHosts" : ''),
+            "connect-src 'self'".($ga ? " $gaHosts" : ''),
             "object-src 'none'",
             "base-uri 'self'",
             "frame-ancestors 'self'",
