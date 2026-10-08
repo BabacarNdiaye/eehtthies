@@ -25,6 +25,12 @@ return [
         'credential' => env('TURN_CREDENTIAL'),
     ],
 
+    // Géolocalisation des visiteurs du site public (onglet Trafic). Vide = désactivée (seul l'en-tête
+    // CF-IPCountry de Cloudflare, s'il existe, renseigne alors le pays).
+    'geoip' => [
+        'url' => env('GEOIP_URL', 'https://ipwho.is'),
+    ],
+
     'anthropic' => [
         'key' => env('ANTHROPIC_API_KEY'),
         'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),

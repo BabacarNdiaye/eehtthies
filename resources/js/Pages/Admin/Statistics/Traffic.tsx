@@ -4,9 +4,19 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import StatisticsTabs from '@/Components/Admin/StatisticsTabs';
 import { Head } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Activity, LogIn, UserCheck, UserX } from 'lucide-react';
+import { Activity, Globe, LogIn, UserCheck, UserX } from 'lucide-react';
+
+interface Visitors {
+    total: number;
+    unique: number;
+    byCountry: { name: string; total: number; visitors: number }[];
+    byRegion: { country: string; region: string; total: number }[];
+    topPages: { path: string; total: number }[];
+    recent: { id: number; ip_address?: string | null; country?: string | null; region?: string | null; city?: string | null; path: string; created_at: string }[];
+}
 
 interface Props {
+    visitors: Visitors;
     daily: { day: string; total: number }[];
     byRole: { name: string; total: number }[];
     totalUsers: number;
@@ -22,7 +32,7 @@ interface Props {
 }
 
 
-export default function Traffic({ daily, byRole, totalUsers, activeUsers30d, neverLoggedIn, logins30d, recent }: Props) {
+export default function Traffic({ visitors, daily, byRole, totalUsers, activeUsers30d, neverLoggedIn, logins30d, recent }: Props) {
     return (
         <AdminLayout>
             <Head title="Trafic" />
@@ -103,6 +113,110 @@ export default function Traffic({ daily, byRole, totalUsers, activeUsers30d, nev
                     </ResponsiveContainer>
                 </Card>
             </div>
+
+            <div className="mb-3 flex items-center gap-2">
+                <Globe className="h-5 w-5 text-gold-800" />
+                <h2 className="font-serif text-xl font-semibold text-ink-900">Visiteurs du site public (30 jours)</h2>
+            </div>
+            <div className="mb-4 grid grid-cols-2 gap-4">
+                <Card className="p-5">
+                    <p className="text-xl font-bold text-ink-900">{visitors.total}</p>
+                    <p className="text-sm text-ink-500">Pages vues</p>
+                </Card>
+                <Card className="p-5">
+                    <p className="text-xl font-bold text-ink-900">{visitors.unique}</p>
+                    <p className="text-sm text-ink-500">Visiteurs uniques (par adresse IP)</p>
+                </Card>
+            </div>
+            <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <Card className="overflow-hidden">
+                    <div className="border-b border-ink-100 p-5"><h3 className="font-serif text-lg font-semibold text-ink-900">Par pays</h3></div>
+                    <table className="w-full text-left text-sm">
+                        <tbody className="divide-y divide-ink-100">
+                            {visitors.byCountry.map((c) => (
+                                <tr key={c.name}>
+                                    <td className="px-5 py-3 font-medium text-ink-900">{c.name}</td>
+                                    <td className="px-5 py-3 text-right text-ink-500">{c.visitors} visiteur(s) · {c.total} vue(s)</td>
+                                </tr>
+                            ))}
+                            {visitors.byCountry.length === 0 && (
+                                <tr><td className="px-5 py-8 text-center text-ink-500">Aucune visite enregistrée.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </Card>
+                <Card className="overflow-hidden">
+                    <div className="border-b border-ink-100 p-5"><h3 className="font-serif text-lg font-semibold text-ink-900">Par région</h3></div>
+                    <table className="w-full text-left text-sm">
+                        <tbody className="divide-y divide-ink-100">
+                            {visitors.byRegion.map((r) => (
+                                <tr key={`${r.country}-${r.region}`}>
+                                    <td className="px-5 py-3 font-medium text-ink-900">{r.region} <span className="font-normal text-ink-500">({r.country})</span></td>
+                                    <td className="px-5 py-3 text-right text-ink-500">{r.total}</td>
+                                </tr>
+                            ))}
+                            {visitors.byRegion.length === 0 && (
+                                <tr><td className="px-5 py-8 text-center text-ink-500">Aucune visite enregistrée.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </Card>
+                <Card className="overflow-hidden">
+                    <div className="border-b border-ink-100 p-5"><h3 className="font-serif text-lg font-semibold text-ink-900">Pages les plus vues</h3></div>
+                    <table className="w-full text-left text-sm">
+                        <tbody className="divide-y divide-ink-100">
+                            {visitors.topPages.map((p) => (
+                                <tr key={p.path}>
+                                    <td className="px-5 py-3 font-medium text-ink-900">{p.path}</td>
+                                    <td className="px-5 py-3 text-right text-ink-500">{p.total}</td>
+                                </tr>
+                            ))}
+                            {visitors.topPages.length === 0 && (
+                                <tr><td className="px-5 py-8 text-center text-ink-500">Aucune visite enregistrée.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </Card>
+            </div>
+
+            <Card className="mb-6 overflow-hidden">
+                <div className="border-b border-ink-100 p-5">
+                    <h3 className="font-serif text-lg font-semibold text-ink-900">Dernières visites du site</h3>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-ink-50 text-xs uppercase tracking-wide text-ink-500">
+                            <tr>
+                                <th className="px-5 py-3">Pays</th>
+                                <th className="px-5 py-3">Région</th>
+                                <th className="px-5 py-3">Ville</th>
+                                <th className="px-5 py-3">Page</th>
+                                <th className="px-5 py-3">Adresse IP</th>
+                                <th className="px-5 py-3">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-ink-100">
+                            {visitors.recent.map((v) => (
+                                <tr key={v.id}>
+                                    <td className="px-5 py-3 font-medium text-ink-900">{v.country ?? '—'}</td>
+                                    <td className="px-5 py-3 text-ink-500">{v.region ?? '—'}</td>
+                                    <td className="px-5 py-3 text-ink-500">{v.city ?? '—'}</td>
+                                    <td className="px-5 py-3 text-ink-500">{v.path}</td>
+                                    <td className="px-5 py-3 text-ink-500">{v.ip_address ?? '—'}</td>
+                                    <td className="px-5 py-3 text-ink-500">{new Date(v.created_at).toLocaleString('fr-FR')}</td>
+                                </tr>
+                            ))}
+                            {visitors.recent.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="px-5 py-10 text-center text-sm text-ink-500">
+                                        Aucune visite du site public enregistrée pour le moment.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </Card>
 
             <Card className="overflow-hidden">
                 <div className="border-b border-ink-100 p-5">

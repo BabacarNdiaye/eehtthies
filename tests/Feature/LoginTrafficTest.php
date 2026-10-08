@@ -6,6 +6,7 @@ use App\Models\LoginLog;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -77,5 +78,28 @@ class LoginTrafficTest extends TestCase
         $response = $this->actingAs($user)->get(route('admin.statistics.traffic'));
 
         $response->assertForbidden();
+    }
+
+    public function test_public_page_visit_is_recorded_with_location(): void
+    {
+        config(['services.geoip.url' => 'https://geo.test']);
+        Http::fake(['geo.test/*' => Http::response([
+            'success' => true, 'country_code' => 'SN', 'country' => 'Sénégal', 'region' => 'Dakar', 'city' => 'Dakar',
+        ])]);
+
+        $this->withHeaders(['User-Agent' => 'Mozilla/5.0 (X11; Linux) Firefox/130.0'])
+            ->withServerVariables(['REMOTE_ADDR' => '41.82.10.20'])
+            ->get('/formations')
+            ->assertOk();
+
+        $this->assertDatabaseHas('site_visits', [
+            'ip_address' => '41.82.10.20', 'country' => 'Sénégal', 'region' => 'Dakar', 'path' => '/formations',
+        ]);
+    }
+
+    public function test_bots_and_admin_pages_are_not_recorded_as_visits(): void
+    {
+        $this->withHeaders(['User-Agent' => 'Googlebot/2.1'])->get('/formations')->assertOk();
+        $this->assertDatabaseCount('site_visits', 0);
     }
 }

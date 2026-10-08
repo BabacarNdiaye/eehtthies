@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureUserIsStaff;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TrackLastSeen;
+use App\Http\Middleware\TrackSiteVisit;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -35,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
             SecurityHeaders::class,
             TrackLastSeen::class,
+            TrackSiteVisit::class,
         ]);
 
         // Refus d'appel depuis une notification et notifications du fournisseur de paiement : ni l'un ni l'autre ne vient

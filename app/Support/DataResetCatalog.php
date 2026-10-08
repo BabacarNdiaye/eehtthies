@@ -553,8 +553,8 @@ class DataResetCatalog
             'connexions' => [
                 'group' => 'Traces et fichiers',
                 'label' => 'Historique des connexions',
-                'description' => 'Connexions des utilisateurs (statistiques de trafic).',
-                'tables' => ['login_logs'],
+                'description' => 'Connexions des utilisateurs et visites du site public (statistiques de trafic).',
+                'tables' => ['login_logs', 'site_visits'],
             ],
             'pieces_jointes' => [
                 'group' => 'Traces et fichiers',

@@ -12,6 +12,7 @@ use App\Models\Invoice;
 use App\Models\LoginLog;
 use App\Models\Payment;
 use App\Models\ReportCard;
+use App\Models\SiteVisit;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
@@ -272,7 +273,25 @@ class StatisticsController extends Controller
             ->take(15)
             ->get(['id', 'user_id', 'ip_address', 'created_at']);
 
+        $visits = SiteVisit::where('created_at', '>=', $since);
+        $visitors = [
+            'total' => (clone $visits)->count(),
+            'unique' => (clone $visits)->distinct('ip_address')->count('ip_address'),
+            'byCountry' => (clone $visits)
+                ->selectRaw("coalesce(country, 'Inconnu') as name, count(*) as total, count(distinct ip_address) as visitors")
+                ->groupBy('country')->orderByDesc('total')->take(10)->get(),
+            'byRegion' => (clone $visits)
+                ->selectRaw("coalesce(country, 'Inconnu') as country, coalesce(region, 'Inconnue') as region, count(*) as total")
+                ->groupBy('country', 'region')->orderByDesc('total')->take(10)->get(),
+            'topPages' => (clone $visits)
+                ->selectRaw('path, count(*) as total')
+                ->groupBy('path')->orderByDesc('total')->take(8)->get(),
+            'recent' => SiteVisit::latest('id')->take(15)
+                ->get(['id', 'ip_address', 'country', 'region', 'city', 'path', 'created_at']),
+        ];
+
         return Inertia::render('Admin/Statistics/Traffic', [
+            'visitors' => $visitors,
             'daily' => $daily,
             'byRole' => $byRole,
             'totalUsers' => $totalUsers,
