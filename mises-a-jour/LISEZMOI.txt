@@ -5,3 +5,4 @@ Paquets de mise à jour (6-7 octobre 2026)
 
 Chaque zip contient sa notice d'installation (LISEZMOI-*.txt) : suppression de public/build, extraction dans
 /home/onitssn/, tâche cron ponctuelle migrate + optimize:clear + optimize, à supprimer ensuite.
+- eeht-maj-8-octobre.zip     : seulement la mise à jour du 8 octobre (visiteurs du site public dans Trafic).
